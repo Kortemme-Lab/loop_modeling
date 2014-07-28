@@ -1,0 +1,27 @@
+<ROSETTASCRIPTS>
+
+    <TASKOPERATIONS>
+        <RestrictToLoops name="loop" loops_file="%%model%%.loop"/>
+    </TASKOPERATIONS>
+
+    <MOVERS>
+        <LoopModeler name="modeler" loops_file="%%model%%.loop"/>
+
+        <ReportToDB name="loop_reporter" task_operations="loop">
+          <feature name="ProteinRMSDNoSuperpositionFeatures"/>
+        </ReportToDB>
+
+        <ReportToDB name="pose_reporter">
+          <feature name="ScoreTypeFeatures"/>
+          <feature name="StructureScoresFeatures" scorefxn="talaris2013"/>
+        </ReportToDB>
+    </MOVERS>
+
+    <PROTOCOLS>
+        <Add mover_name=modeler/>
+        <Add mover_name=loop_reporter/>
+        <Add mover_name=pose_reporter/>
+    </PROTOCOLS>
+
+</ROSETTASCRIPTS>
+
