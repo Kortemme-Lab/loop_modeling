@@ -1,1 +1,5 @@
-conf.py
+/conf.py
+/conf.pyc
+/output
+*.pyc
+.*.sw*

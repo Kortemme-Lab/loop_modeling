@@ -1,11 +1,11 @@
 <ROSETTASCRIPTS>
 
     <TASKOPERATIONS>
-        <RestrictToLoops name="loop" loops_file="%%model%%.loop"/>
+        <RestrictToLoops name="loop" loops_file="%%loop_file%%"/>
     </TASKOPERATIONS>
 
     <MOVERS>
-        <LoopModeler name="modeler" loops_file="%%model%%.loop"/>
+        <LoopModeler name="modeler" loops_file="%%loop_file%%" fast="%%fast%%"/>
 
         <ReportToDB name="loop_reporter" task_operations="loop">
           <feature name="ProteinRMSDNoSuperpositionFeatures"/>
