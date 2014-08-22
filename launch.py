@@ -43,7 +43,7 @@ def compile_rosetta():
 
     compile_command = 'ssh', 'iqint', '; '.join([
             'cd "%s"' % scons_path,
-            'nohup nice ./scons.py bin -j16 mode=debug extras=mysql'])
+            'nohup nice ./scons.py bin -j16 mode=release extras=mysql'])
 
     return subprocess.call(compile_command)
 
