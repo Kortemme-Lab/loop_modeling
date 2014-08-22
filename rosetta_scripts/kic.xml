@@ -7,20 +7,15 @@
     <MOVERS>
         <LoopModeler name="modeler" loops_file="%%loop_file%%" fast="%%fast%%"/>
 
-        <ReportToDB name="loop_reporter" task_operations="loop">
+        <ReportToDB name="reporter" task_operations="loop">
+          <feature name="TotalScoreFeatures" scorefxn="talaris2013"/>
           <feature name="ProteinRMSDNoSuperpositionFeatures"/>
-        </ReportToDB>
-
-        <ReportToDB name="pose_reporter">
-          <feature name="ScoreTypeFeatures"/>
-          <feature name="StructureScoresFeatures" scorefxn="talaris2013"/>
         </ReportToDB>
     </MOVERS>
 
     <PROTOCOLS>
         <Add mover_name=modeler/>
-        <Add mover_name=loop_reporter/>
-        <Add mover_name=pose_reporter/>
+        <Add mover_name=reporter/>
     </PROTOCOLS>
 
 </ROSETTASCRIPTS>
