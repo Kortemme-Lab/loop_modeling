@@ -1,3 +1,4 @@
 /settings.conf
 *.pyc
 .*.sw*
+.nfs*

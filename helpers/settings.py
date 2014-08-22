@@ -25,10 +25,17 @@ def load(interactive=True):
     def get_setting(parser, section, setting, prompt, default=None):
         try:
             return parser.get(section, setting)
+
         except configparser.Error:
             if not interactive: raise
+
             if default: prompt += ' [{0}]'.format(default)
-            value = raw_input(prompt + ': ') or default
+            try:
+                value = raw_input(prompt + ': ') or default
+            except KeyboardInterrupt:
+                print
+                raise SystemExit
+
             if not parser.has_section(section): parser.add_section(section)
             parser.set(section, setting, value)
             return value
