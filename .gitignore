@@ -1,5 +1,3 @@
-/conf.py
-/conf.pyc
-/output
+/settings.conf
 *.pyc
 .*.sw*

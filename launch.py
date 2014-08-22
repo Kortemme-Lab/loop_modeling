@@ -5,16 +5,14 @@ import os
 import shutil
 import subprocess
 import glob
-import conf
 
-def check_hostname():
-    from socket import gethostname
-
-    if gethostname() != 'chef.compbio.ucsf.edu':
-        raise SystemExit("This script must be run on chef.")
+from helpers import database
+from helpers import install
+from helpers import settings; settings.load()
+from helpers import utilities
 
 def compile_rosetta():
-    rosetta_path = os.path.abspath(conf.rosetta)
+    rosetta_path = os.path.abspath(settings.rosetta)
 
     # Setup the compiler for the cluster.
 
@@ -49,7 +47,7 @@ def compile_rosetta():
 
     return subprocess.call(compile_command)
 
-def run_benchmark(pdbs, debug=False):
+def run_benchmark(script, pdbs, vars=(), fast=False):
     pdbs = [x for x in sorted(pdbs)]
 
     # Make sure all the inputs actually exist.
@@ -58,26 +56,32 @@ def run_benchmark(pdbs, debug=False):
         if not os.path.exists(pdb):
             raise ValueError("'{0}' does not exist.".format(pdb))
 
-    # Wipe the output directory.
+    # Create an entry in the benchmarks table.
 
-    if os.path.exists('output'): shutil.rmtree('output')
-    os.mkdir('output')
+    with database.connect() as session:
+        benchmark = database.Benchmarks()
+        session.add(benchmark)
+        session.flush()
+        benchmark_id = str(benchmark.id)
 
     # Submit the benchmark to the cluster.
 
+    script_vars = ()
+    for var in vars:
+        script_vars += '--var', var
+
     for pdb in pdbs:
-        if debug:
+        if fast:
             command = (
                     'qsub', '-q', 'short.q', '-l', 'h_rt=0:30:00',
-                    'benchmark.py', pdb, '--fast'
-            )
+                    'benchmark.py', script, pdb, '--id', benchmark_id, '--fast',
+            ) + script_vars
         else:
             command = (
                     'qsub', '-t', '1-500',
-                    'benchmark.py', pdb,
-            )
+                    'benchmark.py', script, pdb, '--id', benchmark_id,
+            ) + script_vars
 
-        print ' '.join(command)
         subprocess.call(command)
 
 
@@ -86,21 +90,32 @@ if __name__ == '__main__':
 
     # Use optparse because it's available on chef.
 
-    parser = optparse.OptionParser(usage='%prog [options] <benchmark>')
+    usage = 'launch.py [options] <script> <full|mini|pdbs...|test>'
+    parser = optparse.OptionParser(usage=usage)
+    parser.add_option('--var', dest='vars', action='append', default=[])
     parser.add_option('--compile-only', '-c', action='store_true', dest='compile_only')
     parser.add_option('--execute-only', '-x', action='store_true', dest='execute_only')
     options, arguments = parser.parse_args()
-    benchmark = set(arguments)
 
-    if not arguments:
-        print 'Usage: launch.py [options] <full|test|mini|pdbs...>'
+    if len(arguments) == 0:
+        print 'Usage: ' + usage
         print
-        print 'launch.py: error: must specify a benchmark to launch.'
+        print 'launch.py: error: must specify a RosettaScript to benchmark.'
         sys.exit(1)
+
+    if len(arguments) == 1:
+        print 'Usage: ' + usage
+        print
+        print 'launch.py: error: must specify a set of PDB files to benchmark.'
+        sys.exit(1)
+
+    script = arguments[0]
+    benchmark = set(arguments[1:])
 
     # Compile rosetta.
 
-    check_hostname()
+    utilities.require_chef()
+    install.install_dependencies_if_necessary()
 
     if not options.execute_only:
         error_code = compile_rosetta()
@@ -110,17 +125,18 @@ if __name__ == '__main__':
     if options.compile_only:
         sys.exit(1)
 
-    # Run a test job, if requested.
+    # Configure the benchmark run.  If a test run is specified, an easy 
+    # structure is used and only a few iterations are run.  If a benchmark run 
+    # is specified, any structures specified on the command-line will be used.  
+    # The 'full' and 'mini' keywords automatically load common structures.
 
     if 'test' in arguments:
         pdbs = ['structures/1srp.pdb']
-        debug = True
-
-    # Run the full benchmark on the specified structures, otherwise.
+        fast = True
 
     else:
         pdbs = set()
-        debug = False
+        fast = False
 
         if 'full' in benchmark:
             benchmark.remove('full')
@@ -138,6 +154,5 @@ if __name__ == '__main__':
 
         pdbs |= benchmark
 
-    error_code = run_benchmark(pdbs, debug=debug)
-    sys.exit(error_code)
+    run_benchmark(script, pdbs, vars=options.vars, fast=fast)
 
