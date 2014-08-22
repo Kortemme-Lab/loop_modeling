@@ -41,13 +41,18 @@ class BenchmarkProtocols (Base):
         self.protocol_id = protocol_id
 
 
-class TracerOutput (Base):
-    protocol_id = Column(Integer, primary_key=True)
-    output = Column(Text)
+class ProtocolOutput (Base):
+    output_id = Column(Integer, primary_key=True, autoincrement=True)
+    benchmark_id = Column(Integer, ForeignKey('benchmarks.benchmark_id'))
+    protocol_id = Column(Integer)
+    stdout = Column(Text)
+    stderr = Column(Text)
 
-    def __init__(self, protocol_id, output):
+    def __init__(self, benchmark_id, protocol_id, stdout, stderr):
+        self.benchmark_id = benchmark_id
         self.protocol_id = protocol_id
-        self.output = output
+        self.stdout = stdout
+        self.stderr = stderr
 
 
 

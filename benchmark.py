@@ -77,17 +77,18 @@ process = subprocess.Popen(rosetta_command, env=rosetta_env, stdout=subprocess.P
 stdout, stderr = process.communicate(); process.poll()
 return_code = process.returncode
 
-# Create a mapping between the benchmark and the protocol in the database.
+# Create a mapping between the benchmark and the protocol in the database.  
 
 protocol_match = re.search("protocol_id '([1-9][0-9]*)'", stdout)
+protocol_id = protocol_match.groups()[0] if protocol_match else None
+benchmark_id = options.id
 
-if protocol_match:
-    benchmark_id = options.id
-    protocol_id = protocol_match.groups()[0]
+with database.connect() as session:
+    protocol_output = database.ProtocolOutput(benchmark_id, protocol_id, stdout, stderr)
+    session.add(protocol_output)
 
-    with database.connect() as session:
+    if protocol_id is not None:
         benchmark_map = database.BenchmarkProtocols(benchmark_id, protocol_id)
-        tracer_output = database.TracerOutput(protocol_id, stdout)
-        session.add_all([benchmark_map, tracer_output])
+        session.add(benchmark_map)
 
 sys.exit(return_code)
