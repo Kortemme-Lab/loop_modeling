@@ -17,7 +17,7 @@ class Base (object):
     @property
     def dict(self):
         keys = [column.name for column in self.__table__.columns]
-        return {key: getattr(self, key) for key in keys}
+        return dict((key, getattr(self, key)) for key in keys)
 
 
 Base = declarative_base(cls=Base)
