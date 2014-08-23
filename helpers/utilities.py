@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 def get_benchmark_root():
+    import shlex
+    import subprocess
     command = shlex.split('git rev-parse --show-toplevel')
     directory = subprocess.check_output(command)
     return directory.strip()

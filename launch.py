@@ -112,10 +112,13 @@ if __name__ == '__main__':
     script = arguments[0]
     benchmark = set(arguments[1:])
 
-    # Compile rosetta.
+    # Make sure that all the necessary dependencies have been installed.
 
     utilities.require_chef()
-    install.install_dependencies_if_necessary()
+    install.require_sqlalchemy()
+    install.require_mysql_connector()
+
+    # Compile rosetta.
 
     if not options.execute_only:
         error_code = compile_rosetta()
