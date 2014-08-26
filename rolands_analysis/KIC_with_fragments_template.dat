@@ -1,0 +1,83 @@
+################################################################
+## KIC with fragments parameters file
+################################################################
+
+
+################################################
+## Global parameters
+################################################
+
+global_Rosetta_dir=/netapp/home/rpac/Rosetta_57138/main/
+
+global_main_dir=/netapp/home/rpac/KIC_with_fragments/
+
+global_cluster_queue=
+global_cluster_architecture=linux-x64
+
+
+###############################################
+## Structure calibration with minpacker parameters
+###############################################
+structure_calibration_indir=data/long_loops_benchmark_dataset/cleaned/
+#data/KIC_benchmark_dataset/cleaned/
+
+structure_calibration_extra_Rosetta_flags=-ignore_zero_occupancy false -constant_seed -ex1 -ex2 -extrachi_cutoff 0 -flip_HNQ -no_optH false -preserve_header -min_pack -packing:repack_only
+
+structure_calibration_outdir=data/long_loops_benchmark_dataset/calibrated_with_MinPacker/
+#data/KIC_benchmark_dataset/calibrated_with_MinPacker/
+
+
+###############################################
+## Extract fasta sequence parameters
+###############################################
+extract_fasta_sequence_indir=data/long_loops_benchmark_dataset/cleaned/
+#data/KIC_benchmark_dataset/calibrated_with_MinPacker/
+
+extract_fasta_sequence_outdir=data/long_loops_benchmark_dataset/fasta_sequences/
+#data/KIC_benchmark_dataset/fasta_sequences/
+
+
+###############################################
+## Loopmodel parameters
+###############################################
+loopmodel_structures_indir=data/KIC_benchmark_dataset/calibrated_with_MinPacker/
+#data/long_loops_benchmark_dataset/final_input_structures/
+#data/KIC_benchmark_dataset/calibrated_with_MinPacker/
+
+loopmodel_loops_indir=data/long_loops_benchmark_dataset/loop_definitions/
+#data/KIC_benchmark_dataset/loop_definitions/
+
+loopmodel_num_models_offset=0
+loopmodel_num_models_per_PDB=500
+
+loopmodel_run_identifier=legacy_KIC
+#perturb_KIC_with_fragments_nohoms_refine_KIC_refactor
+#legacy_KIC
+#refactored_KIC
+#next_generation_KIC
+#CCD
+#CCD_nohoms
+#KIC_with_fragments
+#KIC_with_fragments_nohoms
+
+loopmodel_fragments_indir=data/long_loops_benchmark_dataset/fragments_nohoms/
+#data/KIC_benchmark_dataset/fragments/
+#data/KIC_benchmark_dataset/fragments_nohoms/
+
+loopmodel_extra_Rosetta_flags=-loops:remodel perturb_kic -loops:refine refine_kic -loops:outer_cycles 5 -max_kic_perturber_samples 10000
+#-loops:remodel quick_ccd -loops:refine refine_ccd -loops:outer_cycles 5 -max_kic_perturber_samples 10000
+#-loops:remodel perturb_kic_refactor -loops:refine refine_kic_refactor -loops:outer_cycles 5 -max_kic_perturber_samples 10000
+#-loops:remodel perturb_kic -loops:refine refine_kic -kic_rama2b -loops:ramp_fa_rep -loops:ramp_rama -loops:outer_cycles 5 -kic_omega_sampling -allow_omega_move true -max_retry_job 0 -max_kic_perturber_samples 10000
+#-loops:remodel perturb_kic_with_fragments -loops:refine refine_kic_with_fragments -loops:outer_cycles 5 -max_kic_perturber_samples 10000
+#
+
+loopmodel_run_identifiers=CCD_nohoms,legacy_KIC,refactored_KIC,next_generation_KIC,KIC_with_fragments_nohoms
+#CCD,CCD_nohoms,legacy_KIC,refactored_KIC,next_generation_KIC,KIC_with_fragments,KIC_with_fragments_nohoms
+
+loopmodel_outdir=results/talaris_5_outer_cycles_max_2000_perturber_samples_bugfix/
+#results/rev_57138/talaris_max_10k_perturber_samples/
+#results/talaris_5_outer_cycles_max_2000_perturber_samples_bugfix/
+#results/talaris_5_outer_cycles_max_2000_perturber_samples/
+#results/talaris/max_2000_KIC_perturber_samples/
+#results/talaris/
+#results/talaris/without_RamaPerturber_during_initial_loopbuild/
