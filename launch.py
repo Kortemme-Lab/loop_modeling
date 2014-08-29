@@ -47,7 +47,9 @@ def compile_rosetta():
 
     return subprocess.call(compile_command)
 
-def run_benchmark(script, pdbs, vars=(), fast=False):
+def run_benchmark(script, pdbs,
+        name=None, desc=None, vars=(), fast=False, explicit_log=False):
+
     pdbs = [x for x in sorted(pdbs)]
 
     # Make sure all the inputs actually exist.
@@ -59,28 +61,34 @@ def run_benchmark(script, pdbs, vars=(), fast=False):
     # Create an entry in the benchmarks table.
 
     with database.connect() as session:
-        benchmark = database.Benchmarks()
+        benchmark = database.Benchmarks(name, desc)
         session.add(benchmark)
         session.flush()
         benchmark_id = str(benchmark.id)
 
+    # Make sure the log file directories exist.
+
+    if explicit_log:
+        utilities.clear_directory('explicit_log')
+        log_args = '-o', 'explicit_log', '-j', 'y'
+    else:
+        log_args = '-o', '/dev/null', '-j', 'y'
+        
     # Submit the benchmark to the cluster.
 
-    script_vars = ()
+    vars_args = ()
     for var in vars:
-        script_vars += '--var', var
+        vars_args += '--var', var
 
     for pdb in pdbs:
         if fast:
             command = (
-                    'qsub', '-q', 'short.q', '-l', 'h_rt=0:30:00',
-                    'benchmark.py', script, pdb, '--id', benchmark_id, '--fast',
-            ) + script_vars
+                    'qsub', '-q', 'short.q', '-l', 'h_rt=0:30:00') + log_args + (
+                    'benchmark.py', script, pdb, '--id', benchmark_id, '--fast',) + vars_args
         else:
             command = (
-                    'qsub', '-t', '1-500',
-                    'benchmark.py', script, pdb, '--id', benchmark_id,
-            ) + script_vars
+                    'qsub', '-t', '1-500') + log_args + (
+                    'benchmark.py', script, pdb, '--id', benchmark_id,) + vars_args
 
         subprocess.call(command)
 
@@ -92,9 +100,12 @@ if __name__ == '__main__':
 
     usage = 'launch.py [options] <script> <full|mini|pdbs...|test>'
     parser = optparse.OptionParser(usage=usage)
+    parser.add_option('--name', dest='name')
+    parser.add_option('--desc', dest='desc')
     parser.add_option('--var', dest='vars', action='append', default=[])
     parser.add_option('--compile-only', '-c', action='store_true', dest='compile_only')
     parser.add_option('--execute-only', '-x', action='store_true', dest='execute_only')
+    parser.add_option('--explicit-log', action='store_true', dest='explicit_log')
     options, arguments = parser.parse_args()
 
     if len(arguments) == 0:
@@ -157,5 +168,7 @@ if __name__ == '__main__':
 
         pdbs |= benchmark
 
-    run_benchmark(script, pdbs, vars=options.vars, fast=fast)
+    run_benchmark(script, pdbs,
+            name=options.name, desc=options.desc,
+            vars=options.vars, explicit_log=options.explicit_log, fast=fast)
 

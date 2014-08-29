@@ -15,6 +15,8 @@ def load(interactive=True):
     import subprocess
     from . import utilities
 
+    # Parse the settings file.
+
     parser = configparser.SafeConfigParser()
     parser.read(settings_path)
 
@@ -24,11 +26,15 @@ def load(interactive=True):
 
     def get_setting(parser, section, setting, prompt, default=None):
         try:
+            # Attempt to read the requested setting from the settings file.
             return parser.get(section, setting)
 
         except configparser.Error:
+
+            # If not in interactive mode, each setting must have a value.
             if not interactive: raise
 
+            # Prompt the user for the missing value.
             if default: prompt += ' [{0}]'.format(default)
             try:
                 value = raw_input(prompt + ': ') or default
@@ -36,8 +42,16 @@ def load(interactive=True):
                 print
                 raise SystemExit
 
-            if not parser.has_section(section): parser.add_section(section)
+            # Add the setting to the ConfigFile object.
+            if not parser.has_section(section):
+                parser.add_section(section)
+
             parser.set(section, setting, value)
+
+            # Update the settings file.
+            with open(settings_path, 'w') as file:
+                parser.write(file)
+
             return value
 
 
@@ -47,11 +61,6 @@ def load(interactive=True):
     db_password_cmd = get_setting(parser, 'database', 'password', prompt="Command to get database password", default='echo pa55w0rd')
     db_host = get_setting(parser, 'database', 'host', prompt="Database host", default='guybrush-pi.compbio.ucsf.edu')
     db_port = get_setting(parser, 'database', 'port', prompt="Database port", default='3306')
-
-    # Write any user-specified values to the config file.
-
-    with open(settings_path, 'w') as file:
-        parser.write(file)
 
     # Invoke the password command to get the database password.
 
