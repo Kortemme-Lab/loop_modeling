@@ -21,8 +21,9 @@ class Base (object):
 
 
 Base = declarative_base(cls=Base)
+NonRosettaBase = declarative_base(cls=Base)
 
-class Benchmarks (Base):
+class Benchmarks (NonRosettaBase):
     benchmark_id = Column(Integer, primary_key=True, autoincrement=True)
     start_time = Column(DateTime)
     name = Column(Text)
@@ -39,7 +40,7 @@ class Benchmarks (Base):
         return self.benchmark_id
 
 
-class BenchmarkProtocols (Base):
+class BenchmarkProtocols (NonRosettaBase):
     benchmark_id = Column(Integer, primary_key=True)
     protocol_id = Column(Integer, primary_key=True)
     
@@ -104,7 +105,7 @@ class TotalScores (Base):
         return repr.format(self)
 
 
-class ProtocolOutput (Base):
+class ProtocolOutput (NonRosettaBase):
     output_id = Column(Integer, primary_key=True, autoincrement=True)
     benchmark_id = Column(Integer, ForeignKey('benchmarks.benchmark_id'))
     protocol_id = Column(Integer)
@@ -132,7 +133,7 @@ def connect():
         session = None
         try:
             engine = create_engine(url())
-            Base.metadata.create_all(engine)
+            NonRosettaBase.metadata.create_all(engine)
             Session.configure(bind=engine)
             session = Session()
             yield session
