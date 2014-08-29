@@ -73,8 +73,11 @@ rosetta_command = [
 
 # Run the benchmark.
 
-process = subprocess.Popen(rosetta_command, env=rosetta_env, stdout=subprocess.PIPE)
+process = subprocess.Popen(rosetta_command, env=rosetta_env,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
 stdout, stderr = process.communicate(); process.poll()
+sys.stdout.write(stdout); sys.stderr.write(stderr)
 return_code = process.returncode
 
 # Create a mapping between the benchmark and the protocol in the database.  

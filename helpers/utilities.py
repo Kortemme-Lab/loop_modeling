@@ -7,6 +7,10 @@ def get_benchmark_root():
     directory = subprocess.check_output(command)
     return directory.strip()
 
+def clear_directory(directory):
+    import os, shutil
+    if os.path.exists(directory): shutil.rmtree(directory)
+    os.mkdir(directory)
 def require_chef():
     from socket import gethostname
     if gethostname() != 'chef.compbio.ucsf.edu':
