@@ -22,7 +22,7 @@ def load(interactive=True):
 
     # Read all the settings from the config file.
 
-    global rosetta, db_name, db_user, db_password, db_host, db_port
+    global rosetta, author, db_name, db_user, db_password, db_host, db_port
 
     def get_setting(parser, section, setting, prompt, default=None):
         try:
@@ -56,6 +56,7 @@ def load(interactive=True):
 
 
     rosetta = get_setting(parser, 'rosetta', 'path', prompt="Path to rosetta")
+    author = get_setting(parser, 'analysis', 'author', prompt="You full name")
     db_name = get_setting(parser, 'database', 'name', prompt="Database name", default='loops_modeling_benchmark')
     db_user = get_setting(parser, 'database', 'user', prompt="Database user", default=getpass.getuser())
     db_password_cmd = get_setting(parser, 'database', 'password', prompt="Command to get database password", default='echo pa55w0rd')
@@ -70,6 +71,7 @@ def load(interactive=True):
 # These values are filled in by the install() and load() functions.
 
 rosetta = ''
+author = ''
 db_name = ''
 db_user = ''
 db_password = ''
