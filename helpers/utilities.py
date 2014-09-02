@@ -11,9 +11,12 @@ def clear_directory(directory):
     import os, shutil
     if os.path.exists(directory): shutil.rmtree(directory)
     os.mkdir(directory)
-def require_chef():
+def is_this_chef():
     from socket import gethostname
-    if gethostname() != 'chef.compbio.ucsf.edu':
+    return gethostname() == 'chef.compbio.ucsf.edu'
+
+def require_chef():
+    if not is_this_chef():
         raise SystemExit("This script must be run on chef.")
 
 def check_output(*popenargs, **kwargs):

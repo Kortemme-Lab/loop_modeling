@@ -6,10 +6,9 @@ import shutil
 import subprocess
 import glob
 
-from helpers import database
-from helpers import install
+from helpers import utilities; utilities.require_chef()
 from helpers import settings; settings.load()
-from helpers import utilities
+from helpers import database
 
 def compile_rosetta():
     rosetta_path = os.path.abspath(settings.rosetta)
@@ -122,12 +121,6 @@ if __name__ == '__main__':
 
     script = arguments[0]
     benchmark = set(arguments[1:])
-
-    # Make sure that all the necessary dependencies have been installed.
-
-    utilities.require_chef()
-    install.require_sqlalchemy()
-    install.require_mysql_connector()
 
     # Compile rosetta.
 

@@ -1,3 +1,8 @@
+from . import install
+
+install.require_sqlalchemy()
+install.require_mysql_connector()
+
 from sqlalchemy import create_engine, ForeignKey
 from sqlalchemy import Column, Integer, Float, Text, String, DateTime
 from sqlalchemy.orm import sessionmaker, relationship
