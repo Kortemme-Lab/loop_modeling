@@ -38,7 +38,6 @@ import numpy
 import os
 import re
 import shutil
-import subprocess
 import sys
 import time
 
@@ -87,8 +86,10 @@ class Report:
             pdf_path = os.path.join(self.latex_dir, 'report.pdf')
 
             chapter_paths = []
+
             chapter_path = self.make_comparison_chapter()
-            chapter_paths.append(chapter_path)
+            if chapter_path is not None:
+                chapter_paths.append(chapter_path)
 
             for benchmark in self:
                 chapter_path = self.make_benchmark_chapter(benchmark)
@@ -133,10 +134,12 @@ class Report:
 
             if self.verbose:
                 print "Running pdflatex..."
+                tex_command = 'pdflatex', 'report.tex'
+            else:
+                tex_command = 'pdflatex', '-interaction=batchmode', 'report.tex'
 
-            tex_command = 'pdflatex', 'report.tex'
-            subprocess.check_output(tex_command, cwd=self.latex_dir)
-            subprocess.check_output(tex_command, cwd=self.latex_dir)
+            utilities.run_command(tex_command, cwd=self.latex_dir, verbose=self.verbose)
+            utilities.run_command(tex_command, cwd=self.latex_dir, verbose=self.verbose)
             shutil.copy(pdf_path, path)
 
     @contextlib.contextmanager
@@ -208,7 +211,7 @@ class Report:
         """
 
         if len(self) == 1:
-            return
+            return None
 
         if self.verbose:
             print "Making the comparison chapter..."
@@ -472,7 +475,7 @@ plot {plot_arguments}
         with open(gnu_path, 'w') as file:
             file.write(gnuplot_script.format(**locals()))
 
-        subprocess.check_output(('gnuplot', gnu_path))
+        utilities.run_gnuplot(gnu_path, self.verbose)
 
         return pdf_path
 
@@ -696,8 +699,16 @@ plot "{tsv_path}" index 4 using 1:3:2:6:5 with candlesticks whiskerbars ls 3 not
         with open(gnu_path, 'w') as file:
             file.write(gnuplot_script.format(**locals()))
 
+        # If there are no outliers, gnuplot will produce a warning.  This is a 
+        # pretty common occurrence, and I think it's really bad to produce 
+        # warning message for common occurrences.  So instead I opt to ignore 
+        # stderr.  This is a little dangerous.  It would probably be better to 
+        # suppress only the exact warning I know about.  But if we were really 
+        # interested in doing things the right way, we would use matplotlib 
+        # instead of gnuplot.
+
         with open(os.devnull) as devnull:
-            subprocess.check_output(('gnuplot', gnu_path), stderr=devnull)
+            utilities.run_gnuplot(gnu_path, stderr=devnull, verbose=self.verbose)
 
         return pdf_path_rmsd, pdf_path_score, pdf_path_subA
 
@@ -891,7 +902,7 @@ plot "{tsv_path}" index 1 using ($2):($3) with points ls 2 title "75% lowest-sco
         with open(gnu_path, 'w') as file:
             file.write(gnuplot_script.format(**locals()))
 
-        subprocess.check_output(('gnuplot', gnu_path))
+        utilities.run_gnuplot(gnu_path, verbose=self.verbose)
 
         return pdf_path_100, pdf_path_75
 
@@ -961,7 +972,7 @@ plot "{tsv_path}" index 0 using ($1):($2) smooth bezier with lines ls 2 title "a
         with open(gnu_path, 'w') as file:
             file.write(gnuplot_script.format(**locals()))
 
-        subprocess.check_output(('gnuplot', gnu_path))
+        utilities.run_gnuplot(gnu_path, verbose=self.verbose)
 
         return pdf_path
 

@@ -1,14 +1,5 @@
 settings_path = 'settings.conf'
 
-def install():
-    import os.path
-    if not os.path.exists(settings_path):
-        print '''\
-Settings related to compiling rosetta and connecting to the database are kept
-in 'settings.conf'.  Please answer the following questions to create this file:
-'''
-        load()
-
 def load(interactive=True):
     import getpass
     import ConfigParser as configparser
@@ -35,7 +26,15 @@ def load(interactive=True):
             if not interactive: raise
 
             # Prompt the user for the missing value.
-            if default: prompt += ' [{0}]'.format(default)
+            if get_setting.first_prompt:
+                get_setting.first_prompt = False
+                print '''\
+Settings related to running and analyzing the Kortemme lab loop benchmark are 
+kept in 'settings.conf'.  Values for the following settings are needed:
+'''
+            if default:
+                prompt += ' [{0}]'.format(default)
+
             try:
                 value = raw_input(prompt + ': ') or default
             except KeyboardInterrupt:
@@ -55,8 +54,10 @@ def load(interactive=True):
             return value
 
 
+    get_setting.first_prompt = True
+
     rosetta = get_setting(parser, 'rosetta', 'path', prompt="Path to rosetta")
-    author = get_setting(parser, 'analysis', 'author', prompt="You full name")
+    author = get_setting(parser, 'analysis', 'author', prompt="Your full name")
     db_name = get_setting(parser, 'database', 'name', prompt="Database name", default='loops_modeling_benchmark')
     db_user = get_setting(parser, 'database', 'user', prompt="Database user", default=getpass.getuser())
     db_password_cmd = get_setting(parser, 'database', 'password', prompt="Command to get database password", default='echo pa55w0rd')

@@ -55,3 +55,16 @@ def check_output(*popenargs, **kwargs):
 import subprocess
 subprocess.check_output = check_output
 
+def run_command(cmd, **kwargs):
+    verbose = kwargs.pop('verbose', False)
+    cwd = kwargs.get('cwd', None)
+
+    if verbose:
+        if cwd is not None: print '$ cd {0}'.format(cwd)
+        print '$', ' '.join(cmd)
+        subprocess.check_call(cmd, **kwargs)
+    else:
+        subprocess.check_output(cmd, **kwargs)
+
+def run_gnuplot(gnuplot_script, **kwargs):
+    run_command(('gnuplot', gnuplot_script), **kwargs)
