@@ -232,7 +232,7 @@ class Report:
 
 '''
         tex_chapter = '''\
-\chapter{{Benchmark Comparisons}}
+\\chapter{Benchmark Comparisons}
 
 '''
         tex_chapter += figure_template.format(
@@ -475,7 +475,7 @@ plot {plot_arguments}
         with open(gnu_path, 'w') as file:
             file.write(gnuplot_script.format(**locals()))
 
-        utilities.run_gnuplot(gnu_path, self.verbose)
+        utilities.run_gnuplot(gnu_path, verbose=self.verbose)
 
         return pdf_path
 
@@ -776,7 +776,7 @@ plot "{tsv_path}" index 4 using 1:3:2:6:5 with candlesticks whiskerbars ls 3 not
 
         num_rows = 5
         page_template = '''\
-\\begin{{figure}}
+\\begin{{figure}}[h]
 \\centering
 \\begin{{tabular}}{{cc}}
 {0} \\\\
@@ -790,7 +790,7 @@ plot "{tsv_path}" index 4 using 1:3:2:6:5 with candlesticks whiskerbars ls 3 not
 
         tex_path = os.path.join(benchmark.latex_dir, 'loop_plots.tex')
 
-        for i, loop in enumerate(benchmark):
+        for i, loop in enumerate(sorted(benchmark, key=lambda x: x.pdb_id)):
             score_vs_rmsd_paths = self.make_score_vs_rmsd_plot(loop)
             rmsd_histogram_path = self.make_rmsd_histogram(loop)
 
@@ -806,6 +806,9 @@ plot "{tsv_path}" index 4 using 1:3:2:6:5 with candlesticks whiskerbars ls 3 not
             if i % num_rows == num_rows - 1:
                 with open(tex_path, 'a') as file:
                     file.write(page_template.format(' \\\\\n'.join(rows_75)))
+
+        with open(tex_path, 'a') as file:
+            file.write(page_template.format(' \\\\\n'.join(rows_75)))
 
         return tex_path
 
@@ -884,7 +887,7 @@ set boxwidth 0.75
 set key below right
 set xrange [0:]
 set encoding iso_8859_1
-set title "{loop.pdb_id}: {loop.percent_subangstrom}% sub-\305 models"
+set title "{loop.pdb_id}: {loop.percent_subangstrom:0.2f}% sub-\305 models"
 set xlabel "r.m.s. deviation to crystal loop [\305]"
 set arrow from 1, graph 0 to 1, graph 1 ls 9 nohead
 set ylabel "Rosetta all-atom score"
@@ -961,7 +964,7 @@ set boxwidth 0.75
 set key below right
 set xrange [0:]
 set encoding iso_8859_1
-set title "{loop.pdb_id}: {loop.percent_subangstrom}% sub-\305 models"
+set title "{loop.pdb_id}: {loop.percent_subangstrom:0.2f}% sub-\305 models"
 set xlabel "r.m.s. deviation to crystal loop [\305]"
 set yrange [0:]
 set arrow from 1, graph 0 to 1, graph 1 ls 9 nohead
@@ -1036,32 +1039,28 @@ class Benchmark:
             # strings and ids are expected to be integers.  If more than one
             # benchmark has the same name, the most recent one will be used.
 
-            if isinstance(name_or_id, str):
+            try:
+                id = int(name_or_id)
+                db_benchmark = session.query(database.Benchmarks).get(id)
+
+            except ValueError:
                 name = name_or_id
                 query = session.query(database.Benchmarks).filter_by(name=name)
-                benchmark = sorted(query.all(), key=lambda x: x.start_time)[0]
+                db_benchmark = sorted(query.all(), key=lambda x: x.start_time)[0]
 
-            elif isinstance(name_or_id, int):
-                id = name_or_id
-                benchmark = session.query(Benchmarks).get(name_or_id)
+            # Fill in the benchmark data structure from the database.
 
-            else:
-                raise TypeError("name_or_id expected to be either a name (str) or an id (int).")
+            for structure in db_benchmark.structures:
+                tag = structure.input_tag
+                loop = benchmark.loops.setdefault(tag, Loop(benchmark, tag))
 
-            # Fill in the Benchmark data structure from the database.
-            
-            for batch in benchmark.batches:
-                for structure in batch.structures:
-                    tag = structure.input_tag
-                    loop = benchmark.loops.setdefault(tag, Loop(benchmark, tag))
+                id = len(loop.models) + 1
+                score = structure.score_features.score
+                rmsd = structure.rmsd_features.protein_backbone
+                runtime = 0
 
-                    id = len(model) + 1
-                    score = structure.total_score.score,
-                    rmsd = structure.protein_rmsd_no_superposition.protein_backbone,
-                    runtime = 0
-
-                    model = Model(loop, id, score, rmsd, runtime)
-                    loop.models.append(model)
+                model = Model(loop, id, score, rmsd, runtime)
+                loop.models.append(model)
 
         return benchmark
 
@@ -1209,7 +1208,6 @@ class Model:
 
 if __name__ == '__main__':
     settings.load()
-
     from helpers import docopt
     arguments = docopt.docopt(__doc__)
     report = Report.from_docopt_args(arguments)
