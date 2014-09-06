@@ -191,13 +191,3 @@ def connect(echo=False):
 
     return session_manager()
 
-
-def data_frame_from_table(session, table):
-    query = session.query(table)
-    return data_frame_from_query(query)
-
-def data_frame_from_query(query):
-    import pandas
-    records = [record.dict for record in query.all()]
-    return pandas.DataFrame.from_records(records)
-
