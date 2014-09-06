@@ -1,5 +1,6 @@
 /settings.conf
 /explicit_log
+/reports
 *.pyc
 .*.sw*
 .nfs*
