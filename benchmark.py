@@ -88,7 +88,7 @@ protocol_match = re.search("protocol_id '([1-9][0-9]*)'", stdout)
 protocol_id = protocol_match.groups()[0] if protocol_match else None
 
 with database.connect() as session:
-    log_row = database.ProtocolLogs(protocol_id, return_code, stdout, stderr)
+    log_row = database.TracerLogs(benchmark_id, protocol_id, stdout, stderr)
     session.add(log_row)
 
     if protocol_id is not None:

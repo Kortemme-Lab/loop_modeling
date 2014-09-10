@@ -166,13 +166,15 @@ class Runtimes (Base):
         return '<Runtime struct_id={0.struct_id} timestamp={0.timestamp} elapsed_time={0.elapsed_time}s>'.format(self)
 
 
-class ProtocolLogs (NonRosettaBase):
-    protocol_id = Column(Integer, primary_key=True)
-    return_code = Column(Integer)
+class TracerLogs (NonRosettaBase):
+    log_id = Column(Integer, primary_key=True)
+    benchmark_id = Column(Integer)
+    protocol_id = Column(Integer)   # This will be 0 if the job fails.
     stdout = Column(Text)
     stderr = Column(Text)
 
-    def __init__(self, protocol_id, stdout, stderr):
+    def __init__(self, benchmark_id, protocol_id, stdout, stderr):
+        self.benchmark_id = benchmark_id
         self.protocol_id = protocol_id
         self.stdout = stdout
         self.stderr = stderr
