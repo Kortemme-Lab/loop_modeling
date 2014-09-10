@@ -100,8 +100,7 @@ class Protocols (Base):
     batches = relationship('Batches', order_by='Batches.batch_id', backref='protocol')
 
     def __repr__(self):
-        repr = '<Protocol protocol_id={0.protocol_id}>'
-        return repr.format(self)
+        return '<Protocol protocol_id={0.protocol_id}>'.format(self)
 
 
 class Batches (Base):
@@ -112,8 +111,7 @@ class Batches (Base):
     structures = relationship('Structures', order_by='Structures.struct_id', backref='protocol')
 
     def __repr__(self):
-        repr = '<Batch batch_id={0.batch_id} protocol_id={0.protocol_id} name={0.name}>'
-        return repr.format(self)
+        return '<Batch batch_id={0.batch_id} protocol_id={0.protocol_id} name={0.name}>'.format(self)
 
 
 class Structures (Base):
@@ -123,10 +121,10 @@ class Structures (Base):
     input_tag = Column(String)
     rmsd_features = relationship('ProteinRmsdNoSuperposition', uselist=False)
     score_features = relationship('TotalScores', uselist=False)
+    runtime_features = relationship('Runtimes', uselist=False)
 
     def __repr__(self):
-        repr = '<Structure struct_id={0.struct_id} batch_id={0.batch_id} tag={0.tag}>'
-        return repr.format(self)
+        return '<Structure struct_id={0.struct_id} batch_id={0.batch_id} tag={0.tag}>'.format(self)
 
 
 class ProteinRmsdNoSuperposition (Base):
@@ -135,8 +133,7 @@ class ProteinRmsdNoSuperposition (Base):
     protein_backbone = Column(Float)
 
     def __repr__(self):
-        repr = '<ProteinRmsd struct_id={0.struct_id} reference_tag={0.reference_tag} backbone_rmsd={0.protein_backbone}>'
-        return repr.format(self)
+        return '<ProteinRmsd struct_id={0.struct_id} reference_tag={0.reference_tag} backbone_rmsd={0.protein_backbone}>'.format(self)
 
 
 class TotalScores (Base):
@@ -144,8 +141,16 @@ class TotalScores (Base):
     score = Column(Float)
 
     def __repr__(self):
-        repr = '<StructureScore struct_id={0.struct_id} score={0.score}>'
-        return repr.format(self)
+        return '<TotalScore struct_id={0.struct_id} score={0.score}>'.format(self)
+
+
+class Runtimes (Base):
+    struct_id = Column(Integer, ForeignKey('structures.struct_id'), primary_key=True)
+    timestamp = Column(String)
+    elapsed_time = Column(Integer)
+
+    def __repr__(self):
+        return '<Runtime struct_id={0.struct_id} timestamp={0.timestamp} elapsed_time={0.elapsed_time}s>'.format(self)
 
 
 class ProtocolOutput (NonRosettaBase):
@@ -160,6 +165,9 @@ class ProtocolOutput (NonRosettaBase):
         self.protocol_id = protocol_id
         self.stdout = stdout
         self.stderr = stderr
+
+    def __repr__(self):
+        return '<ProtocolOutput benchmark_id={0.benchmark_id} protocol_id={0.protocol_id}>'.format(self)
 
 
 

@@ -10,6 +10,7 @@
         <ReportToDB name="reporter" task_operations="loop">
           <feature name="TotalScoreFeatures" scorefxn="talaris2013"/>
           <feature name="ProteinRMSDNoSuperpositionFeatures"/>
+          <feature name="RuntimeFeatures"/>
         </ReportToDB>
     </MOVERS>
 

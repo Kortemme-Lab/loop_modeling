@@ -1057,7 +1057,7 @@ class Benchmark:
                 id = len(loop.models) + 1
                 score = structure.score_features.score
                 rmsd = structure.rmsd_features.protein_backbone
-                runtime = 0
+                runtime = structure.runtime_features.elapsed_time
 
                 model = Model(loop, id, score, rmsd, runtime)
                 loop.models.append(model)
