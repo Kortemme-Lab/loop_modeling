@@ -61,8 +61,12 @@ def run_benchmark(script, pdbs,
 
     with database.connect() as session:
         benchmark = database.Benchmarks(name, desc)
-        session.add(benchmark)
-        session.flush()
+
+        for pdb in pdbs:
+            benchmark_input = database.BenchmarkInputs(pdb)
+            benchmark.input_pdbs.append(benchmark_input)
+
+        session.add(benchmark); session.flush()
         benchmark_id = str(benchmark.id)
 
     # Make sure the log file directories exist.
@@ -82,12 +86,12 @@ def run_benchmark(script, pdbs,
     for pdb in pdbs:
         if fast:
             command = (
-                    'qsub', '-q', 'short.q', '-l', 'h_rt=0:30:00') + log_args + (
+                    'qsub', '-t', '1-10', '-l', 'h_rt=0:30:00') + log_args + (
                     'benchmark.py', script, pdb, '--id', benchmark_id, '--fast',) + vars_args
         else:
             command = (
                     'qsub', '-t', '1-500') + log_args + (
-                    'benchmark.py', script, pdb, '--id', benchmark_id,) + vars_args
+                    'benchmark.py', script, pdb, '--id', benchmark_id) + vars_args
 
         subprocess.call(command)
 
@@ -138,7 +142,7 @@ if __name__ == '__main__':
     # The 'full' and 'mini' keywords automatically load common structures.
 
     if 'test' in arguments:
-        pdbs = ['structures/1srp.pdb']
+        pdbs = ['structures/1srp.pdb', 'structures/1bn8.pdb']
         fast = True
 
     else:

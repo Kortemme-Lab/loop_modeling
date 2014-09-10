@@ -31,6 +31,7 @@ NonRosettaBase = declarative_base(cls=Base)
 class Benchmarks (NonRosettaBase):
     benchmark_id = Column(Integer, primary_key=True, autoincrement=True)
     protocol_ids = relationship('BenchmarkProtocols', order_by='BenchmarkProtocols.protocol_id')
+    input_pdbs = relationship('BenchmarkInputs')
     start_time = Column(DateTime)
     name = Column(Text)
     description = Column(Text)
@@ -80,7 +81,7 @@ class Benchmarks (NonRosettaBase):
 
 class BenchmarkProtocols (NonRosettaBase):
     benchmark_id = Column(Integer, ForeignKey('benchmarks.benchmark_id'), primary_key=True)
-    protocol_id = Column(Integer, primary_key=True)
+    protocol_id = Column(Integer, primary_key=True, autoincrement=False)
     
     def __init__(self, benchmark_id, protocol_id):
         self.benchmark_id = benchmark_id
@@ -88,6 +89,18 @@ class BenchmarkProtocols (NonRosettaBase):
 
     def __repr__(self):
         return '<BenchmarkProtocol benchmark_id={0.benchmark_id} protocol_id={0.protocol_id}>'.format(self)
+
+
+class BenchmarkInputs (NonRosettaBase):
+    benchmark_input_id = Column(Integer, primary_key=True)
+    benchmark_id = Column(Integer, ForeignKey('benchmarks.benchmark_id'))
+    pdb_path = Column(Text)
+
+    def __init__(self, pdb_path):
+        self.pdb_path = pdb_path
+
+    def __repr__(self):
+        return '<BenchmarkInput benchmark_id={0.benchmark_id}, pdb_path={0.pdb_path}'.format(self)
 
 
 class Protocols (Base):
@@ -148,15 +161,13 @@ class TotalScores (Base):
         return repr.format(self)
 
 
-class ProtocolOutput (NonRosettaBase):
-    output_id = Column(Integer, primary_key=True, autoincrement=True)
-    benchmark_id = Column(Integer, ForeignKey('benchmarks.benchmark_id'))
-    protocol_id = Column(Integer)
+class ProtocolLogs (NonRosettaBase):
+    protocol_id = Column(Integer, primary_key=True)
+    return_code = Column(Integer)
     stdout = Column(Text)
     stderr = Column(Text)
 
-    def __init__(self, benchmark_id, protocol_id, stdout, stderr):
-        self.benchmark_id = benchmark_id
+    def __init__(self, protocol_id, stdout, stderr):
         self.protocol_id = protocol_id
         self.stdout = stdout
         self.stderr = stderr
