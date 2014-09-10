@@ -29,8 +29,8 @@ def load(interactive=True):
             if get_setting.first_prompt:
                 get_setting.first_prompt = False
                 print '''\
-Settings related to running and analyzing the Kortemme lab loop benchmark are 
-kept in 'settings.conf'.  Values for the following settings are needed:
+Settings related to running and analyzing the loop modeling benchmark are kept 
+in 'settings.conf'.  Values for the following settings are needed:
 '''
             if default:
                 prompt += ' [{0}]'.format(default)
