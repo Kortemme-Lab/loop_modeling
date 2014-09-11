@@ -6580,7 +6580,6 @@ ATOM   6579 3HD1 LEU A 436     114.602  47.715  42.786  1.00  0.00
 ATOM   6580 1HD2 LEU A 436     115.529  50.637  42.473  1.00  0.00              
 ATOM   6581 2HD2 LEU A 436     116.393  49.406  43.427  1.00  0.00              
 ATOM   6582 3HD2 LEU A 436     117.243  50.293  42.139  1.00  0.00              
-HETATM 6583 ZN    ZN A 438      97.653  51.565  25.951  1.00  0.00              
 TER                                                                             
 # All scores below are weighted scores, not raw scores.
 #BEGIN_POSE_ENERGIES_TABLE 4enl_0001.pdb

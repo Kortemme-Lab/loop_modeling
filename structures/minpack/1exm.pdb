@@ -6262,7 +6262,6 @@ ATOM   6261 1HB  GLU A 405      45.837 -38.656   3.704  1.00  0.00
 ATOM   6262 2HB  GLU A 405      45.362 -37.286   2.671  1.00  0.00              
 ATOM   6263 1HG  GLU A 405      47.654 -37.387   1.565  1.00  0.00              
 ATOM   6264 2HG  GLU A 405      47.989 -38.713   2.702  1.00  0.00              
-HETATM 6265 MG    MG A 407      44.699   2.696   0.549  1.00  0.00              
 TER                                                                             
 # All scores below are weighted scores, not raw scores.
 #BEGIN_POSE_ENERGIES_TABLE 1exm_0001.pdb

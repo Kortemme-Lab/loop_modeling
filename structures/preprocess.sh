@@ -18,6 +18,9 @@ cd scratch/$pdb
 fetch-pdb $pdb
 head $pdb.pdb
 
+# Remove HETATM records from the structure.
+sed -i '/^HETATM/d' $pdb.pdb
+
 # Relax the structure using the rosetta score function.
 $rosetta_bin/fixbb                      \
     -in:file:fullatom                   \

@@ -5926,9 +5926,6 @@ ATOM   5925 2HE  LYS A 384      31.154  16.689  -1.433  1.00  0.00
 ATOM   5926 1HZ  LYS A 384      32.548  18.591  -1.890  1.00  0.00              
 ATOM   5927 2HZ  LYS A 384      31.733  18.145  -3.254  1.00  0.00              
 ATOM   5928 3HZ  LYS A 384      31.252  19.474  -2.402  1.00  0.00              
-HETATM 5929 MG    MG A 487      20.087  26.754  15.765  1.00  0.00              
-HETATM 5930 NA    NA A 490      19.692  27.488  19.120  1.00  0.00              
-HETATM 5931 NA    NA A 491      18.401  28.285  13.144  1.00  0.00              
 TER                                                                             
 # All scores below are weighted scores, not raw scores.
 #BEGIN_POSE_ENERGIES_TABLE 3hsc_0001.pdb

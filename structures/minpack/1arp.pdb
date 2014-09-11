@@ -4843,8 +4843,6 @@ ATOM   4842 1HG  PRO A 344      29.248  11.391  27.756  1.00  0.00
 ATOM   4843 2HG  PRO A 344      30.321  10.781  26.489  1.00  0.00              
 ATOM   4844 1HD  PRO A 344      28.070  12.183  25.851  1.00  0.00              
 ATOM   4845 2HD  PRO A 344      28.618  10.850  24.826  1.00  0.00              
-HETATM 4846 CA    CA A 346      15.815  26.595  45.289  1.00  0.00              
-HETATM 4847 CA    CA A 347      29.837  21.253  23.144  1.00  0.00              
 TER                                                                             
 # All scores below are weighted scores, not raw scores.
 #BEGIN_POSE_ENERGIES_TABLE 1arp_0001.pdb

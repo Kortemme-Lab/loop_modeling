@@ -4460,8 +4460,6 @@ ATOM   4459 1HG  PRO A 298      37.743  55.224   4.135  1.00  0.00
 ATOM   4460 2HG  PRO A 298      39.427  54.692   4.037  1.00  0.00              
 ATOM   4461 1HD  PRO A 298      38.221  55.356   6.436  1.00  0.00              
 ATOM   4462 2HD  PRO A 298      39.958  55.550   6.169  1.00  0.00              
-HETATM 4463 ZN    ZN A 302      49.202  37.708  19.451  1.00  0.00              
-HETATM 4464 CA    CA A 400      51.525  45.467  31.069  1.00  0.00              
 TER                                                                             
 # All scores below are weighted scores, not raw scores.
 #BEGIN_POSE_ENERGIES_TABLE 1ezm_0001.pdb

@@ -2386,9 +2386,6 @@ ATOM   2385  HA  SER A 263      -4.322  24.030  18.348  1.00  0.00
 ATOM   2386 1HB  SER A 263      -2.346  24.795  17.635  1.00  0.00              
 ATOM   2387 2HB  SER A 263      -2.462  23.878  16.115  1.00  0.00              
 ATOM   2388  HG  SER A 263      -4.367  25.073  15.663  1.00  0.00              
-HETATM 2389 ZN    ZN A 275      18.709  22.099  26.605  1.00  0.00              
-HETATM 2390 ZN    ZN A 276      21.375  31.933  33.620  1.00  0.00              
-HETATM 2391 CA    CA A 277      29.652  29.184  26.544  1.00  0.00              
 TER                                                                             
 # All scores below are weighted scores, not raw scores.
 #BEGIN_POSE_ENERGIES_TABLE 1hfc_0001.pdb

@@ -5971,8 +5971,6 @@ ATOM   5970  OXT GLY A 388      46.382  62.393  85.060  1.00  0.00
 ATOM   5971  H   GLY A 388      46.252  59.601  84.835  1.00  0.00              
 ATOM   5972 1HA  GLY A 388      46.106  60.523  87.687  1.00  0.00              
 ATOM   5973 2HA  GLY A 388      47.595  60.649  86.721  1.00  0.00              
-HETATM 5974 MN    MN A 390      39.243  36.793  58.435  1.00  0.00              
-HETATM 5975 MN    MN A 391      34.953  35.572  59.671  1.00  0.00              
 TER                                                                             
 # All scores below are weighted scores, not raw scores.
 #BEGIN_POSE_ENERGIES_TABLE 1xif_0001.pdb

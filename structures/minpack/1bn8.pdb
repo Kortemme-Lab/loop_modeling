@@ -5962,7 +5962,6 @@ ATOM   5961 1HB  ASN A 399      44.100  16.860  32.837  1.00  0.00
 ATOM   5962 2HB  ASN A 399      45.494  17.540  33.710  1.00  0.00              
 ATOM   5963 1HD2 ASN A 399      46.400  14.108  33.639  1.00  0.00              
 ATOM   5964 2HD2 ASN A 399      46.445  15.570  32.710  1.00  0.00              
-HETATM 5965 CA    CA A 400      15.601  18.204  40.313  1.00  0.00              
 TER                                                                             
 # All scores below are weighted scores, not raw scores.
 #BEGIN_POSE_ENERGIES_TABLE 1bn8_0001.pdb

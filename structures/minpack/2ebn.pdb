@@ -4374,7 +4374,6 @@ ATOM   4373  HE3 TRP A 289      15.297  17.103   5.564  1.00  0.00
 ATOM   4374  HZ2 TRP A 289      18.676  19.975   7.883  1.00  0.00              
 ATOM   4375  HZ3 TRP A 289      15.680  16.845   7.938  1.00  0.00              
 ATOM   4376  HH2 TRP A 289      17.322  18.226   9.135  1.00  0.00              
-HETATM 4377 ZN    ZN A 301      29.437  32.287   6.486  1.00  0.00              
 TER                                                                             
 # All scores below are weighted scores, not raw scores.
 #BEGIN_POSE_ENERGIES_TABLE 2ebn_0001.pdb

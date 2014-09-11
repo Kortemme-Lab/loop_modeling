@@ -1629,10 +1629,6 @@ ATOM   1628  HA  SER A 108       9.860  -3.827  23.211  1.00  0.00
 ATOM   1629 1HB  SER A 108       9.178  -1.592  22.823  1.00  0.00              
 ATOM   1630 2HB  SER A 108      10.737  -1.214  22.054  1.00  0.00              
 ATOM   1631  HG  SER A 108      10.226  -2.805  20.481  1.00  0.00              
-HETATM 1632 CA    CA A 109       2.819  10.766  25.316  1.00  0.00              
-HETATM 1633 CA    CA A 110      10.943  17.755  30.310  1.00  0.00              
-HETATM 1634 CA    CA A 124      17.562  -7.276  32.960  1.00  0.00              
-HETATM 1635 CA    CA A 135      33.540  12.689  24.256  1.00  0.00              
 TER                                                                             
 # All scores below are weighted scores, not raw scores.
 #BEGIN_POSE_ENERGIES_TABLE 1rro_0001.pdb
