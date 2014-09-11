@@ -15,9 +15,9 @@ import optparse
 import subprocess
 import re
 
-from helpers import utilities
-from helpers import settings; settings.load(interactive=False)
-from helpers import database
+from libraries import utilities
+from libraries import settings; settings.load(interactive=False)
+from libraries import database
 
 # Parse arguments (e.g. input pdb)
 

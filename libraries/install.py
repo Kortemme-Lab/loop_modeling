@@ -23,11 +23,11 @@ def require_sqlalchemy():
         ask_to_install("Installing sqlalchemy.")
 
         root_dir = utilities.get_benchmark_root()
-        deps_dir = os.path.join(root_dir, 'dependencies')
-        package_dir = os.path.join(deps_dir, 'SQLAlchemy-0.9.7')
+        libs_dir = os.path.join(root_dir, 'libraries')
+        package_dir = os.path.join(libs_dir, 'SQLAlchemy-0.9.7')
         package_archive = package_dir + '.tar.gz'
 
-        unpack_command = 'tar', '-xzv', '-C', deps_dir, '-f', package_archive
+        unpack_command = 'tar', '-xzv', '-C', libs_dir, '-f', package_archive
         install_command = '; '.join([
                 'cd {0}'.format(package_dir),
                 'python setup.py install --user',
@@ -55,11 +55,11 @@ def require_mysql_connector():
         ask_to_install("Installing mysql-connector.")
 
         root_dir = utilities.get_benchmark_root()
-        deps_dir = os.path.join(root_dir, 'dependencies')
-        package_dir = os.path.join(deps_dir, 'mysql-connector-python-1.2.2')
+        libs_dir = os.path.join(root_dir, 'libraries')
+        package_dir = os.path.join(libs_dir, 'mysql-connector-python-1.2.2')
         package_archive = package_dir + '.zip'
 
-        unpack_command = 'unzip', '-d', deps_dir, package_archive
+        unpack_command = 'unzip', '-d', libs_dir, package_archive
         install_command = shlex.split('python setup.py install --user')
 
         subprocess.check_call(unpack_command)

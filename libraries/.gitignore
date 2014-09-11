@@ -1,4 +1,5 @@
 *
+!*.py
 !*.tgz
 !*.tar.gz
 !*.zip

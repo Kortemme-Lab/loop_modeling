@@ -41,10 +41,10 @@ import shutil
 import sys
 import time
 
-from helpers import colors
-from helpers import settings
-from helpers import statistics
-from helpers import utilities
+from libraries import colors
+from libraries import settings
+from libraries import statistics
+from libraries import utilities
 
 # Global variables (fold)
 top_x = 5
@@ -1048,8 +1048,8 @@ class Benchmark:
 
     @staticmethod
     def from_database(name_or_id):
-        from helpers import database
-        from helpers import settings; settings.load()
+        from libraries import database
+        from libraries import settings; settings.load()
 
         with database.connect() as session:
             benchmark = Benchmark(name_or_id)
@@ -1231,7 +1231,7 @@ class Model:
 
 if __name__ == '__main__':
     settings.load()
-    from helpers import docopt
+    from libraries import docopt
     arguments = docopt.docopt(__doc__)
     report = Report.from_docopt_args(arguments)
     report.make_report(arguments['--output'])
