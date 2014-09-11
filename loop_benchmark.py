@@ -1,12 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 #$ -S /usr/bin/python
 #$ -l mem_free=1G
 #$ -l arch=linux-x64
 #$ -l netapp=1G
-#$ -l h_rt=03:00:00
-#$ -o /dev/null
-#$ -j y
 #$ -cwd
 
 import os
@@ -19,25 +16,34 @@ from libraries import utilities
 from libraries import settings; settings.load(interactive=False)
 from libraries import database
 
-# Parse arguments (e.g. input pdb)
+# Parse arguments.
 
-parser = optparse.OptionParser(usage='%prog [options] <pdb>')
-parser.add_option('--id', dest='id', type=int, default=0)
+usage = 'SGE_TASK_ID=<id> loop_benchmark.py [options] <benchmark_id> <script>'
+parser = optparse.OptionParser(usage=usage)
 parser.add_option('--var', dest='vars', action='append', default=[])
 parser.add_option('--fast', dest='fast', action='store_true')
 options, arguments = parser.parse_args()
 
 if len(arguments) != 2:
-    print 'Usage: benchmark.py [options] <script> <pdb>'
+    print 'Usage:', usage
     print 
     print 'benchmark.py: error: expected 2 positional argument, got {0}.'.format(len(arguments))
     sys.exit(1)
 
-script_path = arguments[0]
-pdb_path = arguments[1]
+task_id = int(os.environ['SGE_TASK_ID']) - 1
+benchmark_id = int(arguments[0])
+script_path = arguments[1]
+
+# Figure out which loop to benchmark.
+
+with database.connect() as session:
+    benchmark = session.query(database.Benchmarks).get(benchmark_id)
+    input_pdbs = benchmark.input_pdbs
+    pdb_path = input_pdbs[task_id % len(input_pdbs)]
+
 loop_path = re.sub('\.pdb(\.gz)?$', '.loop', pdb_path)
 
-# Setup LD_LIBRARY_PATH
+# Set LD_LIBRARY_PATH so that the MySQL libraries can be found.
 
 rosetta_env = os.environ.copy()
 mysql_lib = '/netapp/home/kbarlow/lib/mysql-connector-c-6.1.2-linux-glibc2.5-x86_64/lib:'

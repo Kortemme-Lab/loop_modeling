@@ -69,31 +69,30 @@ def run_benchmark(script, pdbs,
         session.add(benchmark); session.flush()
         benchmark_id = str(benchmark.id)
 
-    # Make sure the log file directories exist.
+    # Submit the benchmark to the cluster.
+
+    qsub_command = 'qsub',
+    benchmark_command = 'benchmark.py', benchmark_id, script
+
+    if fast:
+        qsub_command += '-t', '1-{}'.format(10 * len(pdbs))
+        qsub_command += '-l', 'h_rt=0:30:00'
+    else:
+        qsub_command += '-t', '1-{}'.format(500 * len(pdbs))
+        qsub_command += '-l', 'h_rt=3:00:00'
 
     if explicit_log:
         utilities.clear_directory('explicit_log')
-        log_args = '-o', 'explicit_log', '-j', 'y'
+        qsub_command += '-o', 'explicit_log', '-j', 'y'
     else:
-        log_args = '-o', '/dev/null', '-j', 'y'
+        qsub_command += '-o', '/dev/null', '-j', 'y'
         
-    # Submit the benchmark to the cluster.
-
-    vars_args = ()
+    if fast:
+        benchmark_command += '--fast',
     for var in vars:
-        vars_args += '--var', var
+        benchmark_command += '--var', var
 
-    for pdb in pdbs:
-        if fast:
-            command = (
-                    'qsub', '-t', '1-10', '-l', 'h_rt=0:30:00') + log_args + (
-                    'benchmark.py', script, pdb, '--id', benchmark_id, '--fast',) + vars_args
-        else:
-            command = (
-                    'qsub', '-t', '1-500') + log_args + (
-                    'benchmark.py', script, pdb, '--id', benchmark_id) + vars_args
-
-        subprocess.call(command)
+    subprocess.call(qsub_command + benchmark_command)
 
 
 if __name__ == '__main__':
@@ -101,30 +100,31 @@ if __name__ == '__main__':
 
     # Use optparse because it's available on chef.
 
-    usage = 'launch.py [options] <script> <full|mini|pdbs...|test>'
+    usage = 'kickoff.py [options] <script> <pdbs>'
     parser = optparse.OptionParser(usage=usage)
     parser.add_option('--name', dest='name')
     parser.add_option('--desc', dest='desc')
-    parser.add_option('--var', dest='vars', action='append', default=[])
+    parser.add_option('--var', action='append', default=[], dest='vars')
     parser.add_option('--compile-only', '-c', action='store_true', dest='compile_only')
     parser.add_option('--execute-only', '-x', action='store_true', dest='execute_only')
     parser.add_option('--explicit-log', action='store_true', dest='explicit_log')
+    parser.add_option('--debug', action='store_true', dest='debug')
     options, arguments = parser.parse_args()
 
     if len(arguments) == 0:
         print 'Usage: ' + usage
         print
-        print 'launch.py: error: must specify a RosettaScript to benchmark.'
+        print 'kickoff.py: error: must specify a RosettaScript to benchmark.'
         sys.exit(1)
 
     if len(arguments) == 1:
         print 'Usage: ' + usage
         print
-        print 'launch.py: error: must specify a set of PDB files to benchmark.'
+        print 'kickoff.py: error: must specify a set of PDB files to benchmark.'
         sys.exit(1)
 
     script = arguments[0]
-    benchmark = set(arguments[1:])
+    pdb_paths = set(arguments[1:])
 
     # Compile rosetta.
 
@@ -136,37 +136,32 @@ if __name__ == '__main__':
     if options.compile_only:
         sys.exit(1)
 
-    # Configure the benchmark run.  If a test run is specified, an easy 
-    # structure is used and only a few iterations are run.  If a benchmark run 
-    # is specified, any structures specified on the command-line will be used.  
-    # The 'full' and 'mini' keywords automatically load common structures.
+    # Decide which structures to benchmark.
 
-    if 'test' in arguments:
-        #pdbs = ['structures/1srp.pdb', 'structures/1bn8.pdb']
-        pdbs = ['structures/1srp.pdb']
-        fast = True
+    pdbs = set()
 
-    else:
-        pdbs = set()
-        fast = False
+    for path in pdb_paths:
+        if path.endswith('.pdb') or path.endswith('.pdb.gz'):
+            pdbs.add(path)
 
-        if 'full' in benchmark:
-            benchmark.remove('full')
-            pdbs |= set(glob.glob('structures/*.pdb'))
+        elif path.endswith('.pdbs'):
+            with open(path) as file:
+                pdbs.update(line.strip() for line in file)
 
-        if 'mini' in benchmark:
-            benchmark.remove('mini')
-            pdbs |= set([
-                    "structures/1c5e.pdb",
-                    "structures/1cyo.pdb",
-                    "structures/1exm.pdb",
-                    "structures/2cpl.pdb",
-                    "structures/3cla.pdb",
-                    "structures/1oth.pdb"])
+        else:
+            print "Unknown input structure '{}'.".format(path)
+            sys.exit(1)
 
-        pdbs |= benchmark
+    for pdb in pdbs:
+        if not os.path.exists():
+            print "Unknown input structure '{}'.".format(pdb)
+            sys.exit(1)
 
-    run_benchmark(script, pdbs,
+    # Run the benchmark.
+
+    run_benchmark(
+            script, pdbs,
             name=options.name, desc=options.desc,
-            vars=options.vars, explicit_log=options.explicit_log, fast=fast)
+            vars=options.vars, explicit_log=options.explicit_log,
+            fast=options.debug)
 
