@@ -6,9 +6,9 @@ import shutil
 import subprocess
 import glob
 
-from helpers import utilities; utilities.require_chef()
-from helpers import settings; settings.load()
-from helpers import database
+from libraries import utilities; utilities.require_chef()
+from libraries import settings; settings.load()
+from libraries import database
 
 def compile_rosetta():
     rosetta_path = os.path.abspath(settings.rosetta)
@@ -142,7 +142,8 @@ if __name__ == '__main__':
     # The 'full' and 'mini' keywords automatically load common structures.
 
     if 'test' in arguments:
-        pdbs = ['structures/1srp.pdb', 'structures/1bn8.pdb']
+        #pdbs = ['structures/1srp.pdb', 'structures/1bn8.pdb']
+        pdbs = ['structures/1srp.pdb']
         fast = True
 
     else:
