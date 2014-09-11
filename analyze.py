@@ -735,27 +735,37 @@ plot "{tsv_path}" index 4 using 1:3:2:6:5 with candlesticks whiskerbars ls 3 not
         ID & RMSD & Score &
         ID & RMSD & Score \\\\
     \\midrule
-    {rows} \\\\
+{rows} \\\\
     \\bottomrule
     \\end{{tabular}}
 \\end{{table}}
 '''
-        row_template = ' & '.join([
+        row_template = '    ' + ' & '.join([
             '{0.pdb_id}', '{0.num_models:3}',
             '{1.id:3}', '{1.rmsd:4.2f}', '{1.score:7.2f}',
             '{2.id:3}', '{2.rmsd:4.2f}', '{2.score:7.2f}',
         ])
+        empty_row_template = '    ' + ' & '.join([
+            '{0.pdb_id}', '{0.num_models:3}',
+            '---', ' ---', '    ---',
+            '---', ' ---', '    ---',
+        ])
 
         # Create a row for each loop in the benchmark.
 
-        table_rows = [
-                row_template.format(
+        table_rows = []
+
+        for loop in sorted(benchmark, key=lambda x: x.pdb_id):
+            if loop.has_data:
+                row = row_template.format(
                     loop,
                     loop.best_top_x_model,
-                    loop.lowest_rmsd_model,
+                    loop.lowest_rmsd_model
                 )
-                for loop in sorted(benchmark, key=lambda x: x.pdb_id)
-        ]
+            else:
+                row = empty_row_template.format(loop)
+
+            table_rows.append(row)
 
         tex_table = table_template.format(
                 top_x=top_x, rows=' \\\\\n'.join(table_rows))
@@ -770,11 +780,7 @@ plot "{tsv_path}" index 4 using 1:3:2:6:5 with candlesticks whiskerbars ls 3 not
         return tex_path
 
     def make_loop_decoy_plots(self, benchmark):
-
-        # The original script would notice missing loops and deliberately leave 
-        # a blank space for them.
-
-        num_rows = 5
+        pages = []
         page_template = '''\
 \\begin{{figure}}[h]
 \\centering
@@ -782,33 +788,42 @@ plot "{tsv_path}" index 4 using 1:3:2:6:5 with candlesticks whiskerbars ls 3 not
 {0} \\\\
 \\end{{tabular}}\n\
 \\end{{figure}}
-
 '''
+        rows = []
+        rows_per_page = 5
         row_template = (
                 '\\includegraphics[height=1.7in]{{{0}}} & '
                 '\\includegraphics[height=1.7in]{{{1}}}')
-
-        tex_path = os.path.join(benchmark.latex_dir, 'loop_plots.tex')
+        missing_data_template = (
+                '\\multicolumn{{2}}{{c}}{{'
+                '\\parbox[t][1.7in][c]{{4in}}{{'
+                '\\centering{{}}'
+                'No data for {0.pdb_id}}}}}')
 
         for i, loop in enumerate(sorted(benchmark, key=lambda x: x.pdb_id)):
             score_vs_rmsd_paths = self.make_score_vs_rmsd_plot(loop)
             rmsd_histogram_path = self.make_rmsd_histogram(loop)
 
-            if i % num_rows == 0:
-                rows_100 = []   # All models.
-                rows_75 = []    # Only top 75% scoring models.
+            if loop.has_data:
+                row = row_template.format(
+                        score_vs_rmsd_paths[1], rmsd_histogram_path)
+            else:
+                row = missing_data_template.format(loop)
 
-            rows_100.append(row_template.format(
-                score_vs_rmsd_paths[0], rmsd_histogram_path))
-            rows_75.append(row_template.format(
-                score_vs_rmsd_paths[1], rmsd_histogram_path))
+            rows.append(row)
 
-            if i % num_rows == num_rows - 1:
-                with open(tex_path, 'a') as file:
-                    file.write(page_template.format(' \\\\\n'.join(rows_75)))
+            if i % rows_per_page == rows_per_page - 1:
+                page = page_template.format(' \\\\\n'.join(rows))
+                pages.append(page)
+                rows = []
 
-        with open(tex_path, 'a') as file:
-            file.write(page_template.format(' \\\\\n'.join(rows_75)))
+        page = page_template.format(' \\\\\n'.join(rows))
+        pages.append(page)
+
+        tex_path = os.path.join(benchmark.latex_dir, 'loop_plots.tex')
+
+        with open(tex_path, 'w') as file:
+            file.write('\n'.join(pages))
 
         return tex_path
 
@@ -823,6 +838,9 @@ plot "{tsv_path}" index 4 using 1:3:2:6:5 with candlesticks whiskerbars ls 3 not
         """
 
         # This method would be much more concise if it used matplotlib.
+
+        if not loop.has_data:
+            return
 
         tsv_path = os.path.join(loop.latex_dir, 'score_vs_rmsd.tsv')
         gnu_path = os.path.join(loop.latex_dir, 'score_vs_rmsd.gnu')
@@ -916,6 +934,9 @@ plot "{tsv_path}" index 1 using ($2):($3) with points ls 2 title "75% lowest-sco
         """
 
         # This method would be much more concise if it used matplotlib.
+
+        if not loop.has_data:
+            return
 
         tsv_path = os.path.join(loop.latex_dir, 'rmsd_histogram.tsv')
         gnu_path = os.path.join(loop.latex_dir, 'rmsd_histogram.gnu')
@@ -1043,6 +1064,10 @@ class Benchmark:
                 id = int(name_or_id)
                 db_benchmark = session.query(database.Benchmarks).get(id)
 
+                if db_benchmark is None:
+                    print "No benchmark '{}' in the database.".format(id)
+                    sys.exit(1)
+
             except ValueError:
                 name = name_or_id
                 query = session.query(database.Benchmarks).filter_by(name=name)
@@ -1050,10 +1075,12 @@ class Benchmark:
 
             # Fill in the benchmark data structure from the database.
 
-            for structure in db_benchmark.structures:
-                tag = structure.input_tag
-                loop = benchmark.loops.setdefault(tag, Loop(benchmark, tag))
+            for db_input in db_benchmark.input_pdbs:
+                path = db_input.pdb_path
+                benchmark.loops[path] = Loop(benchmark, path)
 
+            for structure in db_benchmark.structures:
+                loop = benchmark.loops[structure.input_tag]
                 id = len(loop.models) + 1
                 score = structure.score_features.score
                 rmsd = structure.rmsd_features.protein_backbone
@@ -1099,46 +1126,35 @@ class Benchmark:
         phrase = phrase.title()
         phrase = re.sub(r'\b[Kk][Ii][Cc]\b', 'KIC', phrase)
         phrase = re.sub(r'\b[Cc][Cc][Dd]\b', 'CCD', phrase)
+        phrase = re.sub(r'\b[Nn][Gg][Kk]\b', 'NGK', phrase)
         return phrase
 
     @property
     def all_models(self):
-        return sum((loop.models for loop in self), [])
-
-    @property
-    def all_scores(self):
-        return sum((loop.scores for loop in self), [])
-
-    @property
-    def all_rmsds(self):
-        return sum((loop.rmsds for loop in self), [])
-
-    @property
-    def all_runtimes(self):
-        return sum((loop.runtimes for loop in self), [])
+        return sum((loop.models for loop in self if loop.has_data), [])
 
     @property
     def best_top_x_models(self):
-        return [loop.best_top_x_model for loop in self]
+        return [loop.best_top_x_model for loop in self if loop.has_data]
 
     @property
     def lowest_score_models(self):
-        return [loop.lowest_score_model for loop in self]
+        return [loop.lowest_score_model for loop in self if loop.has_data]
 
     @property
     def lowest_rmsd_models(self):
-        return [loop.lowest_rmsd_model for loop in self]
+        return [loop.lowest_rmsd_model for loop in self if loop.has_data]
 
     @property
     def percents_subangstrom(self):
-        return [loop.percent_subangstrom for loop in self]
+        return [loop.percent_subangstrom for loop in self if loop.has_data]
 
 
 class Loop:
 
-    def __init__(self, benchmark, name):
+    def __init__(self, benchmark, path):
         self.benchmark = benchmark
-        self.name = name
+        self.path = path
         self.models = []        # Set by Report.from_...()
         self.latex_dir = None   # Set by Report.setup_latex_dir()
 
@@ -1148,13 +1164,20 @@ class Loop:
     def __len__(self):
         return len(self.models)
 
+    def __nonzero__(self):
+        return bool(self.models)
+
     @property
     def pdb_id(self):
-        return os.path.basename(self.name)[0:4]
+        return os.path.basename(self.path)[0:4]
 
     @property
     def num_models(self):
         return len(self)
+
+    @property
+    def has_data(self):
+        return len(self) > 0
 
     @property
     def scores(self):
