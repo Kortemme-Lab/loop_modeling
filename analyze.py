@@ -1134,6 +1134,10 @@ class Benchmark:
         return sum((loop.models for loop in self if loop.has_data), [])
 
     @property
+    def all_runtimes(self):
+        return sum((loop.runtimes for loop in self if loop.has_data), [])
+
+    @property
     def best_top_x_models(self):
         return [loop.best_top_x_model for loop in self if loop.has_data]
 
