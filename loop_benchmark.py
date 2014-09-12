@@ -39,7 +39,7 @@ script_path = arguments[1]
 with database.connect() as session:
     benchmark = session.query(database.Benchmarks).get(benchmark_id)
     input_pdbs = benchmark.input_pdbs
-    pdb_path = input_pdbs[task_id % len(input_pdbs)]
+    pdb_path = input_pdbs[task_id % len(input_pdbs)].pdb_path
 
 loop_path = re.sub('\.pdb(\.gz)?$', '.loop', pdb_path)
 
@@ -87,8 +87,6 @@ sys.stdout.write(stdout); sys.stderr.write(stderr)
 return_code = process.returncode
 
 # Create a mapping between the benchmark and the protocol in the database.  
-
-benchmark_id = options.id
 
 protocol_match = re.search("protocol_id '([1-9][0-9]*)'", stdout)
 protocol_id = protocol_match.groups()[0] if protocol_match else None

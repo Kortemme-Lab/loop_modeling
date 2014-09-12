@@ -46,8 +46,8 @@ def compile_rosetta():
 
     return subprocess.call(compile_command)
 
-def run_benchmark(script, pdbs,
-        name=None, desc=None, vars=(), fast=False, explicit_log=False):
+def run_benchmark(name, script, pdbs,
+        desc=None, vars=(), debug=False, explicit_log=False):
 
     pdbs = [x for x in sorted(pdbs)]
 
@@ -69,16 +69,19 @@ def run_benchmark(script, pdbs,
         session.add(benchmark); session.flush()
         benchmark_id = str(benchmark.id)
 
+    print "Your benchmark \"{0}\" (id={1}) has been created".format(
+            name, benchmark_id)
+
     # Submit the benchmark to the cluster.
 
     qsub_command = 'qsub',
-    benchmark_command = 'benchmark.py', benchmark_id, script
+    benchmark_command = 'loop_benchmark.py', benchmark_id, script
 
-    if fast:
-        qsub_command += '-t', '1-{}'.format(10 * len(pdbs))
+    if debug:
+        qsub_command += '-t', '1-{0}'.format(10 * len(pdbs))
         qsub_command += '-l', 'h_rt=0:30:00'
     else:
-        qsub_command += '-t', '1-{}'.format(500 * len(pdbs))
+        qsub_command += '-t', '1-{0}'.format(500 * len(pdbs))
         qsub_command += '-l', 'h_rt=3:00:00'
 
     if explicit_log:
@@ -87,7 +90,7 @@ def run_benchmark(script, pdbs,
     else:
         qsub_command += '-o', '/dev/null', '-j', 'y'
         
-    if fast:
+    if debug:
         benchmark_command += '--fast',
     for var in vars:
         benchmark_command += '--var', var
@@ -100,10 +103,9 @@ if __name__ == '__main__':
 
     # Use optparse because it's available on chef.
 
-    usage = 'kickoff.py [options] <script> <pdbs>'
+    usage = 'kickoff.py [options] <name> <script> <pdbs>'
     parser = optparse.OptionParser(usage=usage)
-    parser.add_option('--name', dest='name')
-    parser.add_option('--desc', dest='desc')
+    parser.add_option('--desc', '-m', dest='desc')
     parser.add_option('--var', action='append', default=[], dest='vars')
     parser.add_option('--compile-only', '-c', action='store_true', dest='compile_only')
     parser.add_option('--execute-only', '-x', action='store_true', dest='execute_only')
@@ -112,19 +114,25 @@ if __name__ == '__main__':
     options, arguments = parser.parse_args()
 
     if len(arguments) == 0:
-        print 'Usage: ' + usage
+        print 'Usage:', usage
+        print
+        print 'kickoff.py: error: must provide a name for this benchmark.'
+
+    if len(arguments) == 1:
+        print 'Usage:', usage
         print
         print 'kickoff.py: error: must specify a RosettaScript to benchmark.'
         sys.exit(1)
 
-    if len(arguments) == 1:
-        print 'Usage: ' + usage
+    if len(arguments) == 2:
+        print 'Usage:', usage
         print
         print 'kickoff.py: error: must specify a set of PDB files to benchmark.'
         sys.exit(1)
 
-    script = arguments[0]
-    pdb_paths = set(arguments[1:])
+    name = arguments[0]
+    script = arguments[1]
+    pdb_paths = set(arguments[2:])
 
     # Compile rosetta.
 
@@ -153,15 +161,14 @@ if __name__ == '__main__':
             sys.exit(1)
 
     for pdb in pdbs:
-        if not os.path.exists():
+        if not os.path.exists(pdb):
             print "Unknown input structure '{}'.".format(pdb)
             sys.exit(1)
 
     # Run the benchmark.
 
     run_benchmark(
-            script, pdbs,
-            name=options.name, desc=options.desc,
-            vars=options.vars, explicit_log=options.explicit_log,
-            fast=options.debug)
+            name, script, pdbs,
+            desc=options.desc, vars=options.vars,
+            debug=options.debug, explicit_log=options.explicit_log)
 
