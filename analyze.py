@@ -1051,7 +1051,6 @@ class Benchmark:
         from libraries import settings; settings.load()
 
         with database.connect() as session:
-            benchmark = Benchmark(name_or_id)
 
             # Decide whether a name or id was used to specify a benchmark run, 
             # and load the corresponding data out of the database.  The meaning 
@@ -1073,6 +1072,8 @@ class Benchmark:
                 db_benchmark = sorted(query.all(), key=lambda x: x.start_time)[0]
 
             # Fill in the benchmark data structure from the database.
+            
+            benchmark = Benchmark(db_benchmark.name, db_benchmark.title)
 
             for db_input in db_benchmark.input_pdbs:
                 path = db_input.pdb_path
@@ -1091,8 +1092,9 @@ class Benchmark:
         return benchmark
 
 
-    def __init__(self, name):
+    def __init__(self, name, title=None):
         self.name = name
+        self.manual_title = None
         self.loops = {}         # Set by Report.from_...()
         self.latex_dir = None   # Set by Report.setup_latex_dir()
         self.color = None       # Set by Report.setup_benchmark_colors()
@@ -1120,6 +1122,9 @@ class Benchmark:
 
     @property
     def title(self):
+        if self.manual_title:
+            return self.manual_title
+
         words = self.name.split('_')
         phrase = ' '.join(words)
         phrase = phrase.title()
