@@ -1030,6 +1030,8 @@ class Benchmark:
         name = name or splitext(basename(path))[0]
         benchmark = Benchmark(name)
 
+        print "Loading the {0.title} benchmark from a flat file...".format(benchmark)
+
         with open(path) as file:
             for line in file:
                 line = line.strip()
@@ -1074,6 +1076,8 @@ class Benchmark:
             # Fill in the benchmark data structure from the database.
             
             benchmark = Benchmark(db_benchmark.name, db_benchmark.title)
+
+            print "Loading the {0.title} benchmark from the database...".format(benchmark)
 
             for db_input in db_benchmark.input_pdbs:
                 path = db_input.pdb_path
