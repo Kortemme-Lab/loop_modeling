@@ -34,12 +34,14 @@ class Benchmarks (NonRosettaBase):
     input_pdbs = relationship('BenchmarkInputs')
     start_time = Column(DateTime)
     name = Column(Text)
+    title = Column(Text)
     description = Column(Text)
 
-    def __init__(self, name=None, description=None):
+    def __init__(self, name=None, title=None, description=None):
         import datetime
         self.start_time = datetime.datetime.now()
         self.name = name
+        self.title = title
         self.description = description
 
     def __repr__(self):
