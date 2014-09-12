@@ -157,12 +157,12 @@ if __name__ == '__main__':
                 pdbs.update(line.strip() for line in file)
 
         else:
-            print "Unknown input structure '{}'.".format(path)
+            print "Unknown input structure '{0}'.".format(path)
             sys.exit(1)
 
     for pdb in pdbs:
         if not os.path.exists(pdb):
-            print "Unknown input structure '{}'.".format(pdb)
+            print "Unknown input structure '{0}'.".format(pdb)
             sys.exit(1)
 
     # Run the benchmark.
