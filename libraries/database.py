@@ -35,14 +35,16 @@ class Benchmarks (NonRosettaBase):
     start_time = Column(DateTime)
     name = Column(Text)
     title = Column(Text)
+    user = Column(Text)
     description = Column(Text)
 
-    def __init__(self, name=None, title=None, description=None):
+    def __init__(self, name, title=None, user=None, desc=None):
         import datetime
         self.start_time = datetime.datetime.now()
         self.name = name
         self.title = title
-        self.description = description
+        self.user = user
+        self.description = desc
 
     def __repr__(self):
         return '<Benchmark id={0.benchmark_id} name={0.name}>'.format(self)

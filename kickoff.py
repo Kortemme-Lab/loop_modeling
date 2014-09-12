@@ -60,7 +60,8 @@ def run_benchmark(name, script, pdbs,
     # Create an entry in the benchmarks table.
 
     with database.connect() as session:
-        benchmark = database.Benchmarks(name, desc)
+        import getpass; user = getpass.getuser()
+        benchmark = database.Benchmarks(name, user=user, desc=desc)
 
         for pdb in pdbs:
             benchmark_input = database.BenchmarkInputs(pdb)
