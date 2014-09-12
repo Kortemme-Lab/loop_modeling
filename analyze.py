@@ -132,8 +132,9 @@ class Report:
             with open(tex_path, 'w') as file:
                 file.write(report_template.format(**locals()))
 
+            print "Running pdflatex..."
+
             if self.verbose:
-                print "Running pdflatex..."
                 tex_command = 'pdflatex', 'report.tex'
             else:
                 tex_command = 'pdflatex', '-interaction=batchmode', 'report.tex'
@@ -213,8 +214,7 @@ class Report:
         if len(self) == 1:
             return None
 
-        if self.verbose:
-            print "Making the comparison chapter..."
+        print "Making the comparison chapter..."
 
         # Make the comparison plots
 
@@ -480,8 +480,7 @@ plot {plot_arguments}
         return pdf_path
 
     def make_benchmark_chapter(self, benchmark):
-        if self.verbose:
-            print "Making the {0.title} chapter...".format(benchmark)
+        print "Making the {0.title} chapter...".format(benchmark)
 
         # Calculate the median percent subangstrom decoys.
 
