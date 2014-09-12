@@ -32,11 +32,11 @@ class Benchmarks (NonRosettaBase):
     benchmark_id = Column(Integer, primary_key=True, autoincrement=True)
     protocol_ids = relationship('BenchmarkProtocols', order_by='BenchmarkProtocols.protocol_id')
     input_pdbs = relationship('BenchmarkInputs')
-    start_time = Column(DateTime)
+    user = Column(Text)
     name = Column(Text)
     title = Column(Text)
-    user = Column(Text)
     description = Column(Text)
+    start_time = Column(DateTime)
 
     def __init__(self, name, title=None, user=None, desc=None):
         import datetime
