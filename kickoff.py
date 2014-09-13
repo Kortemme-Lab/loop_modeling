@@ -47,7 +47,7 @@ def compile_rosetta():
     return subprocess.call(compile_command)
 
 def run_benchmark(name, script, pdbs,
-        desc=None, vars=(), debug=False, explicit_log=False):
+        desc=None, vars=(), nstruct=None, debug=False, explicit_log=False):
 
     pdbs = [x for x in sorted(pdbs)]
 
@@ -79,10 +79,10 @@ def run_benchmark(name, script, pdbs,
     benchmark_command = 'loop_benchmark.py', benchmark_id, script
 
     if debug:
-        qsub_command += '-t', '1-{0}'.format(10 * len(pdbs))
+        qsub_command += '-t', '1-{0}'.format((nstruct or 10) * len(pdbs))
         qsub_command += '-l', 'h_rt=0:30:00'
     else:
-        qsub_command += '-t', '1-{0}'.format(500 * len(pdbs))
+        qsub_command += '-t', '1-{0}'.format((nstruct or 500) * len(pdbs))
         qsub_command += '-l', 'h_rt=3:00:00'
 
     if explicit_log:
@@ -108,6 +108,7 @@ if __name__ == '__main__':
     parser = optparse.OptionParser(usage=usage)
     parser.add_option('--desc', '-m', dest='desc')
     parser.add_option('--var', action='append', default=[], dest='vars')
+    parser.add_option('--nstruct', '-n', type=int, dest='nstruct')
     parser.add_option('--compile-only', '-c', action='store_true', dest='compile_only')
     parser.add_option('--execute-only', '-x', action='store_true', dest='execute_only')
     parser.add_option('--explicit-log', action='store_true', dest='explicit_log')
@@ -170,6 +171,6 @@ if __name__ == '__main__':
 
     run_benchmark(
             name, script, pdbs,
-            desc=options.desc, vars=options.vars,
+            desc=options.desc, vars=options.vars, nstruct=options.nstruct,
             debug=options.debug, explicit_log=options.explicit_log)
 
