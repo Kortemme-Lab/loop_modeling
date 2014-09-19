@@ -28,7 +28,7 @@ options, arguments = parser.parse_args()
 if len(arguments) != 2:
     print 'Usage:', usage
     print 
-    print 'benchmark.py: error: expected 2 positional argument, got {0}.'.format(len(arguments))
+    print 'benchmark.py: error: expected 2 positional arguments, got {0}.'.format(len(arguments))
     sys.exit(1)
 
 task_id = int(os.environ['SGE_TASK_ID']) - 1
@@ -83,12 +83,10 @@ if options.flags is not None:
 
 # Run the benchmark.
 
-process = subprocess.Popen(rosetta_command, env=rosetta_env,
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+return_code = subprocess.call(rosetta_command, env=rosetta_env)
 
-stdout, stderr = process.communicate(); process.poll()
-sys.stdout.write(stdout); sys.stderr.write(stderr)
-return_code = process.returncode
+with open(os.environ['SGE_STDOUT_PATH']) as file: stdout = file.read()
+with open(os.environ['SGE_STDERR_PATH']) as file: stderr = file.read()
 
 # Create a mapping between the benchmark and the protocol in the database.  
 

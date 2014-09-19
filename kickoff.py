@@ -38,6 +38,7 @@ Options:
 
     --nstruct NUM -n NUM
         Specify how many simulations to do for each structure in the benchmark.
+        The default value is 500.
 
     --desc DESC -m DESC
         Give a more detailed description of this benchmark run.
@@ -47,13 +48,13 @@ Options:
 
     --execute-only
         Launch the benchmark without compiling rosetta.  I never use this flag 
-        when launching full-scale benchmarks, because I don't want to forget to 
-        compile some last-minute tweak.  But for test runs it's annoying to 
-        wait 2-3 minutes for scons to figure out that nothing has changed.
+        when launching full-scale benchmarks, but for test runs it's not worth 
+        waiting 2-3 minutes for scons to figure out that nothing has changed.
 
     --fast
-        Run jobs with a very small number of iterations.  This is useful when 
-        you're just making sure a new algorithm runs without crashing.
+        Run jobs with a very small number of iterations and lower the default 
+        value of --nstruct to 10.  This is useful when you're just making sure 
+        a new algorithm runs without crashing.
 """
 
 import sys
@@ -129,10 +130,6 @@ def run_benchmark(name, script, pdbs,
     print "Your benchmark \"{0}\" (id={1}) has been created".format(
             name, benchmark_id)
 
-    # Wipe the job_output directory.
-
-    utilities.clear_directory('job_output')
-
     # Submit the benchmark to the cluster.
 
     qsub_command = 'qsub',
@@ -145,6 +142,9 @@ def run_benchmark(name, script, pdbs,
         qsub_command += '-t', '1-{0}'.format((nstruct or 500) * len(pdbs))
         qsub_command += '-l', 'h_rt=3:00:00'
 
+    utilities.clear_directory('job_output')
+    qsub_command += '-o', 'job_output', '-e', 'job_output'
+
     if fast:
         benchmark_command += '--fast',
     if flags:
@@ -152,6 +152,8 @@ def run_benchmark(name, script, pdbs,
     for var in vars:
         benchmark_command += '--var', var
 
+    print ' '.join(qsub_command + benchmark_command)
+    print
     subprocess.call(qsub_command + benchmark_command)
 
 
@@ -202,7 +204,7 @@ if __name__ == '__main__':
             name, script, pdbs,
             vars=arguments['--var'],
             flags=arguments['--flags'],
-            nstruct=arguments['--nstruct'],
+            nstruct=int(arguments['--nstruct']),
             desc=arguments['--desc'],
             fast=arguments['--fast'],
     )
