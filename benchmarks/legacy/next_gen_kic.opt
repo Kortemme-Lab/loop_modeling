@@ -1,0 +1,12 @@
+-loops:remodel perturb_kic
+-loops:refine refine_kic
+-kic_rama2b
+-loops:ramp_fa_rep
+-loops:ramp_rama
+-loops:outer_cycles 5
+-kic_omega_sampling
+-allow_omega_move true
+-max_retry_job 0
+-max_kic_perturber_samples 10000
+-ex1
+-ex2

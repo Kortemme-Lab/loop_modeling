@@ -5,10 +5,7 @@
     </TASKOPERATIONS>
 
     <MOVERS>
-        <LoopModeler name="modeler" loops_file="%%loop_file%%" fast="%%fast%%">
-          <!-- Also, should turn off rama2b -->
-          <Fullatom ramp_rama="no" ramp_rep="no"/>
-        </LoopModeler>
+        <LoopmodelWrapper name="modeler" loops_file="%%loop_file%%" fast="%%fast%%"/>
 
         <ReportToDB name="reporter" task_operations="loop">
           <feature name="TotalScoreFeatures" scorefxn="talaris2013"/>
