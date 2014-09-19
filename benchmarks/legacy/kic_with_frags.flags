@@ -1,6 +1,5 @@
 -loops:remodel perturb_kic_with_fragments
 -loops:refine refine_kic_with_fragments
 -loops:outer_cycles 5
--max_kic_perturber_samples 10000
 -ex1
 -ex2
