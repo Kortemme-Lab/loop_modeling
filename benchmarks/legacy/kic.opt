@@ -1,0 +1,6 @@
+-loops:remodel perturb_kic
+-loops:refine refine_kic
+-loops:outer_cycles 5
+-max_kic_perturber_samples 10000
+-ex1
+-ex2
