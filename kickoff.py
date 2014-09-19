@@ -152,8 +152,6 @@ def run_benchmark(name, script, pdbs,
     for var in vars:
         benchmark_command += '--var', var
 
-    print ' '.join(qsub_command + benchmark_command)
-    print
     subprocess.call(qsub_command + benchmark_command)
 
 
