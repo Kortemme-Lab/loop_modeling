@@ -1,5 +1,62 @@
 #!/usr/bin/env python2
 
+"""\
+Launch a loops benchmark run.  Options are provided so you can easily control 
+every important aspect of the benchmark, including which protocol to test, 
+which structures to use, and how much simulation to do one each one.  The 
+benchmark results are written to the MySQL database specified in the settings 
+file to facilitate storage and organization.  This script automatically 
+compiles rosetta with database support before each run.
+
+Usage:
+    kickoff.py <name> <script> <pdbs>... [--var=VAR ...] [options]
+
+Arguments:
+    <name>
+        The name for this benchmark.  It's ok for several benchmark runs to 
+        have the same name.  The analysis script will automatically pick the 
+        most recent one when given an ambiguous name.
+
+    <script>
+        A rosetta XML script to execute.  Commonly used scripts can be found in 
+        the benchmarks directory of this repository.  Feel free to add more!
+
+    <pdbs>
+        A list of PDB files to use for the benchmark.  Files with the extension 
+        '*.pdbs' are expected to contain a list of PDB files to include (one on 
+        each line).  Commonly used PDB lists can be found in the benchmarks 
+        directory of this repository.
+
+Options:
+    --var VAR
+        Specify a rosetta-scripts macro substitution to make.  This option can 
+        be specified any number of times.  Each instance of this option should 
+        specify and name and a value like so: "--var name=value".
+
+    --flags OPT
+        Specify a rosetta flag file containing extra options for this run.
+
+    --nstruct NUM -n NUM
+        Specify how many simulations to do for each structure in the benchmark.
+        The default value is 500.
+
+    --desc DESC -m DESC
+        Give a more detailed description of this benchmark run.
+
+    --compile-only
+        Compile rosetta but don't run the benchmark.
+
+    --execute-only
+        Launch the benchmark without compiling rosetta.  I never use this flag 
+        when launching full-scale benchmarks, but for test runs it's not worth 
+        waiting 2-3 minutes for scons to figure out that nothing has changed.
+
+    --fast
+        Run jobs with a very small number of iterations and lower the default 
+        value of --nstruct to 10.  This is useful when you're just making sure 
+        a new algorithm runs without crashing.
+"""
+
 import sys
 import os
 import shutil
@@ -47,7 +104,7 @@ def compile_rosetta():
     return subprocess.call(compile_command)
 
 def run_benchmark(name, script, pdbs,
-        desc=None, vars=(), nstruct=None, debug=False, explicit_log=False):
+        vars=(), flags=None, nstruct=None, desc=None, fast=False):
 
     pdbs = [x for x in sorted(pdbs)]
 
@@ -78,79 +135,53 @@ def run_benchmark(name, script, pdbs,
     qsub_command = 'qsub',
     benchmark_command = 'loop_benchmark.py', benchmark_id, script
 
-    if debug:
+    if fast:
         qsub_command += '-t', '1-{0}'.format((nstruct or 10) * len(pdbs))
         qsub_command += '-l', 'h_rt=0:30:00'
     else:
         qsub_command += '-t', '1-{0}'.format((nstruct or 500) * len(pdbs))
         qsub_command += '-l', 'h_rt=3:00:00'
 
-    if explicit_log:
-        utilities.clear_directory('explicit_log')
-        qsub_command += '-o', 'explicit_log', '-j', 'y'
-    else:
-        qsub_command += '-o', '/dev/null', '-j', 'y'
-        
-    if debug:
+    utilities.clear_directory('job_output')
+    qsub_command += '-o', 'job_output', '-e', 'job_output'
+
+    if fast:
         benchmark_command += '--fast',
+    if flags:
+        benchmark_command += '--flags', flags
     for var in vars:
         benchmark_command += '--var', var
 
+    print ' '.join(qsub_command + benchmark_command)
+    print
     subprocess.call(qsub_command + benchmark_command)
 
 
 if __name__ == '__main__':
-    import optparse
+    from libraries import docopt
 
-    # Use optparse because it's available on chef.
+    # Parse command-line options.
 
-    usage = 'kickoff.py [options] <name> <script> <pdbs>'
-    parser = optparse.OptionParser(usage=usage)
-    parser.add_option('--desc', '-m', dest='desc')
-    parser.add_option('--var', action='append', default=[], dest='vars')
-    parser.add_option('--nstruct', '-n', type=int, dest='nstruct')
-    parser.add_option('--compile-only', '-c', action='store_true', dest='compile_only')
-    parser.add_option('--execute-only', '-x', action='store_true', dest='execute_only')
-    parser.add_option('--explicit-log', action='store_true', dest='explicit_log')
-    parser.add_option('--debug', action='store_true', dest='debug')
-    options, arguments = parser.parse_args()
-
-    if len(arguments) == 0:
-        print 'Usage:', usage
-        print
-        print 'kickoff.py: error: must provide a name for this benchmark.'
-
-    if len(arguments) == 1:
-        print 'Usage:', usage
-        print
-        print 'kickoff.py: error: must specify a RosettaScript to benchmark.'
-        sys.exit(1)
-
-    if len(arguments) == 2:
-        print 'Usage:', usage
-        print
-        print 'kickoff.py: error: must specify a set of PDB files to benchmark.'
-        sys.exit(1)
-
-    name = arguments[0]
-    script = arguments[1]
-    pdb_paths = set(arguments[2:])
+    arguments = docopt.docopt(__doc__)
+    name = arguments['<name>']
+    script = arguments['<script>']
+    pdb_args = set(arguments['<pdbs>'])
 
     # Compile rosetta.
 
-    if not options.execute_only:
+    if not arguments['--execute-only']:
         error_code = compile_rosetta()
         if error_code != 0:
             sys.exit(error_code)
 
-    if options.compile_only:
+    if arguments['--compile-only']:
         sys.exit(1)
 
     # Decide which structures to benchmark.
 
     pdbs = set()
 
-    for path in pdb_paths:
+    for path in pdb_args:
         if path.endswith('.pdb') or path.endswith('.pdb.gz'):
             pdbs.add(path)
 
@@ -171,6 +202,10 @@ if __name__ == '__main__':
 
     run_benchmark(
             name, script, pdbs,
-            desc=options.desc, vars=options.vars, nstruct=options.nstruct,
-            debug=options.debug, explicit_log=options.explicit_log)
+            vars=arguments['--var'],
+            flags=arguments['--flags'],
+            nstruct=int(arguments['--nstruct']),
+            desc=arguments['--desc'],
+            fast=arguments['--fast'],
+    )
 
