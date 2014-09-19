@@ -20,6 +20,7 @@ from libraries import database
 
 usage = 'SGE_TASK_ID=<id> loop_benchmark.py [options] <benchmark_id> <script>'
 parser = optparse.OptionParser(usage=usage)
+parser.add_option('--flags', dest='flags')
 parser.add_option('--var', dest='vars', action='append', default=[])
 parser.add_option('--fast', dest='fast', action='store_true')
 options, arguments = parser.parse_args()
@@ -76,6 +77,9 @@ rosetta_command = [
             'loop_file={0}'.format(loop_path),
             'fast={0}'.format('yes' if options.fast else 'no'),
 ]         + options.vars
+
+if options.flags is not None:
+    rosetta_command += ['@', options.flags]
 
 # Run the benchmark.
 
