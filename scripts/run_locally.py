@@ -24,7 +24,7 @@ Options:
         be specified any number of times.  Each instance of this option should 
         specify and name and a value like so: "--var name=value".
 
-    --options OPT
+    --flags OPT
         Specify a rosetta flag file containing extra options for this run.
 
     --unabridged -u
@@ -46,8 +46,8 @@ arguments = docopt.docopt(__doc__)
 script_path = os.path.abspath(arguments['<script>'])
 pdb_path = os.path.abspath(arguments['<pdb>'] or 'structures/1srp.pdb')
 loop_path = os.path.splitext(pdb_path)[0] + '.loop'
-options_path = arguments['--options']
-if options_path is not None: options_path = os.path.abspath(options_path)
+flags_path = arguments['--flags']
+if flags_path is not None: flags_path = os.path.abspath(flags_path)
 output_dir = arguments['--output'] or '.'
 
 settings.load()
@@ -72,8 +72,8 @@ rosetta_command = [
             'fast={0}'.format('no' if arguments['--unabridged'] else 'yes'),
 ]         + arguments['--var']
 
-if options_path is not None:
-    rosetta_command += ['@', options_path]
+if flags_path is not None:
+    rosetta_command += ['@', flags_path]
 
 if arguments['--verbose']:
     print '$ ' + ' '.join(rosetta_command)
