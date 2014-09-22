@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 def get_benchmark_root():
     import shlex
@@ -18,6 +18,38 @@ def is_this_chef():
 def require_chef():
     if not is_this_chef():
         raise SystemExit("This script must be run on chef.")
+
+def tee(*popenargs, **kwargs):
+    import subprocess, select, sys
+
+    process = subprocess.Popen(
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            *popenargs, **kwargs)
+
+    stdout, stderr = '', ''
+
+    print "Process ID:", process.pid
+
+    def read_stream(input_callback, output_stream):   # (no fold)
+        read = input_callback()
+        output_stream.write(read)
+        output_stream.flush()
+        return read
+
+    while process.poll() is None:
+        watch = process.stdout.fileno(), process.stderr.fileno()
+        ready = select.select(watch, [], [])[0]
+
+        for fd in ready:
+            if fd == process.stdout.fileno():
+                stdout += read_stream(process.stdout.readline, sys.stdout)
+            if fd == process.stderr.fileno():
+                stderr += read_stream(process.stderr.readline, sys.stderr)
+
+    stdout += read_stream(process.stdout.read, sys.stdout)
+    stderr += read_stream(process.stderr.read, sys.stderr)
+
+    return stdout, stderr
 
 def check_output(*popenargs, **kwargs):
     """ 

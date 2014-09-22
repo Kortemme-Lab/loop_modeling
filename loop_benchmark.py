@@ -83,10 +83,7 @@ if options.flags is not None:
 
 # Run the benchmark.
 
-return_code = subprocess.call(rosetta_command, env=rosetta_env)
-
-with open(os.environ['SGE_STDOUT_PATH']) as file: stdout = file.read()
-with open(os.environ['SGE_STDERR_PATH']) as file: stderr = file.read()
+stdout, stderr = utilities.tee(rosetta_command, env=rosetta_env)
 
 # Create a mapping between the benchmark and the protocol in the database.  
 
@@ -101,4 +98,3 @@ with database.connect() as session:
         benchmark_map = database.BenchmarkProtocols(benchmark_id, protocol_id)
         session.add(benchmark_map)
 
-sys.exit(return_code)
