@@ -4,7 +4,7 @@ install.require_sqlalchemy()
 install.require_mysql_connector()
 
 from sqlalchemy import create_engine, ForeignKey
-from sqlalchemy import Column, Integer, Float, Text, String, DateTime
+from sqlalchemy import Column, Integer, Float, Text, String, DateTime, Boolean
 from sqlalchemy.orm import sessionmaker, relationship, subqueryload
 from sqlalchemy.ext.declarative import declared_attr, declarative_base
 
@@ -32,19 +32,30 @@ class Benchmarks (NonRosettaBase):
     benchmark_id = Column(Integer, primary_key=True, autoincrement=True)
     protocol_ids = relationship('BenchmarkProtocols', order_by='BenchmarkProtocols.protocol_id')
     input_pdbs = relationship('BenchmarkInputs')
-    user = Column(Text)
+    start_time = Column(DateTime)
     name = Column(Text)
     title = Column(Text)
+    user = Column(Text)
     description = Column(Text)
-    start_time = Column(DateTime)
+    rosetta_script = Column(Text)
+    rosetta_script_vars = Column(Text)
+    rosetta_flags = Column(Text)
+    fast = Column(Boolean)
 
-    def __init__(self, name, title=None, user=None, desc=None):
+    def __init__(self, name, script,
+            title=None, user=None, desc=None,
+            vars=None, flags=None, fast=None):
+
         import datetime
         self.start_time = datetime.datetime.now()
         self.name = name
         self.title = title
         self.user = user
         self.description = desc
+        self.rosetta_script = script
+        self.rosetta_script_vars = vars
+        self.rosetta_flags = flags
+        self.fast = fast
 
     def __repr__(self):
         return '<Benchmark id={0.benchmark_id} name={0.name}>'.format(self)

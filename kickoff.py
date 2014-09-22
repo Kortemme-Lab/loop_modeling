@@ -10,6 +10,7 @@ compiles rosetta with database support before each run.
 
 Usage:
     kickoff.py <name> <script> <pdbs>... [--var=VAR ...] [options]
+    kickoff.py --resume ID [options]
 
 Arguments:
     <name>
@@ -46,7 +47,7 @@ Options:
     --compile-only
         Compile rosetta but don't run the benchmark.
 
-    --execute-only
+    --execute-only -x
         Launch the benchmark without compiling rosetta.  I never use this flag 
         when launching full-scale benchmarks, but for test runs it's not worth 
         waiting 2-3 minutes for scons to figure out that nothing has changed.
@@ -55,6 +56,13 @@ Options:
         Run jobs with a very small number of iterations and lower the default 
         value of --nstruct to 10.  This is useful when you're just making sure 
         a new algorithm runs without crashing.
+
+    --resume ID -r ID
+        Expand the given benchmark by running more jobs.  The new jobs will use 
+        the same PDB files, rosetta script files, rosetta script variables, 
+        rosetta flag files, and "fast" settings as the previous jobs did.  
+        However, results may differ if the contents of these files, or the 
+        checked out version of rosetta, are changed.
 """
 
 import sys
@@ -62,6 +70,8 @@ import os
 import shutil
 import subprocess
 import glob
+import json
+import getpass
 
 from libraries import utilities; utilities.require_chef()
 from libraries import settings; settings.load()
@@ -117,8 +127,11 @@ def run_benchmark(name, script, pdbs,
     # Create an entry in the benchmarks table.
 
     with database.connect() as session:
-        import getpass; user = getpass.getuser()
-        benchmark = database.Benchmarks(name, user=user, desc=desc)
+        benchmark = database.Benchmarks(
+                name, script,
+                user=getpass.getuser(), desc=desc,
+                vars=json.dumps(vars), flags=flags, fast=fast
+        )
 
         for pdb in pdbs:
             benchmark_input = database.BenchmarkInputs(pdb)
@@ -133,24 +146,40 @@ def run_benchmark(name, script, pdbs,
     # Submit the benchmark to the cluster.
 
     qsub_command = 'qsub',
-    benchmark_command = 'loop_benchmark.py', benchmark_id, script
+    benchmark_command = 'loop_benchmark.py', benchmark_id
 
     if fast:
         qsub_command += '-t', '1-{0}'.format((nstruct or 10) * len(pdbs))
         qsub_command += '-l', 'h_rt=0:30:00'
     else:
         qsub_command += '-t', '1-{0}'.format((nstruct or 500) * len(pdbs))
-        qsub_command += '-l', 'h_rt=3:00:00'
+        qsub_command += '-l', 'h_rt=4:00:00'
 
     utilities.clear_directory('job_output')
     qsub_command += '-o', 'job_output', '-e', 'job_output'
 
-    if fast:
-        benchmark_command += '--fast',
-    if flags:
-        benchmark_command += '--flags', flags
-    for var in vars:
-        benchmark_command += '--var', var
+    subprocess.call(qsub_command + benchmark_command)
+
+def resume_benchmark(benchmark_id, nstruct=None):
+    qsub_command = 'qsub',
+    benchmark_command = 'loop_benchmark.py', benchmark_id
+
+    with database.connect() as session:
+        benchmark = session.query(database.Benchmarks).get(benchmark_id)
+        num_pdbs = len(benchmark.input_pdbs)
+
+        if benchmark.fast:
+            qsub_command += '-t', '1-{0}'.format((nstruct or 10) * num_pdbs)
+            qsub_command += '-l', 'h_rt=0:30:00'
+        else:
+            qsub_command += '-t', '1-{0}'.format((nstruct or 500) * num_pdbs)
+            qsub_command += '-l', 'h_rt=4:00:00'
+    
+        print "Your benchmark \"{0}\" (id={1}) is being resumed".format(
+                benchmark.name, benchmark_id)
+
+    utilities.clear_directory('job_output')
+    qsub_command += '-o', 'job_output', '-e', 'job_output'
 
     subprocess.call(qsub_command + benchmark_command)
 
@@ -161,9 +190,6 @@ if __name__ == '__main__':
     # Parse command-line options.
 
     arguments = docopt.docopt(__doc__)
-    name = arguments['<name>']
-    script = arguments['<script>']
-    pdb_args = set(arguments['<pdbs>'])
 
     # Compile rosetta.
 
@@ -175,9 +201,18 @@ if __name__ == '__main__':
     if arguments['--compile-only']:
         sys.exit(1)
 
+    # Resume the benchmark, if requested.
+
+    if arguments['--resume'] is not None:
+        benchmark_id = arguments['--resume']
+        resume_benchmark(benchmark_id, arguments['--nstruct'])
+        sys.exit()
+
     # Decide which structures to benchmark.
 
-    pdbs = set()
+    name = arguments['<name>']
+    script = arguments['<script>']
+    pdb_args, pdbs = set(arguments['<pdbs>']), set()
 
     for path in pdb_args:
         if path.endswith('.pdb') or path.endswith('.pdb.gz'):
