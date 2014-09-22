@@ -11,6 +11,7 @@ import sys; sys.path.append(os.getcwd())
 import optparse
 import subprocess
 import re
+import json
 
 from libraries import utilities
 from libraries import settings; settings.load(interactive=False)
@@ -18,31 +19,24 @@ from libraries import database
 
 # Parse arguments.
 
-usage = 'SGE_TASK_ID=<id> loop_benchmark.py [options] <benchmark_id> <script>'
-parser = optparse.OptionParser(usage=usage)
-parser.add_option('--flags', dest='flags')
-parser.add_option('--var', dest='vars', action='append', default=[])
-parser.add_option('--fast', dest='fast', action='store_true')
-options, arguments = parser.parse_args()
-
-if len(arguments) != 2:
-    print 'Usage:', usage
-    print 
-    print 'benchmark.py: error: expected 2 positional arguments, got {0}.'.format(len(arguments))
+if len(sys.argv) != 2 or 'SGE_TASK_ID' not in os.environ:
+    print 'Usage: SGE_TASK_ID=<id> loop_benchmark.py <benchmark_id>'
     sys.exit(1)
 
 task_id = int(os.environ['SGE_TASK_ID']) - 1
-benchmark_id = int(arguments[0])
-script_path = arguments[1]
+benchmark_id = int(sys.argv[1])
 
 # Figure out which loop to benchmark.
 
 with database.connect() as session:
     benchmark = session.query(database.Benchmarks).get(benchmark_id)
+    script_path = benchmark.rosetta_script
+    script_vars = json.loads(benchmark.rosetta_script_vars or '[]')
+    flags_path = benchmark.rosetta_flags
+    fast = benchmark.fast
     input_pdbs = benchmark.input_pdbs
     pdb_path = input_pdbs[task_id % len(input_pdbs)].pdb_path
-
-loop_path = re.sub('\.pdb(\.gz)?$', '.loop', pdb_path)
+    loop_path = re.sub('\.pdb(\.gz)?$', '.loop', pdb_path)
 
 # Set LD_LIBRARY_PATH so that the MySQL libraries can be found.
 
@@ -75,11 +69,11 @@ rosetta_command = [
         '-parser:protocol', script_path,
         '-parser:script_vars',
             'loop_file={0}'.format(loop_path),
-            'fast={0}'.format('yes' if options.fast else 'no'),
-]         + options.vars
+            'fast={0}'.format('yes' if fast else 'no'),
+]         + script_vars
 
-if options.flags is not None:
-    rosetta_command += ['@', options.flags]
+if flags_path is not None:
+    rosetta_command += ['@', flags_path]
 
 # Run the benchmark.
 
