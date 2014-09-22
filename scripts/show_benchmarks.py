@@ -28,7 +28,7 @@ with database.connect() as session:
         ]
 
     total_width = sum(column_widths)
-    column_widths[-1] -= max(total_width - 79 + 2, 0)
+    column_widths[-1] -= max(total_width - 79 + len(columns) - 1, 0)
 
     row_template = '{{0:<{0[0]}}} {{1:<{0[1]}}} {{2}}'.format(
             column_widths)
@@ -37,12 +37,14 @@ with database.connect() as session:
     print ' '.join('=' * x for x in column_widths)
 
     for benchmark in benchmarks:
+        indent = ' ' * (79 - column_widths[-1])
         description = textwrap.fill(
                 benchmark.description or '',
-                width=column_widths[-1],
-                initial_indent='',
-                subsequent_indent=' ' * (79 - column_widths[-1])
-        )
+                width=79,
+                initial_indent=indent,
+                subsequent_indent=indent,
+        ).strip()
+
         print row_template.format(
                 benchmark.id,
                 benchmark.name or '???',
