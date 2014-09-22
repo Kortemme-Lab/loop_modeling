@@ -525,7 +525,7 @@ plot {plot_arguments}
 \\end{{table}}
 
 \\begin{{center}}
-    Median fraction of sub-\\AA{{}} models: {median_percent_subA}\\%
+    Median fraction of sub-\\AA{{}} models: {median_percent_subA:.2f}\\%
 \\end{{center}}
 
 \\pagebreak
