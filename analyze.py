@@ -15,14 +15,14 @@ Options:
         Limit the analysis to the given number of models per loop.  Usually 
         this is done to compare two or more benchmarks of different sizes.
 
-    --verbose
-        Output progress messages and debugging information.
-
     --keep-latex DIR
         Specify a directory where all the intermediate LaTeX and gnuplot 
         files should be saved.  These files can be used to integrate the report 
         into large LaTeX documents.  By default these files are created in /tmp 
         and destroyed once the report is generated.
+
+    --verbose
+        Output progress messages and debugging information.
 
 Authors:
     Roland A. Pache: Original implementation
@@ -83,6 +83,23 @@ class Report:
         self.benchmarks = benchmarks
         self.latex_dir = None
         self.keep_latex = False
+
+        # If any benchmarks have duplicate names, de-duplicate them.
+
+        name_counts = collections.Counter()
+        name_postfixes = {}
+
+        for benchmark in benchmarks:
+            name_counts[benchmark.name] += 1
+
+        for name in name_counts:
+            name_count = name_counts[name]
+            name_postfixes[name] = (
+                    [''] if name_count == 1 else
+                    ['_{}'.format(x + 1) for x in range(name_count)])
+
+        for benchmark in benchmarks:
+            benchmark.name += name_postfixes[benchmark.name].pop(0)
 
     def __len__(self):
         return len(self.benchmarks)
@@ -430,7 +447,7 @@ set ylabel "Runtime [min]" rotate by -90
             '"{0.title}" {1}'.format(benchmark, i+1)
             for i, benchmark in enumerate(reversed(distributions))
         ])
-        fig_height = 1 + len(self)
+        fig_height = min(1 + len(self), 5)
 
         gnuplot_script = '''\
 set autoscale
@@ -1113,7 +1130,7 @@ class Benchmark:
 
     def __init__(self, name, title=None):
         self.name = name
-        self.manual_title = None
+        self.manual_title = title
         self.loops = {}         # Set by Report.from_...()
         self.latex_dir = None   # Set by Report.setup_latex_dir()
         self.color = None       # Set by Report.setup_benchmark_colors()
