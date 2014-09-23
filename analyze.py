@@ -11,6 +11,10 @@ Options:
     -o FILE --output FILE
         File name for the PDF report being generated [default: report.pdf]
 
+    --limit NUM -l NUM
+        Limit the analysis to the given number of models per loop.  Usually 
+        this is done to compare two or more benchmarks of different sizes.
+
     --verbose
         Output progress messages and debugging information.
 
@@ -54,12 +58,23 @@ class Report:
 
     @staticmethod
     def from_docopt_args(arguments):
-        benchmarks = Benchmark.from_names(arguments['<benchmarks>'])
+        benchmarks = Benchmark.from_names(
+                arguments['<benchmarks>'])
 
         report = Report(benchmarks)
         report.latex_dir = arguments['--keep-latex']
         report.keep_latex = arguments['--keep-latex'] is not None
         report.verbose = arguments['--verbose']
+
+        # Throw out extra data if the user wants to limit the analysis to a 
+        # certain number of structures.
+
+        if arguments['--limit'] is not None:
+            max_num_models = int(arguments['--limit'])
+
+            for benchmark in benchmarks:
+                for loop in benchmark:
+                    loop.models = loop.models[:max_num_models]
 
         return report
 
@@ -73,10 +88,10 @@ class Report:
         return len(self.benchmarks)
 
     def __iter__(self):
-        return self.benchmarks.itervalues()
+        return iter(self.benchmarks)
 
     def __reversed__(self):
-        return reversed(self.benchmarks.values())
+        return reversed(iter(self.benchmarks))
 
     def make_report(self, path):
         with self.setup_latex_dir():
@@ -1004,7 +1019,7 @@ class Benchmark:
 
     @staticmethod
     def from_names(names):
-        benchmarks = collections.OrderedDict()
+        benchmarks = []
 
         # The list of names may include several different kinds of name:
         #
@@ -1019,7 +1034,7 @@ class Benchmark:
                 factory = Benchmark.from_database
 
             benchmark = factory(name)
-            benchmarks[benchmark.name] = benchmark
+            benchmarks.append(benchmark)
 
         return benchmarks
 
