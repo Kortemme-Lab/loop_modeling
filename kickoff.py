@@ -148,6 +148,8 @@ def run_benchmark(name, script, pdbs,
     qsub_command = 'qsub',
     benchmark_command = 'loop_benchmark.py', benchmark_id
 
+    if nstruct is not None: assert isinstance(nstruct, int)
+
     if fast:
         qsub_command += '-t', '1-{0}'.format((nstruct or 10) * len(pdbs))
         qsub_command += '-l', 'h_rt=0:30:00'
@@ -163,6 +165,9 @@ def run_benchmark(name, script, pdbs,
 def resume_benchmark(benchmark_id, nstruct=None):
     qsub_command = 'qsub',
     benchmark_command = 'loop_benchmark.py', benchmark_id
+
+    # You get weird errors if you forget to cast nstruct from string to int.
+    if nstruct is not None: assert isinstance(nstruct, int)
 
     with database.connect() as session:
         benchmark = session.query(database.Benchmarks).get(benchmark_id)
@@ -201,44 +206,44 @@ if __name__ == '__main__':
     if arguments['--compile-only']:
         sys.exit(1)
 
-    # Resume the benchmark, if requested.
+    # Decide whether to start a new benchmark or to resume an old one.
 
     if arguments['--resume'] is not None:
         benchmark_id = arguments['--resume']
-        resume_benchmark(benchmark_id, arguments['--nstruct'])
-        sys.exit()
+        resume_benchmark(benchmark_id, int(arguments['--nstruct']))
+    
+    else:
+        name = arguments['<name>']
+        script = arguments['<script>']
+        pdb_args, pdbs = set(arguments['<pdbs>']), set()
 
-    # Decide which structures to benchmark.
+        # Decide which structures to benchmark.
 
-    name = arguments['<name>']
-    script = arguments['<script>']
-    pdb_args, pdbs = set(arguments['<pdbs>']), set()
+        for path in pdb_args:
+            if path.endswith('.pdb') or path.endswith('.pdb.gz'):
+                pdbs.add(path)
 
-    for path in pdb_args:
-        if path.endswith('.pdb') or path.endswith('.pdb.gz'):
-            pdbs.add(path)
+            elif path.endswith('.pdbs'):
+                with open(path) as file:
+                    pdbs.update(line.strip() for line in file)
 
-        elif path.endswith('.pdbs'):
-            with open(path) as file:
-                pdbs.update(line.strip() for line in file)
+            else:
+                print "Unknown input structure '{0}'.".format(path)
+                sys.exit(1)
 
-        else:
-            print "Unknown input structure '{0}'.".format(path)
-            sys.exit(1)
+        for pdb in pdbs:
+            if not os.path.exists(pdb):
+                print "Unknown input structure '{0}'.".format(pdb)
+                sys.exit(1)
 
-    for pdb in pdbs:
-        if not os.path.exists(pdb):
-            print "Unknown input structure '{0}'.".format(pdb)
-            sys.exit(1)
+        # Run the benchmark.
 
-    # Run the benchmark.
-
-    run_benchmark(
-            name, script, pdbs,
-            vars=arguments['--var'],
-            flags=arguments['--flags'],
-            nstruct=int(arguments['--nstruct']),
-            desc=arguments['--desc'],
-            fast=arguments['--fast'],
-    )
+        run_benchmark(
+                name, script, pdbs,
+                vars=arguments['--var'],
+                flags=arguments['--flags'],
+                nstruct=int(arguments['--nstruct']),
+                desc=arguments['--desc'],
+                fast=arguments['--fast'],
+        )
 
