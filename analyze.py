@@ -18,8 +18,16 @@ Options:
     --keep-latex DIR
         Specify a directory where all the intermediate LaTeX and gnuplot 
         files should be saved.  These files can be used to integrate the report 
-        into large LaTeX documents.  By default these files are created in /tmp 
-        and destroyed once the report is generated.
+        into larger LaTeX documents.  By default these files are created in 
+        /tmp and destroyed after the report is generated.
+
+    {settings.config_args}
+
+    --author AUTHOR
+        Override the default author setting.  This name is used on the title 
+        page of the generated report.
+
+    {settings.database_args}
 
     --verbose
         Output progress messages and debugging information.
@@ -518,6 +526,10 @@ plot {plot_arguments}
 
         median_percent_subA = numpy.median(benchmark.percents_subangstrom)
 
+        # Calculate the average number of models per loop.
+
+        models_per_loop = numpy.mean([x.num_models for x in benchmark])
+
         # Calculate some basic statistics for different several different sets 
         # of models.
         
@@ -557,7 +569,8 @@ plot {plot_arguments}
 \\end{{table}}
 
 \\begin{{center}}
-    Median fraction of sub-\\AA{{}} models: {median_percent_subA:.2f}\\%
+    Median fraction of sub-\\AA{{}} models: {median_percent_subA:.2f}\\%\\\\
+    Average number of models per loop: {models_per_loop:.2f}
 \\end{{center}}
 
 \\pagebreak
@@ -1082,7 +1095,7 @@ class Benchmark:
     @staticmethod
     def from_database(name_or_id):
         from libraries import database
-        from libraries import settings; settings.load()
+        from libraries import settings
 
         with database.connect() as session:
 
@@ -1274,9 +1287,14 @@ class Model:
 
 
 if __name__ == '__main__':
-    settings.load()
     from libraries import docopt
-    arguments = docopt.docopt(__doc__)
-    report = Report.from_docopt_args(arguments)
-    report.make_report(arguments['--output'])
+
+    try:
+        arguments = docopt.docopt(__doc__.format(**locals()))
+        settings.load(arguments)
+        report = Report.from_docopt_args(arguments)
+        report.make_report(arguments['--output'])
+
+    except KeyboardInterrupt:
+        print
 

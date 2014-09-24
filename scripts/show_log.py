@@ -4,16 +4,28 @@
 Display the stdout and stderr logs for a particular benchmark run.
 
 Usage:
-    show_logs.py <benchmark_id> [<protocol_id>]
+    show_logs.py <benchmark_id> [<protocol_id>] [options]
+
+Options:
+    {settings.config_args}
+
+    {settings.database_args}
 """
 
-from libraries import settings; settings.load()
+# Add options to pick a particular structure.
+# Add options to pick given structure (i.e 1-500 index) or lowest scoring.
+# Default: only benchmark id required.  Default structure is the lowest energy 
+# model for the first PDB tag sorted alphabetically.
+
+from libraries import settings
 from libraries import database
 from libraries import docopt
 
-arguments = docopt.docopt(__doc__)
+arguments = docopt.docopt(__doc__.format(**locals()))
 benchmark_id = arguments['<benchmark_id>']
 protocol_id = arguments['<protocol_id>']
+
+settings.load(arguments)
 
 with database.connect() as session:
     query = session.query(database.TracerLogs).\

@@ -3,7 +3,6 @@
 import os.path
 import subprocess
 import shlex
-from . import settings
 from . import utilities
 
 def ask_to_install(message):
