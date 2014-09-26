@@ -68,6 +68,7 @@ Options:
 import sys
 import os
 import shutil
+import shlex
 import subprocess
 import glob
 import json
@@ -124,13 +125,21 @@ def run_benchmark(name, script, pdbs,
         if not os.path.exists(pdb):
             raise ValueError("'{0}' does not exist.".format(pdb))
 
+    # Figure out which version of rosetta is being used.
+
+    git_commit = subprocess.check_output(
+            shlex.split('git rev-parse HEAD'), cwd=settings.rosetta)
+    git_diff = subprocess.check_output(
+            shlex.split('git diff'), cwd=settings.rosetta)
+
     # Create an entry in the benchmarks table.
 
     with database.connect() as session:
         benchmark = database.Benchmarks(
                 name, script,
                 user=getpass.getuser(), desc=desc,
-                vars=json.dumps(vars), flags=flags, fast=fast
+                vars=json.dumps(vars), flags=flags, fast=fast,
+                git_commit=git_commit, git_diff=git_diff,
         )
 
         for pdb in pdbs:
