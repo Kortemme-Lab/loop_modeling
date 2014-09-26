@@ -33,7 +33,7 @@ def load(arguments={}, interactive=True):
         # Make sure that any manually-specified sections exist.
 
         if custom_section and not parser.has_section(custom_section):
-            print "No section [{}] in 'settings.conf'.".format(custom_section)
+            print "No section [{0}] in 'settings.conf'.".format(custom_section)
             raise SystemExit
 
         # If the setting was given on the command-line, use it.
@@ -79,7 +79,7 @@ in 'settings.conf'.  Default values for the following settings are needed:
         # If the user can't be prompted (i.e. cluster job), complain and die.
 
         else:
-            raise SystemExit("No value for setting '{}'.".format(setting))
+            raise SystemExit("No value for setting '{0}'.".format(setting))
 
 
     get_setting.first_prompt = True
@@ -100,7 +100,7 @@ in 'settings.conf'.  Default values for the following settings are needed:
     db_name = get_setting(
             parser, 'db_name',
             prompt="Database name",
-            default='{}_loops_benchmark'.format(getpass.getuser()),
+            default='{0}_loops_benchmark'.format(getpass.getuser()),
             flag='--db-name', 
     )
     global db_user
