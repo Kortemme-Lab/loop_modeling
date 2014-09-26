@@ -3,16 +3,23 @@
 """\
 Display some identifying information for each benchmark in the database.
 
-Usage: show_benchmarks.py
+Usage:
+    show_benchmarks.py [options]
+
+Options:
+    {settings.config_args}
+
+    {settings.database_args}
 """
 
 import textwrap
 
-from libraries import settings; settings.load()
+from libraries import settings
 from libraries import database
 from libraries import docopt
 
-docopt.docopt(__doc__)
+arguments = docopt.docopt(__doc__.format(**locals()))
+settings.load(arguments)
 
 with database.connect() as session:
     benchmarks = session.query(database.Benchmarks).all()

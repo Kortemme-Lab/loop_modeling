@@ -15,14 +15,22 @@ Options:
         Limit the analysis to the given number of models per loop.  Usually 
         this is done to compare two or more benchmarks of different sizes.
 
-    --verbose
-        Output progress messages and debugging information.
-
     --keep-latex DIR
         Specify a directory where all the intermediate LaTeX and gnuplot 
         files should be saved.  These files can be used to integrate the report 
-        into large LaTeX documents.  By default these files are created in /tmp 
-        and destroyed once the report is generated.
+        into larger LaTeX documents.  By default these files are created in 
+        /tmp and destroyed after the report is generated.
+
+    {settings.config_args}
+
+    --author AUTHOR
+        Override the default author setting.  This name is used on the title 
+        page of the generated report.
+
+    {settings.database_args}
+
+    --verbose
+        Output progress messages and debugging information.
 
 Authors:
     Roland A. Pache: Original implementation
@@ -83,6 +91,23 @@ class Report:
         self.benchmarks = benchmarks
         self.latex_dir = None
         self.keep_latex = False
+
+        # If any benchmarks have duplicate names, de-duplicate them.
+
+        name_counts = collections.Counter()
+        name_postfixes = {}
+
+        for benchmark in benchmarks:
+            name_counts[benchmark.name] += 1
+
+        for name in name_counts:
+            name_count = name_counts[name]
+            name_postfixes[name] = (
+                    [''] if name_count == 1 else
+                    ['_{}'.format(x + 1) for x in range(name_count)])
+
+        for benchmark in benchmarks:
+            benchmark.name += name_postfixes[benchmark.name].pop(0)
 
     def __len__(self):
         return len(self.benchmarks)
@@ -430,7 +455,7 @@ set ylabel "Runtime [min]" rotate by -90
             '"{0.title}" {1}'.format(benchmark, i+1)
             for i, benchmark in enumerate(reversed(distributions))
         ])
-        fig_height = 1 + len(self)
+        fig_height = min(1 + len(self), 5)
 
         gnuplot_script = '''\
 set autoscale
@@ -501,6 +526,10 @@ plot {plot_arguments}
 
         median_percent_subA = numpy.median(benchmark.percents_subangstrom)
 
+        # Calculate the average number of models per loop.
+
+        models_per_loop = numpy.mean([x.num_models for x in benchmark])
+
         # Calculate some basic statistics for different several different sets 
         # of models.
         
@@ -540,7 +569,8 @@ plot {plot_arguments}
 \\end{{table}}
 
 \\begin{{center}}
-    Median fraction of sub-\\AA{{}} models: {median_percent_subA:.2f}\\%
+    Median fraction of sub-\\AA{{}} models: {median_percent_subA:.2f}\\%\\\\
+    Average number of models per loop: {models_per_loop:.2f}
 \\end{{center}}
 
 \\pagebreak
@@ -1065,7 +1095,7 @@ class Benchmark:
     @staticmethod
     def from_database(name_or_id):
         from libraries import database
-        from libraries import settings; settings.load()
+        from libraries import settings
 
         with database.connect() as session:
 
@@ -1113,7 +1143,7 @@ class Benchmark:
 
     def __init__(self, name, title=None):
         self.name = name
-        self.manual_title = None
+        self.manual_title = title
         self.loops = {}         # Set by Report.from_...()
         self.latex_dir = None   # Set by Report.setup_latex_dir()
         self.color = None       # Set by Report.setup_benchmark_colors()
@@ -1257,9 +1287,14 @@ class Model:
 
 
 if __name__ == '__main__':
-    settings.load()
     from libraries import docopt
-    arguments = docopt.docopt(__doc__)
-    report = Report.from_docopt_args(arguments)
-    report.make_report(arguments['--output'])
+
+    try:
+        arguments = docopt.docopt(__doc__.format(**locals()))
+        settings.load(arguments)
+        report = Report.from_docopt_args(arguments)
+        report.make_report(arguments['--output'])
+
+    except KeyboardInterrupt:
+        print
 
