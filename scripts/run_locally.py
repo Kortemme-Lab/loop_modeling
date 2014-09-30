@@ -31,6 +31,9 @@ Options:
         Run the full number of cycles.  By default, only a small number of 
         "test cycles" are run.
 
+    --non-random SEED
+        Use the given random seed for this job.
+
     --output DIR -o DIR
         Specify the directory where the job should be run.  The default is the 
         current working directory.
@@ -71,6 +74,9 @@ rosetta_command = [
             'loop_file={0}'.format(loop_path),
             'fast={0}'.format('no' if arguments['--unabridged'] else 'yes'),
 ]         + arguments['--var']
+
+if arguments['--non-random'] is not None:
+    rosetta_command += ['-run:constant_seed', '-run:jran', arguments['--non-random']]
 
 if flags_path is not None:
     rosetta_command += ['@', flags_path]
