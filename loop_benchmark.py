@@ -37,6 +37,7 @@ with database.connect() as session:
     input_pdbs = benchmark.input_pdbs
     pdb_path = input_pdbs[task_id % len(input_pdbs)].pdb_path
     loop_path = re.sub('\.pdb(\.gz)?$', '.loop', pdb_path)
+    non_random = benchmark.non_random
 
 # Set LD_LIBRARY_PATH so that the MySQL libraries can be found.
 
@@ -72,6 +73,9 @@ rosetta_command = [
             'fast={0}'.format('yes' if fast else 'no'),
 ]         + script_vars
 
+if non_random:
+    rosetta_command += ['-run:constant_seed', '-run:jran', task_id]
+
 if flags_path is not None:
     rosetta_command += ['@', flags_path]
 
@@ -91,4 +95,3 @@ with database.connect() as session:
     if protocol_id is not None:
         benchmark_map = database.BenchmarkProtocols(benchmark_id, protocol_id)
         session.add(benchmark_map)
-

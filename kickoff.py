@@ -29,6 +29,17 @@ Arguments:
         directory of this repository.
 
 Options:
+    --desc DESC -m DESC
+        Give a more detailed description of this benchmark run.
+
+    --compile-only
+        Compile rosetta but don't run the benchmark.
+
+    --execute-only -x
+        Launch the benchmark without compiling rosetta.  I never use this flag 
+        when launching full-scale benchmarks, but for test runs it's not worth 
+        waiting 2-3 minutes for scons to figure out that nothing has changed.
+
     --var VAR
         Specify a rosetta-scripts macro substitution to make.  This option can 
         be specified any number of times.  Each instance of this option should 
@@ -41,21 +52,14 @@ Options:
         Specify how many simulations to do for each structure in the benchmark.
         The default value is 500.
 
-    --desc DESC -m DESC
-        Give a more detailed description of this benchmark run.
-
-    --compile-only
-        Compile rosetta but don't run the benchmark.
-
-    --execute-only -x
-        Launch the benchmark without compiling rosetta.  I never use this flag 
-        when launching full-scale benchmarks, but for test runs it's not worth 
-        waiting 2-3 minutes for scons to figure out that nothing has changed.
-
     --fast
         Run jobs with a very small number of iterations and lower the default 
         value of --nstruct to 10.  This is useful when you're just making sure 
         a new algorithm runs without crashing.
+
+    --non-random
+        Use the SGE Task ID as the random seed for each job.  Two jobs both run 
+        with this flag should produce the exact same trajectories.
 
     --resume ID -r ID
         Expand the given benchmark by running more jobs.  The new jobs will use 
@@ -115,7 +119,8 @@ def compile_rosetta():
     return subprocess.call(compile_command)
 
 def run_benchmark(name, script, pdbs,
-        vars=(), flags=None, nstruct=None, desc=None, fast=False):
+        vars=(), flags=None, nstruct=None,
+        desc=None, fast=False, non_random=True):
 
     pdbs = [x for x in sorted(pdbs)]
 
@@ -128,9 +133,9 @@ def run_benchmark(name, script, pdbs,
     # Figure out which version of rosetta is being used.
 
     git_commit = subprocess.check_output(
-            shlex.split('git rev-parse HEAD'), cwd=settings.rosetta)
+            shlex.split('git rev-parse HEAD'), cwd=settings.rosetta).strip()
     git_diff = subprocess.check_output(
-            shlex.split('git diff'), cwd=settings.rosetta)
+            shlex.split('git diff'), cwd=settings.rosetta).strip()
 
     # Create an entry in the benchmarks table.
 
@@ -138,8 +143,9 @@ def run_benchmark(name, script, pdbs,
         benchmark = database.Benchmarks(
                 name, script,
                 user=getpass.getuser(), desc=desc,
-                vars=json.dumps(vars), flags=flags, fast=fast,
+                vars=json.dumps(vars), flags=flags,
                 git_commit=git_commit, git_diff=git_diff,
+                fast=fast, non_random=non_random,
         )
 
         for pdb in pdbs:
@@ -176,11 +182,36 @@ def resume_benchmark(benchmark_id, nstruct=None):
     benchmark_command = 'loop_benchmark.py', benchmark_id
 
     # You get weird errors if you forget to cast nstruct from string to int.
-    if nstruct is not None: assert isinstance(nstruct, int)
+
+    if nstruct is not None: nstruct = int(nstruct)
+
+    # Read the job parameters from the database.
 
     with database.connect() as session:
         benchmark = session.query(database.Benchmarks).get(benchmark_id)
         num_pdbs = len(benchmark.input_pdbs)
+
+        # Make sure the right version of rosetta is being used.
+
+        git_commit = subprocess.check_output(
+                shlex.split('git rev-parse HEAD'),
+                cwd=settings.rosetta).strip()
+
+        git_diff = subprocess.check_output(
+                shlex.split('git diff'),
+                cwd=settings.rosetta).strip()
+
+        if benchmark.git_commit != git_commit:
+            message = "Benchmark \"{0}\" was run with rosetta commit #{1}, but commit #{2} is currently checked out.  Press [Ctrl-C] to abort or [Enter] to continue."
+            message = textwrap.fill(message.format(benchmark.id, benchmark.git_commit[:8], git_commit[:8]))
+            raw_input(message)
+
+        elif benchmark.git_diff != git_diff:
+            message = "Uncommitted changes have been made to rosetta since benchmark \"{0}\" was run.  Press [Ctrl-C] to abort or [Enter] to continue."
+            message = textwrap.fill(message.format(benchmark.id))
+            raw_input(message)
+
+        # Build the qsub command.
 
         if benchmark.fast:
             qsub_command += '-t', '1-{0}'.format((nstruct or 10) * num_pdbs)
@@ -188,71 +219,77 @@ def resume_benchmark(benchmark_id, nstruct=None):
         else:
             qsub_command += '-t', '1-{0}'.format((nstruct or 500) * num_pdbs)
             qsub_command += '-l', 'h_rt=4:00:00'
-    
+
         print "Your benchmark \"{0}\" (id={1}) is being resumed".format(
                 benchmark.name, benchmark_id)
+
+    # Submit the job.
 
     utilities.clear_directory('job_output')
     qsub_command += '-o', 'job_output', '-e', 'job_output'
 
     subprocess.call(qsub_command + benchmark_command)
 
-
 if __name__ == '__main__':
-    from libraries import docopt
+    try:
+        # Parse command-line options.
 
-    # Parse command-line options.
+        from libraries import docopt
+        arguments = docopt.docopt(__doc__)
 
-    arguments = docopt.docopt(__doc__)
+        # Compile rosetta.
 
-    # Compile rosetta.
+        if not arguments['--execute-only']:
+            error_code = compile_rosetta()
+            if error_code != 0:
+                sys.exit(error_code)
 
-    if not arguments['--execute-only']:
-        error_code = compile_rosetta()
-        if error_code != 0:
-            sys.exit(error_code)
+        if arguments['--compile-only']:
+            sys.exit(1)
 
-    if arguments['--compile-only']:
-        sys.exit(1)
+        # Decide whether to start a new benchmark or to resume an old one.
 
-    # Decide whether to start a new benchmark or to resume an old one.
+        if arguments['--resume'] is not None:
+            benchmark_id = arguments['--resume']
+            resume_benchmark(benchmark_id, arguments['--nstruct'])
+        
+        else:
+            name = arguments['<name>']
+            script = arguments['<script>']
+            pdb_args, pdbs = set(arguments['<pdbs>']), set()
 
-    if arguments['--resume'] is not None:
-        benchmark_id = arguments['--resume']
-        resume_benchmark(benchmark_id, int(arguments['--nstruct']))
-    
-    else:
-        name = arguments['<name>']
-        script = arguments['<script>']
-        pdb_args, pdbs = set(arguments['<pdbs>']), set()
+            # Decide which structures to benchmark.
 
-        # Decide which structures to benchmark.
+            for path in pdb_args:
+                if path.endswith('.pdb') or path.endswith('.pdb.gz'):
+                    pdbs.add(path)
 
-        for path in pdb_args:
-            if path.endswith('.pdb') or path.endswith('.pdb.gz'):
-                pdbs.add(path)
+                elif path.endswith('.pdbs'):
+                    with open(path) as file:
+                        pdbs.update(line.strip() for line in file)
 
-            elif path.endswith('.pdbs'):
-                with open(path) as file:
-                    pdbs.update(line.strip() for line in file)
+                else:
+                    print "Unknown input structure '{0}'.".format(path)
+                    sys.exit(1)
 
-            else:
-                print "Unknown input structure '{0}'.".format(path)
-                sys.exit(1)
+            for pdb in pdbs:
+                if not os.path.exists(pdb):
+                    print "Unknown input structure '{0}'.".format(pdb)
+                    sys.exit(1)
 
-        for pdb in pdbs:
-            if not os.path.exists(pdb):
-                print "Unknown input structure '{0}'.".format(pdb)
-                sys.exit(1)
+            # Run the benchmark.
 
-        # Run the benchmark.
+            run_benchmark(
+                    name, script, pdbs,
+                    vars=arguments['--var'],
+                    flags=arguments['--flags'],
+                    nstruct=arguments['--nstruct'],
+                    desc=arguments['--desc'],
+                    fast=arguments['--fast'],
+                    non_random=arguments['--non-random'],
+            )
 
-        run_benchmark(
-                name, script, pdbs,
-                vars=arguments['--var'],
-                flags=arguments['--flags'],
-                nstruct=int(arguments['--nstruct']),
-                desc=arguments['--desc'],
-                fast=arguments['--fast'],
-        )
+    except KeyboardInterrupt:
+        print
+
 

@@ -43,11 +43,11 @@ class Benchmarks (NonRosettaBase):
     git_commit = Column(Text)
     git_diff = Column(Text)
     fast = Column(Boolean)
+    non_random = Column(Boolean)
 
     def __init__(self, name, script,
-            title=None, user=None, desc=None,
-            vars=None, flags=None, fast=None,
-            git_commit=None, git_diff=None):
+            title=None, user=None, desc=None, vars=None, flags=None,
+            git_commit=None, git_diff=None, fast=None, non_random=True):
 
         import datetime
         self.start_time = datetime.datetime.now()
@@ -61,6 +61,8 @@ class Benchmarks (NonRosettaBase):
         self.git_commit = git_commit
         self.git_diff = git_diff
         self.fast = fast
+        self.non_random = non_random
+
 
     def __repr__(self):
         return '<Benchmark id={0.benchmark_id} name={0.name}>'.format(self)
