@@ -78,7 +78,7 @@ class Benchmarks (NonRosettaBase):
         return session.query(Protocols).\
                 filter(Protocols.protocol_id.in_(protocol_ids)).\
                 options(subqueryload('*')).\
-                all()
+                all() if protocol_ids else []
 
     @property
     def batches(self):
@@ -88,7 +88,7 @@ class Benchmarks (NonRosettaBase):
                 join(Protocols).\
                 filter(Protocols.protocol_id.in_(protocol_ids)).\
                 options(subqueryload('*')).\
-                all()
+                all() if protocol_ids else []
 
     @property
     def structures(self):
@@ -98,7 +98,7 @@ class Benchmarks (NonRosettaBase):
                 join(Batches, Protocols).\
                 filter(Protocols.protocol_id.in_(protocol_ids)).\
                 options(subqueryload('*')).\
-                all()
+                all() if protocol_ids else []
 
 
 class BenchmarkProtocols (NonRosettaBase):

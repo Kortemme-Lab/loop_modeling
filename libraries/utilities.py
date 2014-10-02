@@ -103,3 +103,8 @@ def run_command(cmd, **kwargs):
 
 def run_gnuplot(gnuplot_script, **kwargs):
     run_command(('gnuplot', gnuplot_script), **kwargs)
+
+def print_warning(message, *args, **kwargs):
+    if args or kwargs: message = message.format(*args, **kwargs)
+    print '\033[1;31m' + message + '\033[0;0m'
+
