@@ -1059,12 +1059,15 @@ class Benchmark:
 
         for name in names:
             if name.endswith('.results'):
-                factory = Benchmark.from_flat_file
+                benchmark = Benchmark.from_flat_file(name)
             else:
-                factory = Benchmark.from_database
+                benchmark = Benchmark.from_database(name)
 
-            benchmark = factory(name)
-            benchmarks.append(benchmark)
+            if benchmark:
+                benchmarks.append(benchmark)
+            else:
+                message = "Skipping the empty {0} benchmark..."
+                utilities.print_warning(message, benchmark.title)
 
         return benchmarks
 
@@ -1151,17 +1154,20 @@ class Benchmark:
     def __str__(self):
         return '<Benchmark name={0.name}>'.format(self)
 
+    def __eq__(self, other):
+        return self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
+
     def __iter__(self):
         return self.loops.itervalues()
 
     def __len__(self):
         return len(self.loops)
 
-    def __eq__(self, other):
-        return self.name == other.name
-
-    def __hash__(self):
-        return hash(self.name)
+    def __nonzero__(self):
+        return any(self)
 
     def __getitem__(self, tag):
         return self.loops[tag]
