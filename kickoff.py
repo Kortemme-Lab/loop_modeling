@@ -175,7 +175,7 @@ def run_benchmark(name, script, pdbs,
         qsub_command += '-l', 'h_rt=0:30:00'
     else:
         qsub_command += '-t', '1-{0}'.format((nstruct or 500) * len(pdbs))
-        qsub_command += '-l', 'h_rt=4:00:00'
+        qsub_command += '-l', 'h_rt=6:00:00'
 
     utilities.clear_directory('job_output')
     qsub_command += '-o', 'job_output', '-e', 'job_output'
