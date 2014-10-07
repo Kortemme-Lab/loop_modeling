@@ -37,6 +37,10 @@ Options:
     --output DIR -o DIR
         Specify the directory where the job should be run.  The default is the 
         current working directory.
+
+    --debug
+        Run the job in gdb.  This assumes that the jobs has been previously 
+        compiled in debug mode.
         
     --verbose -v
         Print out the rosetta command-line.
@@ -80,6 +84,9 @@ if arguments['--non-random'] is not None:
 
 if flags_path is not None:
     rosetta_command += ['@', flags_path]
+
+if arguments['--debug']:
+    rosetta_command = ['gdb', '--args'] + rosetta_command
 
 if arguments['--verbose']:
     print '$ ' + ' '.join(rosetta_command)
