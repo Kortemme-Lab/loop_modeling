@@ -1113,8 +1113,8 @@ class Benchmark:
                 db_benchmark = session.query(database.Benchmarks).get(id)
 
                 if db_benchmark is None:
-                    print "No benchmark '{}' in the database.".format(id)
-                    sys.exit(1)
+                    message = "No benchmark '{}' in the database."
+                    utilities.print_error_and_die(message, id)
 
             except ValueError:
                 name = name_or_id

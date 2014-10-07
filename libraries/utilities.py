@@ -108,3 +108,7 @@ def print_warning(message, *args, **kwargs):
     if args or kwargs: message = message.format(*args, **kwargs)
     print '\033[1;31m' + message + '\033[0;0m'
 
+def print_error_and_die(message, *args, **kwargs):
+    print_warning(message + "  Aborting...", *args, **kwargs)
+    raise SystemExit(1)
+
