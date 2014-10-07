@@ -7,6 +7,7 @@ from sqlalchemy import create_engine, ForeignKey
 from sqlalchemy import Column, Integer, Float, Text, String, DateTime, Boolean
 from sqlalchemy.orm import sessionmaker, relationship, subqueryload
 from sqlalchemy.ext.declarative import declared_attr, declarative_base
+from sqlalchemy.dialects.mysql import LONGTEXT
 
 Session = sessionmaker()
 
@@ -192,8 +193,8 @@ class TracerLogs (NonRosettaBase):
     log_id = Column(Integer, primary_key=True)
     benchmark_id = Column(Integer)
     protocol_id = Column(Integer)   # This will be 0 if the job fails.
-    stdout = Column(Text)
-    stderr = Column(Text)
+    stdout = Column(LONGTEXT)
+    stderr = Column(LONGTEXT)
 
     def __init__(self, benchmark_id, protocol_id, stdout, stderr):
         self.benchmark_id = benchmark_id
