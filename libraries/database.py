@@ -41,14 +41,17 @@ class Benchmarks (NonRosettaBase):
     rosetta_script = Column(Text)
     rosetta_script_vars = Column(Text)
     rosetta_flags = Column(Text)
+    rosetta_fragments = Column(Text)
     git_commit = Column(Text)
     git_diff = Column(Text)
     fast = Column(Boolean)
     non_random = Column(Boolean)
 
     def __init__(self, name, script,
-            title=None, user=None, desc=None, vars=None, flags=None,
-            git_commit=None, git_diff=None, fast=None, non_random=True):
+            title=None, user=None, desc=None,
+            vars=None, flags=None, fragments=None,
+            git_commit=None, git_diff=None,
+            fast=None, non_random=True):
 
         import datetime
         self.start_time = datetime.datetime.now()
@@ -59,6 +62,7 @@ class Benchmarks (NonRosettaBase):
         self.rosetta_script = script
         self.rosetta_script_vars = vars
         self.rosetta_flags = flags
+        self.rosetta_fragments = fragments
         self.git_commit = git_commit
         self.git_diff = git_diff
         self.fast = fast

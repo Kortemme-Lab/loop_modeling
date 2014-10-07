@@ -33,9 +33,11 @@ with database.connect() as session:
     script_path = benchmark.rosetta_script
     script_vars = json.loads(benchmark.rosetta_script_vars or '[]')
     flags_path = benchmark.rosetta_flags
+    fragments_path = benchmark.rosetta_fragments
     fast = benchmark.fast
     input_pdbs = benchmark.input_pdbs
     pdb_path = input_pdbs[task_id % len(input_pdbs)].pdb_path
+    pdb_tag = os.path.splitext(os.path.basename(pdb_path))[0]
     loop_path = re.sub('\.pdb(\.gz)?$', '.loop', pdb_path)
     non_random = benchmark.non_random
 
@@ -73,11 +75,25 @@ rosetta_command = [
             'fast={0}'.format('yes' if fast else 'no'),
 ]         + script_vars
 
-if non_random:
-    rosetta_command += ['-run:constant_seed', '-run:jran', task_id]
-
 if flags_path is not None:
     rosetta_command += ['@', flags_path]
+
+if fragments_path is not None:
+    frag3_file = os.path.join(
+            fragments_path,
+            '{}A'.format(pdb_tag),
+            '{}A.200.{}mers.gz'.format(pdb_tag, 3))
+    frag9_file = os.path.join(
+            fragments_path,
+            '{}A'.format(pdb_tag),
+            '{}A.200.{}mers.gz'.format(pdb_tag, 9))
+    rosetta_command += [
+            '-loops:frag_sizes', '9', '3', '1',
+            '-loops:frag_files', frag9_file, frag3_file, 'none'
+    ]
+
+if non_random:
+    rosetta_command += ['-run:constant_seed', '-run:jran', task_id]
 
 # Run the benchmark.
 

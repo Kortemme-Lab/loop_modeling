@@ -48,6 +48,11 @@ Options:
     --flags OPT
         Specify a rosetta flag file containing extra options for this run.
 
+    --fragments DIR
+        Specify which fragments files to use for this benchmark.  If this flag 
+        is not specified, no fragments files will be given to rosetta, which 
+        may cause some XML scripts to crash.
+
     --nstruct NUM -n NUM
         Specify how many simulations to do for each structure in the benchmark.
         The default value is 500.
@@ -78,8 +83,8 @@ import glob
 import json
 import getpass
 
-from libraries import utilities; utilities.require_chef()
-from libraries import settings; settings.load()
+from libraries import utilities
+from libraries import settings
 from libraries import database
 
 def compile_rosetta():
@@ -119,7 +124,7 @@ def compile_rosetta():
     return subprocess.call(compile_command)
 
 def run_benchmark(name, script, pdbs,
-        vars=(), flags=None, nstruct=None,
+        vars=(), flags=None, fragments=None, nstruct=None,
         desc=None, fast=False, non_random=True):
 
     pdbs = [x for x in sorted(pdbs)]
@@ -143,7 +148,7 @@ def run_benchmark(name, script, pdbs,
         benchmark = database.Benchmarks(
                 name, script,
                 user=getpass.getuser(), desc=desc,
-                vars=json.dumps(vars), flags=flags,
+                vars=json.dumps(vars), flags=flags, fragments=fragments,
                 git_commit=git_commit, git_diff=git_diff,
                 fast=fast, non_random=non_random,
         )
@@ -236,6 +241,8 @@ if __name__ == '__main__':
 
         from libraries import docopt
         arguments = docopt.docopt(__doc__)
+        utilities.require_chef()
+        settings.load()
 
         # Compile rosetta.
 
@@ -283,6 +290,7 @@ if __name__ == '__main__':
                     name, script, pdbs,
                     vars=arguments['--var'],
                     flags=arguments['--flags'],
+                    fragments=arguments['--fragments'],
                     nstruct=arguments['--nstruct'],
                     desc=arguments['--desc'],
                     fast=arguments['--fast'],
