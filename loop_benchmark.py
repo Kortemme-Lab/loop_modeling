@@ -79,19 +79,14 @@ if flags_path is not None:
     rosetta_command += ['@', flags_path]
 
 if fragments_path is not None:
-    frag3_file = os.path.join(
-            fragments_path,
-            '{}A'.format(pdb_tag),
-            '{}A.200.{}mers.gz'.format(pdb_tag, 3))
-    frag9_file = os.path.join(
-            fragments_path,
-            '{}A'.format(pdb_tag),
-            '{}A.200.{}mers.gz'.format(pdb_tag, 9))
+    frag_file = os.path.join(fragments_path, '{0}A', '{0}A.200.{1}mers.gz')
     rosetta_command += [
             '-loops:frag_sizes', '9', '3', '1',
-            '-loops:frag_files', frag9_file, frag3_file, 'none'
+            '-loops:frag_files',
+                frag_file.format(pdb_tag, 9),
+                frag_file.format(pdb_tag, 3),
+                'none',
     ]
-
 if non_random:
     rosetta_command += ['-run:constant_seed', '-run:jran', task_id]
 
