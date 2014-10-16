@@ -102,7 +102,11 @@ if arguments['--debug']:
     rosetta_command = ['gdb', '--args'] + rosetta_command
 
 if arguments['--verbose']:
-    print '$ ' + ' '.join(rosetta_command)
+    print '$',
+    for argument in rosetta_command:
+        if argument[0] in '-@': print '\n   ',
+        print argument,
+    print; print
 
 if not os.path.exists(output_dir): os.mkdir(output_dir)
 subprocess.call(rosetta_command, cwd=output_dir)
