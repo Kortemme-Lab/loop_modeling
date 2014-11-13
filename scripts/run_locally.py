@@ -48,12 +48,15 @@ Options:
         
     --verbose -v
         Print out the rosetta command-line.
+
+{settings.rosetta_args}
+
 """
 
-import os, re, docopt, subprocess
+import os, re, glob, docopt, subprocess
 from libraries import settings
 
-arguments = docopt.docopt(__doc__)
+arguments = docopt.docopt(__doc__.format(**locals()))
 script_path = os.path.abspath(arguments['<script>'])
 pdb_path = os.path.abspath(arguments['<pdb>'] or 'structures/1srp.pdb')
 pdb_tag = os.path.splitext(os.path.basename(pdb_path))[0]
@@ -62,7 +65,7 @@ flags_path = arguments['--flags']
 fragments_path = arguments['--fragments']
 output_dir = arguments['--output'] or 'sandbox'
 
-settings.load()
+settings.load(arguments)
 
 rosetta_path = os.path.abspath(settings.rosetta)
 rosetta_scripts = os.path.join(rosetta_path, 'source', 'bin', 'rosetta_scripts')
@@ -85,13 +88,15 @@ if flags_path is not None:
     rosetta_command += ['@', os.path.abspath(flags_path)]
 
 if fragments_path is not None:
-    frag_file = os.path.abspath(os.path.join(
-            fragments_path, '{0}A', '{0}A.200.{1}mers.gz'))
+    frag_file = lambda tag, size: glob.glob(os.path.abspath(os.path.join(
+            fragments_path, '{0}?'.format(tag),
+            '{0}?.200.{1}backup.rewrite.gz'.format(tag, size))))[0]
+
     rosetta_command += [
             '-loops:frag_sizes', '9', '3', '1',
             '-loops:frag_files',
-                frag_file.format(pdb_tag, 9),
-                frag_file.format(pdb_tag, 3),
+                frag_file(pdb_tag, 9),
+                frag_file(pdb_tag, 3),
                 'none'
     ]
 
