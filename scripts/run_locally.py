@@ -53,8 +53,8 @@ Options:
 
 """
 
-import os, re, glob, docopt, subprocess
-from libraries import settings
+import os, re, glob, subprocess
+from libraries import settings, docopt
 
 arguments = docopt.docopt(__doc__.format(**locals()))
 script_path = os.path.abspath(arguments['<script>'])
