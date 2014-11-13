@@ -50,8 +50,8 @@ Options:
         Print out the rosetta command-line.
 """
 
-import os, re, docopt, subprocess
-from libraries import settings
+import os, re, subprocess
+from libraries import settings, docopt
 
 arguments = docopt.docopt(__doc__)
 script_path = os.path.abspath(arguments['<script>'])
