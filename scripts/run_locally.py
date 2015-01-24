@@ -59,7 +59,7 @@ from libraries import settings, docopt
 
 arguments = docopt.docopt(__doc__.format(**locals()))
 script_path = os.path.abspath(arguments['<script>'])
-pdb_path = os.path.abspath(arguments['<pdb>'] or 'structures/1srp.pdb')
+pdb_path = os.path.abspath(arguments['<pdb>'] or 'input/structures/1srp.pdb')
 pdb_tag = os.path.splitext(os.path.basename(pdb_path))[0]
 loop_path = re.sub('\.pdb(\.gz)?$', '.loop', pdb_path)
 flags_path = arguments['--flags']

@@ -8,7 +8,7 @@ from . import utilities
 
 def ask_to_install(message):
     try:
-        raw_input("{}  Press [enter] to continue. ".format(message))
+        raw_input("{0}  Press [enter] to continue. ".format(message))
     except KeyboardInterrupt:
         print
         print "Aborting because required library not installed."

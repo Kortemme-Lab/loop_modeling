@@ -30,7 +30,12 @@ Running analysis
 Required tools
 ~~~~~~~~~~~~~~
 
-The analysis script requires ...list_of_dependencies...
+The analysis script requires:
+- LaTeX;
+ - Packages: booktabs, graphicx, fullpage, hyperref;
+ - pdflatex;
+- ...list_of_dependencies...
+
 The script has been tested using ...e.g.Python2.6.6_and_... .
 
 ~~~~~~~~~~~~~~~~~~~~~~~~
