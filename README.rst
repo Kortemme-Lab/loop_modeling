@@ -49,16 +49,6 @@ The analysis scripts are described in more detail in analysis/README.rst.
 Protocol 1: Next-Generation Kinematic Closure (NGK)
 ===================================================
 
-Created by: ...authors...
-
-Software suite: Rosetta
-
-Protocol directory: rosetta
-
-============================================
-Protocol 2: Kinematic Closure (KIC) - Legacy
-============================================
-
 -------------------
 General Information
 -------------------
@@ -81,11 +71,22 @@ Instructions
 
 ...todo...
 
-------------------------
-Protocol capture scripts
-------------------------
+---------------------------
+Run a single benchmark case
+---------------------------
 
-...todo...
+::
+
+  cd protocols/rosetta
+  ./run_locally.py kic.xml structures/1a8d.pdb
+
+
+----------------------------
+Run the full benchmark suite
+----------------------------
+
+...fill_in...
+
 
 -------------------
 Common Flags
@@ -113,6 +114,49 @@ ___________________
 +---------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | ...some_option...         | ...some_description...                                                                            |
 +---------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
+============================================
+Protocol 2: Kinematic Closure (KIC) - Legacy
+============================================
+
+-------------------
+General Information
+-------------------
+
+Created by: ...authors...
+
+Software suite: Rosetta
+
+Protocol directory: rosetta
+
+-------------------
+Description
+-------------------
+
+...todo...
+
+-------------------
+Instructions
+-------------------
+
+...todo...
+
+---------------------------
+Run a single benchmark case
+---------------------------
+
+::
+
+  cd protocols/rosetta
+  ./run_locally.py legacy/loopmodel.xml structures/1a8d.pdb --flags legacy/kic.flags
+
+
+----------------------------
+Run the full benchmark suite
+----------------------------
+
+...fill_in...
 
 
 ----------------------
