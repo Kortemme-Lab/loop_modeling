@@ -1,7 +1,34 @@
 #!/usr/bin/env python2
 # This work is licensed under the Creative Commons Attribution 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/ or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
+import os
+
+
 settings_path = 'settings.conf'
+
+
+def get_script_location():
+    '''Returns the filepath of this Python script.'''
+    if os.environ.get('SGE_ROOT') and os.environ.get('JOB_ID'):
+        if not os.environ.get('BENCHMARK_PATH'):
+            raise Exception('The BENCHMARK_PATH variable must be set when submitting this job to an SGE cluster e.g. "qsub -v BENCHMARK_PATH=/path/to/benchmark_captures/loop_modeling ..."')
+        else:
+            benchmark_root = os.environ['BENCHMARK_PATH']
+            script_dir = os.path.join(benchmark_root, 'libraries')
+            if not os.path.exists(script_dir):
+                raise Exception('The directory %s was not found - please ensure that you have set the BENCHMARK_PATH variable correctly.' % script_dir)
+    else:
+        script_dir = os.path.dirname(os.path.realpath(__file__)) # note - this will fail under certain circumstances depending on how this script is called
+    return script_dir
+
+
+def normalize_path(p):
+    '''If p is an absolute path, return p. Otherwise, return a path relative to the script location.'''
+    if os.path.isabs(p):
+        return p
+    else:
+        return os.path.abspath(os.path.normpath(os.path.join(get_script_location(), p)))
+
 
 def load(arguments={}, interactive=True):
     """
@@ -23,13 +50,13 @@ def load(arguments={}, interactive=True):
     # Parse the settings file.
 
     parser = configparser.SafeConfigParser()
-    parser.read(settings_path)
+    parser.read(normalize_path(os.path.join('..', settings_path)))
 
     # Read all the settings from the config file.
 
     def get_setting(parser, setting, prompt, default=None, flag=None):
         custom_section = arguments.get('--config')
-        default_section = 'default'
+        default_section = 'DEFAULT'
 
         # Make sure that any manually-specified sections exist.
 
@@ -70,9 +97,9 @@ in 'settings.conf'.  Default values for the following settings are needed:
                 print
                 raise SystemExit
 
-            parser.set('default', setting, value)
+            parser.set(default_section, setting, value)
 
-            with open(settings_path, 'w') as file:
+            with open(normalize_path(os.path.join('..', settings_path)), 'w') as file:
                 parser.write(file)
 
             return value

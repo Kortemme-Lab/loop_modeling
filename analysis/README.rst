@@ -80,7 +80,8 @@ Report generation
 
 ::
 
-  ...some_command_lines...
+  cd analysis
+  ./analyze.py ../output/sample/ngk_reference.results
 
 This should create a LaTeX report ...explain_what_report_contains...
 
