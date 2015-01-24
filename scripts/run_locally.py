@@ -29,7 +29,7 @@ Options:
         Specify a rosetta flag file containing extra options for this run.
 
     --fragments DIR
-        Specify where to look fro fragments files.  Note that some XML scripts 
+        Specify where to look for fragments files.  Note that some XML scripts
         require this option and will crash without it.
 
     --unabridged -u
