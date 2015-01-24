@@ -1,0 +1,15 @@
+# This is a really complicated set of patterns meant to ignore everything 
+# except actualy fragment files, which are assumed to follow the pattern:
+#
+# ????A.200.?mers.gz
+#
+# The first line ignores everything in the fragments directory.  The second 
+# line un-ignores subdirectories so that they can be searched for fragment 
+# files.  The third line ignores everything in those subdirectories and finally 
+# the fourth line unignores any fragment files that were found.
+
+*/*
+!*/*/
+*/*/*
+!????A.200.?mers.gz
+
