@@ -30,12 +30,12 @@ Directories in this archive
 
 This archive contains the following directories:
 
-- *data* : contains some data from the Smith and Kortemme 2010 publication about the input structures and proteins.
+- *libraries* : contains scripts used by the analysis script and the Rosetta job runners.
 - *input* : contains the input files for the benchmark.
 - *output* : these directories are empty by default. This is the default output location for protocols if they are run on the local machine.
 - *output/sample* : contains sample output data that can be used to test the analysis script.
-- *analysis* : contains the analysis scripts used to analyze the output of a prediction run. All protocols are expected to produce output that will work with the analysis scripts.
-- *protocols* : contains the scripts needed to run a job. The scripts for a protocol are provided in a specific subdirectory.
+- *analysis* : contains the analysis script used to analyze the output of a prediction run. All protocols are expected to produce output in a format compatible with the analysis script (see analysis/README.rst for details of this format).
+- *protocols* : contains the scripts needed to run a prediction for each protocol.
 - *hpc* : contains scripts that can be used to run the entire benchmark using specific cluster architectures. For practical reasons, a limited number of cluster systems are supported. Please feel free to provide scripts which run the benchmark for your particular cluster system.
 
 --------------------------------------
