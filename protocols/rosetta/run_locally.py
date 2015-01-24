@@ -72,6 +72,9 @@ rosetta_path = os.path.abspath(settings.rosetta)
 rosetta_scripts = os.path.join(rosetta_path, 'source', 'bin', 'rosetta_scripts')
 rosetta_database = os.path.join(rosetta_path, 'database')
 
+if not os.path.exists(rosetta_scripts):
+    raise Exception('The RosettaScripts binary %(rosetta_scripts)s does not exist. By default, Rosetta executables are named after the operating system and build type e.g. rosetta_scripts.linuxgccrelease. Either: i) rename an appropriate binary to %(rosetta_scripts)s; or ii) use a symbolic link.' % locals())
+
 rosetta_command = [
         rosetta_scripts,
         '-database', rosetta_database,

@@ -71,6 +71,11 @@ Instructions
 
 ...todo...
 
+The job runner scripts contained in this repository assume that the RosettaScripts binary is called *rosetta_scripts*. By
+default, Rosetta binaries are named after the operating system, additional flags, and build type e.g. *rosetta_scripts.linuxgccrelease*.
+After you build the Rosetta binaries, either rename an appropriate binary to *rosetta_scripts* or else create a symbolic
+link.
+
 ---------------------------
 Run a single benchmark case
 ---------------------------
