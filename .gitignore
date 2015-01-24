@@ -1,6 +1,7 @@
 /settings.conf
 /job_output
 /reports
+.idea/*
 *.pyc
 .*.sw*
 .nfs*
