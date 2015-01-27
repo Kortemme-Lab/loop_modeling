@@ -148,7 +148,7 @@ def run_benchmark(name, script, pdbs,
     except Exception, e: 
         print(str(e))
         sys.exit(1)
-
+    
     # Create an entry in the benchmarks table.
     with database.connect() as session:
         benchmark = database.Benchmarks(
