@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/env python2
 # This work is licensed under the Creative Commons Attribution 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/ or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
 """\
@@ -499,6 +499,8 @@ plot {plot_arguments}
                 '"{tsv_path}" index {outliers_index} using 2:3 with points lt 1 lc rgb "{color}" lw 5 ps 0.5 pt 7 notitle',
         ])
 
+        if not distributions:
+            raise Exception('An error occurred retrieving data from the database.')
         plot_arguments = ', \\\n     '.join([
 
                 plot_template.format(
@@ -1099,7 +1101,7 @@ class Benchmark:
     @staticmethod
     def from_database(name_or_id):
         from libraries import database
-        from libraries import settings
+        from sqlalchemy import desc
 
         with database.connect() as session:
 
@@ -1119,8 +1121,8 @@ class Benchmark:
 
             except ValueError:
                 name = name_or_id
-                query = session.query(database.Benchmarks).filter_by(name=name)
-                db_benchmark = sorted(query.all(), key=lambda x: x.start_time)[0]
+                query = session.query(database.Benchmarks).filter_by(name=name).order_by(desc(database.Benchmarks.start_time))
+                db_benchmark = query[0]
 
             # Fill in the benchmark data structure from the database.
             
