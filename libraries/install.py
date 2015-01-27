@@ -14,7 +14,6 @@ def ask_to_install(message):
         print "Aborting because required library not installed."
         raise SystemExit
 
-
 def require_sqlalchemy():
     try:
         import sqlalchemy
@@ -46,6 +45,9 @@ def require_sqlalchemy():
             subprocess.check_call(install_command, shell=True)
 
         print
+    except Exception:
+        print('An exception occurred importing sqlalchemy.')
+        raise
     
 def require_mysql_connector():
     try:
