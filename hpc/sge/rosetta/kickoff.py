@@ -143,8 +143,13 @@ def run_benchmark(name, script, pdbs,
     git_diff = subprocess.check_output(
             shlex.split('git diff'), cwd=settings.rosetta).strip()
 
-    # Create an entry in the benchmarks table.
+    # Test the database connection
+    try: database.test_connect()
+    except Exception, e: 
+        print(str(e))
+        sys.exit(1)
 
+    # Create an entry in the benchmarks table.
     with database.connect() as session:
         benchmark = database.Benchmarks(
                 name, script,

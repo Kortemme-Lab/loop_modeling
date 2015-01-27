@@ -10,6 +10,7 @@ from sqlalchemy import Column, Integer, Float, Text, String, DateTime, Boolean
 from sqlalchemy.orm import sessionmaker, relationship, subqueryload
 from sqlalchemy.ext.declarative import declared_attr, declarative_base
 from sqlalchemy.dialects.mysql import LONGTEXT
+from sqlalchemy.exc import ProgrammingError
 
 Session = sessionmaker()
 
@@ -217,6 +218,14 @@ def url():
     from . import settings
     url = 'mysql+mysqlconnector://{0.db_user}:{0.db_password}@{0.db_host}:{0.db_port}/{0.db_name}'
     return url.format(settings)
+
+
+def test_connect():
+    try:
+        with connect() as session: pass
+    except ProgrammingError, e:
+        raise Exception('An error occurred connecting to the database: %s' % str(e))
+
 
 def connect(echo=False):
     from contextlib import contextmanager
