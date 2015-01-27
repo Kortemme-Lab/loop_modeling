@@ -68,7 +68,14 @@ output_dir = arguments['--output'] or 'sandbox'
 
 settings.load(arguments)
 
-rosetta_path = os.path.abspath(settings.rosetta)
+rosetta_path = settings.rosetta
+if os.path.isabs(rosetta_path): pass
+elif os.path.isabs(os.path.expanduser(rosetta_path)): # e.g. ~/some/path
+    rosetta_path = os.path.expanduser(rosetta_path)
+else:
+    rosetta_path = os.path.abspath(rosetta_path)
+rosetta_path = os.path.normpath(rosetta_path)
+
 rosetta_scripts = os.path.join(rosetta_path, 'source', 'bin', 'rosetta_scripts')
 rosetta_database = os.path.join(rosetta_path, 'database')
 
