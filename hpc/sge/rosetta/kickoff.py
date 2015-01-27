@@ -172,6 +172,10 @@ def run_benchmark(name, script, pdbs,
     # Submit the benchmark to the cluster.
 
     qsub_command = 'qsub',
+    
+    # Set the benchmark root path
+    qsub_command += '-v', 'BENCHMARK_PATH=%s' % os.path.normpath(os.path.join(os.path.split(os.path.abspath(__file__))[0], '..', '..', '..'))
+    
     benchmark_command = 'loop_benchmark.py', benchmark_id
 
     if nstruct is not None: assert isinstance(nstruct, int)
