@@ -3,32 +3,13 @@
 
 import os
 
+def get_benchmark_root():
+    libraries_dir = os.path.dirname(__file__)
+    libraries_dir = os.path.realpath(libraries_dir)
+    return os.path.dirname(libraries_dir)
 
-settings_path = 'settings.conf'
-
-
-def get_script_location():
-    '''Returns the filepath of this Python script.'''
-    if os.environ.get('SGE_ROOT') and os.environ.get('JOB_ID'):
-        if not os.environ.get('BENCHMARK_PATH'):
-            raise Exception('The BENCHMARK_PATH variable must be set when submitting this job to an SGE cluster e.g. "qsub -v BENCHMARK_PATH=/path/to/benchmark_captures/loop_modeling ..."')
-        else:
-            benchmark_root = os.environ['BENCHMARK_PATH']
-            script_dir = os.path.join(benchmark_root, 'libraries')
-            if not os.path.exists(script_dir):
-                raise Exception('The directory %s was not found - please ensure that you have set the BENCHMARK_PATH variable correctly.' % script_dir)
-    else:
-        script_dir = os.path.dirname(os.path.realpath(__file__)) # note - this will fail under certain circumstances depending on how this script is called
-    return script_dir
-
-
-def normalize_path(p):
-    '''If p is an absolute path, return p. Otherwise, return a path relative to the script location.'''
-    if os.path.isabs(p):
-        return p
-    else:
-        return os.path.abspath(os.path.normpath(os.path.join(get_script_location(), p)))
-
+def get_settings_path():
+    return os.path.join(get_benchmark_root(), 'settings.conf')
 
 def load(arguments={}, interactive=True):
     """
@@ -41,7 +22,6 @@ def load(arguments={}, interactive=True):
     settings.  This is the default behavior, but should be turned off for jobs 
     running on the cluster.
     """
-
     import getpass
     import ConfigParser as configparser
     import subprocess
@@ -50,7 +30,7 @@ def load(arguments={}, interactive=True):
     # Parse the settings file.
 
     parser = configparser.SafeConfigParser()
-    parser.read(normalize_path(os.path.join('..', settings_path)))
+    parser.read(get_settings_path())
 
     # Read all the settings from the config file.
 
@@ -99,7 +79,7 @@ in 'settings.conf'.  Default values for the following settings are needed:
 
             parser.set(default_section, setting, value)
 
-            with open(normalize_path(os.path.join('..', settings_path)), 'w') as file:
+            with open(get_settings_path(), 'w') as file:
                 parser.write(file)
 
             return value
