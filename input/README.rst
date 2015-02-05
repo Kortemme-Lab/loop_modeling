@@ -30,30 +30,35 @@ protocol is performing.
 Table of Contents
 =================
 
-- *full.pdbs*: The set of all the structures that make up the canonical loop 
-  benchmark.  This benchmark was originally published by Mandell et al. in the 
-  paper describing the KIC algorithm.  This dataset is a subset of the combined 
-  Wang et al. and Sellers et al. datasets.
+full.pdbs
+    The set of all the structures that make up the canonical loop benchmark.  
+    This benchmark was originally published by Mandell et al. in the paper 
+    describing the KIC algorithm.  This dataset is a subset of the combined 
+    Wang et al. and Sellers et al. datasets.
 
-- *mini.pdbs*: A reduced set of structures that useful for getting a rough view 
-  of the performance of an algorithm.  A mix of easy, medium, and hard 
-  structures are included in this set.
+mini.pdbs
+    A reduced set of structures that useful for getting a rough view of the 
+    performance of an algorithm.  A mix of easy, medium, and hard structures 
+    are included in this set.
 
-- *ions.pdbs*: The set of all structures containing metal ions.  In most cases 
-  the ions are not located near the loop being sampled.  This set maybe useful 
-  for debugging a protocol that's having a hard time loading ions.
+ions.pdbs
+    The set of all structures containing metal ions.  In most cases the ions 
+    are not located near the loop being sampled.  This set maybe useful for 
+    debugging a protocol that's having a hard time loading ions.
 
-- *structures*: The directory containing all the PDB and loop files used by the 
-  benchmark.  
+structures
+    The directory containing all the PDB and loop files used by the benchmark.  
 
-- *preparation*: In principle, the directory containing the scripts that were 
-  used to prepare the benchmark structures.  In practice, these scripts don't 
-  work right now and I don't know exactly how the structures were prepared.  
-  See ``preparation/README.rst`` for more information.
+preparation
+    In principle, the directory containing the scripts that were used to 
+    prepare the benchmark structures.  In practice, these scripts don't work 
+    right now and I don't know exactly how the structures were prepared.  See 
+    ``preparation/README.rst`` for more information.
 
-- *fragments*: Fragment files used by some of the protocols (e.g. CCD and KIC 
-  with fragments)  These files contain coordinates of peptide fragments in the 
-  PDB with sequence similarity to the loops in the benchmark.
+fragments
+    Fragment files used by some of the protocols (e.g. CCD and KIC with 
+    fragments)  These files contain coordinates of peptide fragments in the PDB 
+    with sequence similarity to the loops in the benchmark.
 
 References
 ==========
