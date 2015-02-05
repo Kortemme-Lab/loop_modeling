@@ -8,9 +8,9 @@ protocols can predict the conformation of internal protein loops.  The primary
 benchmark comprises 45 different curated structures, each with one 12-residue 
 loop to predict.  Each protocol makes 500 predictions for each loop and is 
 judged based on the distribution of those predictions.  For more information on 
-the metrics used to compare protocols, consult the ``analysis'' directory.
+the metrics used to compare protocols, consult the ``analysis`` directory.
 
-The rosetta-based protocols are expressed as XML scripts in the ``protocols'' 
+The rosetta-based protocols are expressed as XML scripts in the ``protocols`` 
 directory.  In general these scripts can do just about anything, but for the 
 most part they are variations on the same algorithm:
 
@@ -35,7 +35,7 @@ Some of the protocols also differ in how they ramp the temperature and certain
 score function weights.
 
 More information on all the protocols that are included in this benchmark can 
-found in the ``protocols'' directory.
+found in the ``protocols`` directory.
 
 Table of Contents
 -----------------
@@ -64,12 +64,12 @@ run_benchmark.py
   The first time you run this script, you will be prompted for a number of 
   settings required by the benchmark.  These include the path to rosetta, the 
   URL to the database used for IO (see next paragraph), and other miscellaneous 
-  things.  These settings are then saved in a file called ``settings.conf'' in 
+  things.  These settings are then saved in a file called ``settings.conf`` in 
   the root directory of the repository.  This is a regular text file and can be 
   edited by hand if you ever need to change any of your settings.  These is 
   also support for adding new sections to the settings file that override the 
   default settings you were prompted for.  For more information about this, 
-  consult ``libraries/settings.py''.
+  consult ``libraries/settings.py``.
   
   The benchmark is meant to use a MySQL database for IO.  This script fills in 
   a table with the parameters for each job that needs to run, compiles rosetta 

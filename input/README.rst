@@ -51,7 +51,7 @@ Table of Contents
 - *preparation*: In principle, the directory containing the scripts that were 
   used to prepare the benchmark structures.  In practice, these scripts don't 
   work right now and I don't know exactly how the structures were prepared.  
-  See ``preparation/README.rst'' for more information.
+  See ``preparation/README.rst`` for more information.
 
 - *fragments*: Fragment files used by some of the protocols (e.g. CCD and KIC 
   with fragments)  These files contain coordinates of peptide fragments in the 

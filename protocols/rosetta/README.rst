@@ -48,11 +48,11 @@ kic_no_sfxn_ramp.xml
     This is dummy protocol we use just for comparison to other things.
 
 legacy/loopmodel.xml
-    This script is a thin wrapper around the legacy rosetta ``loopmodel'' app, 
+    This script is a thin wrapper around the legacy rosetta ``loopmodel`` app, 
     which cannot be called directly by this benchmark because it is not a 
     rosetta script.  The behavior of this script is controlled by the *.flag 
     files included in this directory, which can be passed to 
-    ``hpc/ucsf/rosetta/run_benchmark.py''.
+    ``hpc/ucsf/rosetta/run_benchmark.py``.
     
     - ccd.flags: The algorithm described by Wang et al.
     - kic.flags: The original KIC algorithm described by Mandell et al.
@@ -67,7 +67,7 @@ rosetta documentation.
 
 Debugging Protocols
 -------------------
-The ``debug_protocol.py'' script is provided to make debugging new protocols 
+The ``debug_protocol.py`` script is provided to make debugging new protocols 
 easier.  This script can run individual protocols locally.  By default it runs 
 a very limited number of cycles.  It also provides an option to automatically 
 drop into the gdb, which is very convenient.  This script should not be used to 
