@@ -60,6 +60,16 @@ run_benchmark.py
   make sure you've done this right if you're adding a new protocol.  All of the 
   protocols distributed in the benchmark are properly configured.  If you make 
   a mistake here, the benchmark will run but the analysis script will choke.
+
+  The first time you run this script, you will be prompted for a number of 
+  settings required by the benchmark.  These include the path to rosetta, the 
+  URL to the database used for IO (see next paragraph), and other miscellaneous 
+  things.  These settings are then saved in a file called ``settings.conf'' in 
+  the root directory of the repository.  This is a regular text file and can be 
+  edited by hand if you ever need to change any of your settings.  These is 
+  also support for adding new sections to the settings file that override the 
+  default settings you were prompted for.  For more information about this, 
+  consult ``libraries/settings.py''.
   
   The benchmark is meant to use a MySQL database for IO.  This script fills in 
   a table with the parameters for each job that needs to run, compiles rosetta 
