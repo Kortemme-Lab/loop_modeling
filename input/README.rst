@@ -3,11 +3,9 @@ Input data
 The structures comprising the loop modeling benchmark were compiled from 
 datasets published by Wang et al. and Sellers et al. (references below).  Each 
 structure in the loop benchmark is associated with two files: a PDB file and a 
-loop file.
-
-The PDB files specify coordinates for entire proteins, including the loop 
-regions to be modeled.  These coordinates have been pre-minimized in the 
-rosetta force field.
+loop file.  The PDB files specify coordinates for entire proteins, including 
+the loop regions to be modeled.  These coordinates have been pre-minimized in 
+the rosetta force field.
 
 The loop files specify the regions to be modeled.  The protocols are expected 
 to discard coordinate information from within these regions and to predict a 
