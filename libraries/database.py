@@ -219,7 +219,6 @@ def url():
     url = 'mysql+mysqlconnector://{0.db_user}:{0.db_password}@{0.db_host}:{0.db_port}/{0.db_name}'
     return url.format(settings)
 
-
 def create_database():
     from . import settings
     try:
@@ -227,7 +226,6 @@ def create_database():
         engine.execute("CREATE DATABASE {0.db_name}".format(settings))
     except ProgrammingError, e:
         raise Exception('An error occurred creating the database: %s' % str(e))
-
 
 def test_connect():
     try:
@@ -238,8 +236,7 @@ def test_connect():
             create_database()
             print('Database successfully created.')
         else:
-            raise Exception('An error occurred connecting to the database: %s' % str(e))
-
+            raise RuntimeError('An error occurred connecting to the database: %s' % str(e))
 
 def connect(echo=False):
     from contextlib import contextmanager

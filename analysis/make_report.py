@@ -6,7 +6,7 @@ Create a report summarizing the given loops benchmark runs.  If multiple runs
 are given, extra plot explicitly comparing them will be included in the report.
 
 Usage:
-    analyze.py [options] <benchmarks>...
+    make_report.py [options] <benchmarks>...
 
 Options:
     -o FILE --output FILE
@@ -41,7 +41,6 @@ Copyright:
     Copyright (C) 2011, 2012.  This software is not released under any license.
 """
 
-# Imports (fold)
 from __future__ import division
 
 import collections
@@ -59,9 +58,8 @@ from libraries import settings
 from libraries import statistics
 from libraries import utilities
 
-# Global variables (fold)
-top_x = 5
 
+top_x = 5
 
 class Report:
 
@@ -277,15 +275,15 @@ class Report:
 
 '''
         tex_chapter += figure_template.format(
-                "Comparing percentage of subangstrom decoys",
+                "Comparing percentage of subangstrom predictions",
                 pdf_paths.percents_subangstrom)
 
         tex_chapter += figure_template.format(
-                "Comparing best RMSD among lowest {top_x} scoring decoys".format(top_x=top_x),
+                "Comparing best RMSD among lowest {top_x} scoring predictions".format(top_x=top_x),
                 pdf_paths.best_top_x)
 
         tex_chapter += figure_template.format(
-                "Comparing RMSD of lowest scoring decoys",
+                "Comparing RMSD of lowest scoring predictions",
                 pdf_paths.lowest_scores)
 
         tex_chapter += figure_template.format(
@@ -334,7 +332,7 @@ f(x)=1
                 distributions, path_template,
                 custom_gnuplot_commands, custom_plot_arguments) 
 
-        # Make the 'rmsd of lowest scoring decoys' comparison plot.
+        # Make the 'rmsd of lowest scoring predictions' comparison plot.
 
         distributions = collections.OrderedDict([
             (benchmark, [x.rmsd for x in benchmark.lowest_score_models])
@@ -370,8 +368,8 @@ set ylabel "Runtime [min]" rotate by -90
         """
         Create a plot comparing the same distribution from several different 
         benchmarks.  Examples include the percent subangstrom distribution and 
-        the RMSDs of the lowest scoring decoys.  The resulting plot will have a 
-        nicely colored box plot for each benchmark.
+        the RMSDs of the lowest scoring predictions.  The resulting plot will 
+        have a nicely colored box plot for each benchmark.
 
         Inputs
         ------
@@ -525,7 +523,7 @@ plot {plot_arguments}
     def make_benchmark_chapter(self, benchmark):
         print "Making the {0.title} chapter...".format(benchmark)
 
-        # Calculate the median percent subangstrom decoys.
+        # Calculate the median percent subangstrom predictions.
 
         median_percent_subA = numpy.median(benchmark.percents_subangstrom)
 

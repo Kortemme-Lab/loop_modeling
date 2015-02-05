@@ -10,8 +10,8 @@ file to facilitate storage and organization.  This script automatically
 compiles rosetta with database support before each run.
 
 Usage:
-    kickoff.py <name> <script> <pdbs>... [--var=VAR ...] [options]
-    kickoff.py --resume ID [options]
+    run_benchmark.py <name> <script> <pdbs>... [--var=VAR ...] [options]
+    run_benchmark.py --resume ID [options]
 
 Arguments:
     <name>
@@ -75,18 +75,19 @@ Options:
         checked out version of rosetta, are changed.
 """
 
-import sys
-import os
-import shutil
-import shlex
-import subprocess
+import getpass
 import glob
 import json
-import getpass
+import os
+import shlex
+import shutil
+import subprocess
+import sys
 
 from libraries import utilities
 from libraries import settings
 from libraries import database
+
 
 def compile_rosetta():
     rosetta_path = os.path.abspath(settings.rosetta)
@@ -144,9 +145,10 @@ def run_benchmark(name, script, pdbs,
             shlex.split('git diff'), cwd=settings.rosetta).strip()
 
     # Test the database connection
+
     try: database.test_connect()
-    except Exception, e: 
-        print(str(e))
+    except RuntimeError, error: 
+        print error
         sys.exit(1)
     
     # Create an entry in the benchmarks table.
@@ -186,8 +188,9 @@ def run_benchmark(name, script, pdbs,
 
     utilities.clear_directory('job_output')
     qsub_command += '-o', 'job_output', '-e', 'job_output'
+    qsub_cwd = os.path.dirname(__file__)
 
-    subprocess.call(qsub_command + benchmark_command)
+    subprocess.call(qsub_command + benchmark_command, cwd=qsub_cwd)
 
 def resume_benchmark(benchmark_id, nstruct=None):
     qsub_command = 'qsub',
