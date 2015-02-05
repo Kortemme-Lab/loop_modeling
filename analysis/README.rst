@@ -80,8 +80,10 @@ Dependencies
 The ``make_report.py`` script requires:
 
 - LaTeX;
+
  - Packages: booktabs, graphicx, fullpage, hyperref;
  - pdflatex;
+
 - gnuplot
 
 Input Formats
