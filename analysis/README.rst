@@ -42,16 +42,17 @@ Analyzing a Benchmark Run
 =========================
 The primary script for analyzing benchmark results is ``make_report.py``.  This 
 script generates a PDF report on one or more benchmarks.  The command to 
-generate a report is:
-
-::
+generate a report is::
 
     ./make_report.py <name of benchmark>...
+
 
 One or more benchmarks may be specified.  The benchmark name may either be a 
 database identifier or the path to a flat file (see the section on input 
 formats below).  You can verify that this script is working by creating a 
-report based on the sample input files found in ``output/sample``.
+report based on the sample input files found in ``output/sample``::
+
+    ./make_report.py ../output/sample/*.results
 
 If two or more benchmarks are being considered, the report will begin with a 
 section with bow-and-whisker plots comparing the 4 metrics discussed above for 
@@ -66,12 +67,13 @@ report.  Each benchmark is also color coded to make it easier to stay oriented.
 
 The other scripts in this directory may be peripherally useful:
 
-- *show_benchmarks.py*: List the names of all the benchmarks found in the 
-  specified database.  These names can be passed to ``make_report.py`` to make 
-  reports.
+show_benchmarks.py
+  List the names of all the benchmarks found in the specified database.  These 
+  names can be passed to ``make_report.py`` to make reports.
 
-- *show_log.py*: Show the log files for particular jobs.  This is really only 
-  useful if you're trying to debug a protocol.
+show_log.py
+  Show the log files for particular jobs.  This is really only useful if you're 
+  trying to debug a protocol.
 
 Dependencies
 -------------
@@ -88,9 +90,9 @@ flat file:
 
 Database schema
 ...............
-The database schema is defined in ``1libraries/database.py``.  Note that a 
-large fraction of the schema is part of the rosetta "features reporter" 
-framework, and as such may be rather difficult for other protocols to mimic.
+The database schema is defined in ``libraries/database.py``.  Note that a large 
+fraction of the schema is part of the rosetta "features reporter" framework, 
+and as such may be rather difficult for other protocols to mimic.
 
 Flat file format
 ................
