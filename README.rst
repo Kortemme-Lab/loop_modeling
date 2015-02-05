@@ -29,8 +29,8 @@ respective directories::
   cd ../../../analysis
   ./make_report B1
 
-Directories in this archive
----------------------------
+Table of Contents
+-----------------
 This archive contains the following directories:
 
 libraries
