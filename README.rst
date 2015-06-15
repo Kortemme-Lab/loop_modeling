@@ -67,3 +67,14 @@ Licensing
 This repository contains third party libraries and materials which are distributed under their own terms (see
 LICENSE-3RD-PARTY). The novel content in this repository is licensed according to LICENSE.
 
+----------
+References
+----------
+
+The latest release of this repository: |releasedoi|
+
+.. |releasedoi| image:: https://zenodo.org/badge/doi/10.5281/zenodo.18596.svg  
+   :target: http://dx.doi.org/10.5281/zenodo.18596
+
+
+   
