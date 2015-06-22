@@ -111,7 +111,7 @@ benchmarks::
   ./run_benchmark.py B3 benchmarks/kic.xml benchmarks/mini.pdbs --fast
 
   # Run 50 extra simulations for each structure in the previous run:
-  ./run_benchmark --resume B3 --nstruct 50
+  ./run_benchmark.py --resume B3 --nstruct 50
 
   # Generate a report comparing all these benchmarks:
   cd ../../../analysis
