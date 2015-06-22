@@ -100,15 +100,15 @@ Below are some example command-lines showing how you'd launch a few different
 benchmarks::
 
   # Run the full KIC benchmark:
-  ./run_benchmark.py B1 benchmarks/kic.xml benchmarks/full.pdbs
+  ./run_benchmark.py B1 benchmarks/kic.xml input/full.pdbs
 
   # Run a modified version of the KIC protocol (with score function ramping 
   # disabled) on the full benchmark:
-  ./run_benchmark.py B2 benchmarks/kic_no_sfxn_ramp.xml benchmarks/full.pdbs
+  ./run_benchmark.py B2 benchmarks/kic_no_sfxn_ramp.xml input/full.pdbs
 
   # Run a limited number of jobs on a small subset of the full benchmark.  This 
   # is useful for debugging protocols:
-  ./run_benchmark.py B3 benchmarks/kic.xml benchmarks/mini.pdbs --fast
+  ./run_benchmark.py B3 benchmarks/kic.xml input/mini.pdbs --fast
 
   # Run 50 extra simulations for each structure in the previous run:
   ./run_benchmark.py --resume B3 --nstruct 50

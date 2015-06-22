@@ -24,7 +24,7 @@ and how they can be configured is given in the README.rst files in their
 respective directories::
 
   cd hpc/ucsf/rosetta
-  ./run_benchmark.py B1 benchmarks/kic.xml benchmarks/full.pdbs
+  ./run_benchmark.py B1 benchmarks/kic.xml input/full.pdbs
 
   cd ../../../analysis
   ./make_report B1
