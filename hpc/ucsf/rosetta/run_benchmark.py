@@ -33,6 +33,7 @@ compiles rosetta with database support before each run.
 Usage:
     run_benchmark.py <name> <script> <pdbs>... [--var=VAR ...] [options]
     run_benchmark.py --resume ID [options]
+    run_benchmark.py --complete ID
     run_benchmark.py --compile-only
 
 Arguments:
@@ -96,6 +97,9 @@ Options:
         However, results may differ if the contents of these files, or the 
         checked out version of rosetta, are changed.
 
+    --complete ID -c ID
+        If the benchmark ID is missing data then extra jobs will be run using that benchmark's name and settings.
+
     --keep-old-data
         When a benchmark run is submitted to the cluster, the stdout and stderr files from previous runs are deleted
         from the output directory. To prevent this deletion from occurring, use this flag.
@@ -113,6 +117,7 @@ import sys
 from libraries import utilities
 from libraries import settings
 from libraries import database
+from check_progress import get_progress
 
 
 def compile_rosetta():
@@ -150,6 +155,7 @@ def compile_rosetta():
             'nohup nice ./scons.py bin -j16 mode=release extras=mysql'])
 
     return subprocess.call(compile_command)
+
 
 def run_benchmark(name, script, pdbs,
         vars=(), flags=None, fragments=None, nstruct=None,
@@ -226,6 +232,7 @@ def run_benchmark(name, script, pdbs,
 
     subprocess.call(qsub_command + benchmark_command, cwd=qsub_cwd)
 
+
 def resume_benchmark(benchmark_id, nstruct=None):
     qsub_command = 'qsub',
     benchmark_command = 'loop_benchmark.py', benchmark_id
@@ -279,16 +286,92 @@ def resume_benchmark(benchmark_id, nstruct=None):
 
     subprocess.call(qsub_command + benchmark_command)
 
+
+def complete_benchmark(benchmark_id, nstruct=None):
+    qsub_command = 'qsub',
+    benchmark_command = 'loop_benchmark.py', benchmark_id
+
+    # You get weird errors if you forget to cast nstruct from string to int.
+
+    # Get the progress data for the job
+    progress_data = get_progress(settings.db_name, benchmark_id)
+
+    # Set up nstruct
+    nstruct = progress_data['nstruct']
+    if not nstruct:
+        sys.exit('The nstruct variable is not set for this benchmark. Exiting.')
+
+    # Set up the bins for structures that need extra jobs to be run. We run extra jobs in case these fail as well.
+    bins = {5 : [], 10 : [], 20 : [], 30 : []}
+    d_bins = bins.keys()
+    for input_tag, finished_count in progress_data['CountPerStructure'].iteritems():
+        if finished_count < nstruct:
+            missing_count = nstruct - finished_count
+            if missing_count <= 2:
+                bins[5].append(input_tag)
+            elif missing_count <= 5:
+                bins[10].append(input_tag)
+            elif missing_count <= 10:
+                bins[20].append(input_tag)
+            elif missing_count <= 15:
+                bins[30].append(input_tag)
+            else:
+                bin_size = ((int((missing_count - 11)/20.0) + 2) * 20) + 10
+                bins[bin_size] = bins.get(bin_size, [])
+                bins[bin_size].append(input_tag)
+    for d_bin in d_bins:
+        if not bins[d_bin]:
+            del bins[d_bin]
+
+    with database.connect() as session:
+        name = benchmark_id
+        benchmark_records = [r for r in session.query(database.Benchmarks).filter(database.Benchmarks.name == benchmark_id)]
+        print('')
+        print(set([r.rosetta_script for r in benchmark_records]))
+        for r in benchmark_records:
+            print(type(json.loads(r.rosetta_script_vars)))
+        benchmark_variables = dict(
+            rosetta_script = set([r.rosetta_script for r in benchmark_records]),
+            rosetta_script_vars = [json.loads(r.rosetta_script_vars) for r in benchmark_records],
+            rosetta_flags = set([r.rosetta_flags for r in benchmark_records]),
+            rosetta_fragments = set([r.rosetta_fragments for r in benchmark_records]),
+            fast = set([r.fast for r in benchmark_records]),
+            non_random = set([r.non_random for r in benchmark_records]),
+        )
+        for x in range(0, len(benchmark_variables['rosetta_script_vars']) - 1):
+            if benchmark_variables['rosetta_script_vars'][x] != benchmark_variables['rosetta_script_vars'][x + 1]:
+                sys.exit('Exception (ambiguity): The benchmark {0} has multiple RosettaScript variable values associated with previous runs: "{1}".'.format(benchmark_id, '", "'.join(map(str, sorted(benchmark_variables['rosetta_script_vars'])))))
+
+    for k, v in sorted(benchmark_variables.iteritems()):
+        if len(v) == 0:
+            sys.exit('Exception (missing data): The benchmark {0} has no {1} values associated with previous runs.'.format(benchmark_id, k.replace('_', ' ')))
+        elif k == 'rosetta_script_vars':
+            benchmark_variables[k] = benchmark_variables[k][0]
+        elif len(v) > 1:
+            sys.exit('Exception (ambiguity): The benchmark {0} has multiple {1} values associated with previous runs: "{2}".'.format(benchmark_id, k.replace('_', ' '), '", "'.join(sorted(v))))
+        else:
+            benchmark_variables[k] = v.pop()
+
+    for nstruct, pdbs in reversed(sorted(bins.iteritems())): # start the longer jobs first
+        run_benchmark(name, benchmark_variables['rosetta_script'], pdbs, vars=benchmark_variables['rosetta_script_vars'],
+                      flags=benchmark_variables['rosetta_flags'], fragments=benchmark_variables['rosetta_fragments'], nstruct=nstruct,
+                      desc=None, fast=benchmark_variables['fast'], non_random=benchmark_variables['non_random'])
+
+
 if __name__ == '__main__':
     try:
         # Parse command-line options.
 
         from libraries import docopt
         arguments = docopt.docopt(__doc__)
-        utilities.require_chef()
+        #utilities.require_chef()
         settings.load()
 
         # Compile rosetta.
+
+        if arguments['--complete']:
+            complete_benchmark(arguments['--complete'])
+            sys.exit(1)
 
         if not arguments['--execute-only']:
             error_code = compile_rosetta()
