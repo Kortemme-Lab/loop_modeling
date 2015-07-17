@@ -60,7 +60,7 @@ def get_benchmark_list_by_name(database_name):
         return [r.name for r in session.execute('SELECT DISTINCT name from benchmarks ORDER BY benchmark_id DESC')]
 
 
-def get_progress(database_name, benchmark_name, only_show_summary):
+def get_progress(database_name, benchmark_name):
 
     try: database.test_connect(db_name = database_name)
     except RuntimeError, error:
@@ -133,7 +133,7 @@ def get_progress(database_name, benchmark_name, only_show_summary):
 
 def get_progress_for_terminal(database_name, benchmark_name, only_show_summary):
     '''Write progress to terminal.'''
-    progress_data = get_progress(database_name, benchmark_name, only_show_summary)
+    progress_data = get_progress(database_name, benchmark_name)
     if progress_data:
         progress, num_failed, nstruct = progress_data['Progress'], progress_data['FailureCount'], progress_data['nstruct']
         progress_fns = [colortext.mblue, colortext.mred, colortext.morange, colortext.myellow, colortext.mgreen]
