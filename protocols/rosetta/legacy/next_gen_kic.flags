@@ -1,9 +1,12 @@
+# Notes:
+#     -loops:refine_outer_cycles was called -loops:outer_cycles in older versions of Rosetta
+#
 -loops:remodel perturb_kic
 -loops:refine refine_kic
 -kic_rama2b
 -loops:ramp_fa_rep
 -loops:ramp_rama
--loops:outer_cycles 5
+-loops:refine_outer_cycles 5
 -kic_omega_sampling
 -allow_omega_move true
 -ex1
