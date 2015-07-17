@@ -35,11 +35,11 @@ Arguments:
         most recent one when given an ambiguous name.
 
 Options:
-    --summary
-        Omits the progress breakdown per structure and just reports the global progress. [default: 1]
-
     --database DATABASE -d DATABASE
         By default, the script will query the database defined in the settings.conf file. This setting allows other databases to be queried.
+
+    --summary
+        Omits the progress breakdown per structure and just reports the global progress. [default: 1]
 
     --list
         Lists all available benchmarks in the database (identified by name) but does not print any progress report.
