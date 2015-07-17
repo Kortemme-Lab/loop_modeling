@@ -40,6 +40,9 @@ Options:
 
     --database DATABASE -d DATABASE
         By default, the script will query the database defined in the settings.conf file. This setting allows other databases to be queried.
+
+    --list
+        Lists all available benchmarks in the database (identified by name) but does not print any progress report.
 """
 
 import sys
@@ -50,6 +53,11 @@ from libraries import colortext
 
 def exit(message):
     sys.exit(message + '\n')
+
+
+def get_benchmark_list_by_name(database_name):
+    with database.connect(db_name = database_name) as session:
+        return [r.name for r in session.execute('SELECT DISTINCT name from benchmarks ORDER BY benchmark_id DESC')]
 
 
 def get_progress(database_name, benchmark_name, only_show_summary):
@@ -163,7 +171,17 @@ if __name__ == '__main__':
         benchmark_name = arguments['<benchmark_name>']
         summary = arguments['--summary']
         database_name = arguments['--database'] or settings.db_name
-        report_progress(database_name, benchmark_name, summary)
+        if arguments['--list']:
+            name_list = get_benchmark_list_by_name(database_name)
+            if name_list:
+                colortext.pgreen('\nList of available benchmarks in the {0} database:\n'.format(database_name))
+                for n in name_list:
+                    colortext.pcyan('  - {0}'.format(n))
+                print('')
+            else:
+                colortext.pred('\nNo benchmarks defined in the {0} database.\n'.format(database_name))
+        else:
+            report_progress(database_name, benchmark_name, summary)
     except KeyboardInterrupt:
         print
 
