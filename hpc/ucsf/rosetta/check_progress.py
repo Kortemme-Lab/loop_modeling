@@ -52,7 +52,7 @@ def exit(message):
     sys.exit(message + '\n')
 
 
-def report_progress(database_name, benchmark_name, only_show_summary):
+def get_progress(database_name, benchmark_name, only_show_summary):
 
     try: database.test_connect(db_name = database_name)
     except RuntimeError, error:
@@ -62,7 +62,7 @@ def report_progress(database_name, benchmark_name, only_show_summary):
     # Create an entry in the benchmarks table.
     with database.connect(db_name = database_name) as session:
 
-        print('')
+        messages = ['']
 
         # Use the latest benchmark's name if none was supplied
         if not benchmark_name:
@@ -70,7 +70,7 @@ def report_progress(database_name, benchmark_name, only_show_summary):
             if q.count() == 0:
                 exit('There is no benchmark data in the database "{0}".'.format(database_name))
             benchmark_name = q.first().name
-            print('No benchmark was selected. Choosing the most recent benchmark: "{0}".\n'.format(benchmark_name))
+            messages.append('No benchmark was selected. Choosing the most recent benchmark: "{0}".\n'.format(benchmark_name))
 
         # Retrieve the set of benchmark runs associated the benchmark name
         q = session.query(database.Benchmarks).filter(database.Benchmarks.name == benchmark_name)
@@ -99,7 +99,7 @@ def report_progress(database_name, benchmark_name, only_show_summary):
                 INNER JOIN benchmarks ON benchmarks.benchmark_id=benchmark_protocols.benchmark_id
                 WHERE benchmarks.name="{0}"
                 GROUP BY input_tag'''.format(benchmark_name)):
-            total_count += r[1]
+            total_count += min(r[1], nstruct) # do not count extra jobs
             assert(r[0] in pdb_paths)
             pdb_counts[r[0]] = r[1]
 
@@ -109,28 +109,50 @@ def report_progress(database_name, benchmark_name, only_show_summary):
                 INNER JOIN benchmarks ON benchmarks.benchmark_id=tracer_logs.benchmark_id
                 WHERE stderr <> "" AND benchmarks.name="{0}"'''.format(benchmark_name))
         for r in num_failed: num_failed = r[0]; break
-
         progress = 100 * (total_count/benchmark_size)
+
+        return dict(
+            Messages = '\n'.join(messages),
+            Progress = progress,
+            StructureCount = num_cases,
+            nstruct = nstruct,
+            TotalCount = benchmark_size,
+            CompletedCount = int(total_count),
+            FailureCount = num_failed,
+            CountPerStructure = pdb_counts,
+        )
+
+
+def get_progress_for_terminal(database_name, benchmark_name, only_show_summary):
+    '''Write progress to terminal.'''
+    progress_data = get_progress(database_name, benchmark_name, only_show_summary)
+    if progress_data:
+        progress, num_failed, nstruct = progress_data['Progress'], progress_data['FailureCount'], progress_data['nstruct']
         progress_fns = [colortext.mblue, colortext.mred, colortext.morange, colortext.myellow, colortext.mgreen]
         progress_fn = progress_fns[int(min(max(0, progress), 100)/25)]
-        progress_fn('actual progress')
         failed_cases_str = ''
         if num_failed:
             failed_cases_str = colortext.mred('\nFailed cases                : {0}'.format(num_failed))
 
-        print('''Progress                    : {0}
-Number of cases             : {1}{2}
-Predictions per case        : {3}
-Total number of predictions : {4}
-Completed predictions       : {5}\n'''.format(progress_fn('%0.2f%%' % progress), num_cases, failed_cases_str, nstruct, benchmark_size, int(total_count)))
+        s = [progress_data['Messages'] or '']
+        s.append('''Progress                                       : {0}
+Number of cases                                : {1}{2}
+Predictions per case                           : {3}
+Total number of predictions                    : {4}
+Completed predictions (extra jobs not counted) : {5}\n'''.format(progress_fn('%0.2f%%' % progress), progress_data['StructureCount'], failed_cases_str, nstruct, progress_data['TotalCount'], progress_data['CompletedCount']))
 
         if not only_show_summary:
             t = 'Completed jobs per case'
-            print(t + '\n' + ('-' * len(t)))
-            for k, v in sorted(pdb_counts.iteritems()):
+            s.append(t + '\n' + ('-' * len(t)))
+            for k, v in sorted(progress_data['CountPerStructure'].iteritems()):
                 progress_fn = progress_fns[int((float(min(max(0, v), nstruct))/float(nstruct))/0.25)]
-                print('{0}: {1}'.format(k, progress_fn(v)))
-            print('')
+                s.append('{0}: {1}'.format(k, progress_fn(v)))
+            s.append('')
+    return '\n'.join(s)
+
+
+def report_progress(database_name, benchmark_name, only_show_summary):
+    print(get_progress_for_terminal(database_name, benchmark_name, only_show_summary))
 
 
 if __name__ == '__main__':
