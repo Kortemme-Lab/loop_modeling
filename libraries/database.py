@@ -69,8 +69,9 @@ class Benchmarks (NonRosettaBase):
     git_diff = Column(Text)
     fast = Column(Boolean)
     non_random = Column(Boolean)
+    nstruct = Column(Integer)
 
-    def __init__(self, name, script,
+    def __init__(self, name, script, nstruct,
             title=None, user=None, desc=None,
             vars=None, flags=None, fragments=None,
             git_commit=None, git_diff=None,
@@ -90,6 +91,7 @@ class Benchmarks (NonRosettaBase):
         self.git_diff = git_diff
         self.fast = fast
         self.non_random = non_random
+        self.nstruct = nstruct
 
 
     def __repr__(self):
@@ -234,9 +236,12 @@ class TracerLogs (NonRosettaBase):
 
 
 
-def url():
+def url(db_name = None):
     from . import settings
-    url = 'mysql+mysqlconnector://{0.db_user}:{0.db_password}@{0.db_host}:{0.db_port}/{0.db_name}'
+    if db_name:
+        url = 'mysql+mysqlconnector://{0.db_user}:{0.db_password}@{0.db_host}:{0.db_port}/' + db_name
+    else:
+        url = 'mysql+mysqlconnector://{0.db_user}:{0.db_password}@{0.db_host}:{0.db_port}/{0.db_name}'
     return url.format(settings)
 
 def create_database():
@@ -247,9 +252,9 @@ def create_database():
     except ProgrammingError, e:
         raise Exception('An error occurred creating the database: %s' % str(e))
 
-def test_connect():
+def test_connect(db_name = None):
     try:
-        with connect() as session: pass
+        with connect(db_name = db_name) as session: pass
     except ProgrammingError, e:
         if str(e).find('Unknown database') != -1 or str(e).find('does not exist'): # This second error text is what PostgreSQL will return.
             print('The database does not exist. Attempting to create it...')
@@ -258,14 +263,14 @@ def test_connect():
         else:
             raise RuntimeError('An error occurred connecting to the database: %s' % str(e))
 
-def connect(echo=False):
+def connect(echo=False, db_name = None):
     from contextlib import contextmanager
 
     @contextmanager     # (no fold)
     def session_manager():
         session = None
         try:
-            engine = create_engine(url(), echo=echo)
+            engine = create_engine(url(db_name = db_name), echo=echo)
             NonRosettaBase.metadata.create_all(engine)
             Session.configure(bind=engine)
             session = Session()

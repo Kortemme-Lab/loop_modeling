@@ -150,6 +150,13 @@ def run_benchmark(name, script, pdbs,
         vars=(), flags=None, fragments=None, nstruct=None,
         desc=None, fast=False, non_random=True):
 
+    if nstruct is not None:
+        assert isinstance(nstruct, int)
+    if fast:
+        nstruct  = nstruct or 10
+    else:
+        nstruct  = nstruct or 500
+
     pdbs = [x for x in sorted(pdbs)]
 
     # Make sure all the inputs actually exist.
@@ -175,7 +182,7 @@ def run_benchmark(name, script, pdbs,
     # Create an entry in the benchmarks table.
     with database.connect() as session:
         benchmark = database.Benchmarks(
-                name, script,
+                name, script, nstruct,
                 user=getpass.getuser(), desc=desc,
                 vars=json.dumps(vars), flags=flags, fragments=fragments,
                 git_commit=git_commit, git_diff=git_diff,
@@ -197,14 +204,12 @@ def run_benchmark(name, script, pdbs,
     qsub_command = 'qsub',
     benchmark_command = 'loop_benchmark.py', benchmark_id
 
-    if nstruct is not None:
-        assert isinstance(nstruct, int)
 
     if fast:
-        qsub_command += '-t', '1-{0}'.format((nstruct or 10) * len(pdbs))
+        qsub_command += '-t', '1-{0}'.format(nstruct * len(pdbs))
         qsub_command += '-l', 'h_rt=0:30:00'
     else:
-        qsub_command += '-t', '1-{0}'.format((nstruct or 500) * len(pdbs))
+        qsub_command += '-t', '1-{0}'.format(nstruct * len(pdbs))
         qsub_command += '-l', 'h_rt=6:00:00'
 
     utilities.clear_directory('job_output')
