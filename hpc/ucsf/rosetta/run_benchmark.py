@@ -33,6 +33,7 @@ compiles rosetta with database support before each run.
 Usage:
     run_benchmark.py <name> <script> <pdbs>... [--var=VAR ...] [options]
     run_benchmark.py --resume ID [options]
+    run_benchmark.py --compile-only
 
 Arguments:
     <name>
@@ -94,6 +95,10 @@ Options:
         rosetta flag files, and "fast" settings as the previous jobs did.  
         However, results may differ if the contents of these files, or the 
         checked out version of rosetta, are changed.
+
+    --keep-old-data
+        When a benchmark run is submitted to the cluster, the stdout and stderr files from previous runs are deleted
+        from the output directory. To prevent this deletion from occurring, use this flag.
 """
 
 import getpass
@@ -151,6 +156,8 @@ def run_benchmark(name, script, pdbs,
         desc=None, fast=False, non_random=True):
 
     if nstruct is not None:
+        try: nstruct = int(nstruct)
+        except: pass
         assert isinstance(nstruct, int)
     if fast:
         nstruct  = nstruct or 10
@@ -212,7 +219,8 @@ def run_benchmark(name, script, pdbs,
         qsub_command += '-t', '1-{0}'.format(nstruct * len(pdbs))
         qsub_command += '-l', 'h_rt=6:00:00'
 
-    utilities.clear_directory('job_output')
+    if not arguments['--keep-old-data']:
+        utilities.clear_directory('job_output')
     qsub_command += '-o', 'job_output', '-e', 'job_output'
     qsub_cwd = os.path.dirname(__file__)
 
