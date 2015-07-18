@@ -170,7 +170,7 @@ def run_benchmark(name, script, pdbs,
     else:
         nstruct  = nstruct or 500
 
-    pdbs = [x for x in sorted(pdbs)]
+    pdbs = [x.strip() for x in sorted(pdbs) if x.strip()]
 
     # Make sure all the inputs actually exist.
 
