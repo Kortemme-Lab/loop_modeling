@@ -98,7 +98,7 @@ Options:
         checked out version of rosetta, are changed.
 
     --complete ID -c ID
-        If the benchmark ID is missing data then extra jobs will be run using that benchmark's name and settings.
+        If benchmark ID is missing data, this command queues up extra jobs for the benchmark using the same settings.
 
     --keep-old-data
         When a benchmark run is submitted to the cluster, the stdout and stderr files from previous runs are deleted
