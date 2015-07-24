@@ -54,6 +54,10 @@ Options:
     --verbose
         Output progress messages and debugging information.
 
+    --group_by_name
+        Run analysis by grouping results from different benchmark runs with the same name. This is useful when the
+        benchmark runs were submitted at different times or if additional runs were necessary due to failures.
+
 Authors:
     Roland A. Pache: Original implementation
     Kale Kundert: Database integration
@@ -78,7 +82,7 @@ from libraries import colors
 from libraries import settings
 from libraries import statistics
 from libraries import utilities
-
+from libraries import colortext
 
 top_x = 5
 
@@ -86,10 +90,10 @@ class Report:
 
     @staticmethod
     def from_docopt_args(arguments):
-        benchmarks = Benchmark.from_names(
-                arguments['<benchmarks>'])
+        benchmarks = Benchmark.from_names(arguments['<benchmarks>'], group_by_name = arguments['--group_by_name'])
 
         report = Report(benchmarks)
+        report.group_by_name = arguments['--group_by_name']
         report.latex_dir = arguments['--keep-latex']
         report.keep_latex = arguments['--keep-latex'] is not None
         report.verbose = arguments['--verbose']
@@ -1070,7 +1074,7 @@ plot "{tsv_path}" index 0 using ($1):($2) smooth bezier with lines ls 2 title "a
 class Benchmark:
 
     @staticmethod
-    def from_names(names):
+    def from_names(names, group_by_name = False):
         benchmarks = []
 
         # The list of names may include several different kinds of name:
@@ -1083,7 +1087,7 @@ class Benchmark:
             if name.endswith('.results'):
                 benchmark = Benchmark.from_flat_file(name)
             else:
-                benchmark = Benchmark.from_database(name)
+                benchmark = Benchmark.from_database(name, group_by_name = group_by_name)
 
             if benchmark:
                 benchmarks.append(benchmark)
@@ -1118,7 +1122,7 @@ class Benchmark:
         return benchmark
 
     @staticmethod
-    def from_database(name_or_id):
+    def from_database(name_or_id, group_by_name = False):
         from libraries import database
         from sqlalchemy import desc
 
@@ -1130,38 +1134,59 @@ class Benchmark:
             # strings and ids are expected to be integers.  If more than one
             # benchmark has the same name, the most recent one will be used.
 
+            db_benchmarks = []
             try:
                 id = int(name_or_id)
-                db_benchmark = session.query(database.Benchmarks).get(id)
+                _db_benchmark = session.query(database.Benchmarks).get(id)
 
-                if db_benchmark is None:
+                if _db_benchmark is None:
                     message = "No benchmark '{}' in the database."
                     utilities.print_error_and_die(message, id)
+
+                db_benchmarks = [_db_benchmark]
 
             except ValueError:
                 name = name_or_id
                 query = session.query(database.Benchmarks).filter_by(name=name).order_by(desc(database.Benchmarks.start_time))
-                db_benchmark = query[0]
+                db_benchmarks = [q for q in query]
+                if not group_by_name:
+                    if len(db_benchmarks) > 1:
+                        message = "Multiple benchmarks runs were found with the same name '{0}'. If this is expected then set the --group_by_name option.".format(name)
+                        utilities.print_error_and_die(message, name)
 
-            # Fill in the benchmark data structure from the database.
-            
-            benchmark = Benchmark(db_benchmark.name, db_benchmark.title)
+            b_name = set([db_benchmark.name for db_benchmark in db_benchmarks])
+            assert(len(b_name) == 1)
+            b_name = b_name.pop()
 
-            print "Loading the {0.title} benchmark from the database...".format(benchmark)
+            b_title = set([db_benchmark.title or '' for db_benchmark in db_benchmarks])
+            if len(b_title) > 1:
+                colortext.warning("There are multiple titles associated with benchmark {0}: '{1}'. Choosing the most recent ('{2}').".format(b_name, "', '".join(b_title), db_benchmarks[0].title or ''))
+                b_title = db_benchmarks[0].title
+            else:
+                b_title = b_title.pop() or None
 
-            for db_input in db_benchmark.input_pdbs:
-                path = db_input.pdb_path
-                benchmark.loops[path] = Loop(benchmark, path)
+            benchmark = Benchmark(b_name, b_title)
 
-            for structure in db_benchmark.structures:
-                loop = benchmark.loops[structure.input_tag]
-                id = len(loop.models) + 1
-                score = structure.score_features.score
-                rmsd = structure.rmsd_features.protein_backbone
-                runtime = structure.runtime_features.elapsed_time
+            for db_benchmark in db_benchmarks:
 
-                model = Model(loop, id, score, rmsd, runtime)
-                loop.models.append(model)
+                # Fill in the benchmark data structure from the database.
+
+                print "Loading the {0} benchmark (id {1}) from the database...".format(benchmark.name, db_benchmark.id)
+
+                for db_input in db_benchmark.input_pdbs:
+                    path = db_input.pdb_path
+                    if not benchmark.loops.get(path):
+                        benchmark.loops[path] = Loop(benchmark, path)
+
+                for structure in db_benchmark.structures:
+                    loop = benchmark.loops[structure.input_tag]
+                    id = len(loop.models) + 1
+                    score = structure.score_features.score
+                    rmsd = structure.rmsd_features.protein_backbone
+                    runtime = structure.runtime_features.elapsed_time
+
+                    model = Model(loop, id, score, rmsd, runtime)
+                    loop.models.append(model)
 
         return benchmark
 
