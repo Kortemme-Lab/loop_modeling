@@ -38,9 +38,9 @@ Usage:
 
 Arguments:
     <name>
-        The name for this benchmark.  It's ok for several benchmark runs to 
-        have the same name.  The analysis script will automatically pick the 
-        most recent one when given an ambiguous name.
+        The name for this benchmark.  Several benchmark runs may  
+        have the same name. In case of ambiguity, the analysis script will 
+        automatically pick the most recent run.
 
     <script>
         A rosetta XML script to execute.  Commonly used scripts can be found in 
