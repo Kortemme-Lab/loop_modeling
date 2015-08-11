@@ -56,7 +56,9 @@ Options:
 
     --group_by_name
         Run analysis by grouping results from different benchmark runs with the same name. This is useful when the
-        benchmark runs were submitted at different times or if additional runs were necessary due to failures.
+        benchmark runs were submitted at different times or if additional runs were necessary due to failures. This
+        can be used together with --limit to ensure that any extra jobs that may have been run are not included in
+        the analysis.
 
 Authors:
     Roland A. Pache: Original implementation
@@ -1151,7 +1153,7 @@ class Benchmark:
                 db_benchmarks = [q for q in query]
                 if not group_by_name:
                     if len(db_benchmarks) > 1:
-                        message = "Multiple benchmarks runs were found with the same name '{0}'. If this is expected then set the --group_by_name option.".format(name)
+                        message = "Multiple benchmarks runs were found with the same name '{0}' (ids are: {1}). If this is expected then set the --group_by_name option.".format(name, ', '.join(map(str, [b.id for b in db_benchmarks])))
                         utilities.print_error_and_die(message, name)
 
             b_name = set([db_benchmark.name for db_benchmark in db_benchmarks])
