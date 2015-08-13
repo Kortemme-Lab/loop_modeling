@@ -121,7 +121,7 @@ from check_progress import get_progress
 
 
 def compile_rosetta():
-    rosetta_path = os.path.abspath(settings.rosetta)
+    rosetta_path = os.path.abspath(os.path.expanduser(settings.rosetta))
 
     # Setup the compiler for the cluster.
 
