@@ -337,7 +337,7 @@
     },
     "3hsc": {
         "Chain": "A",
-        "EndResidue": 93,
+        "EndResidue": 83,
         "PassedFilter": true,
         "StartResidue": 72
     },
@@ -353,7 +353,7 @@
         "PassedFilter": false,
         "StartResidue": 372
     },
-    "4ilb": {
+    "4i1b": {
         "Chain": "A",
         "EndResidue": 57,
         "PassedFilter": true,
