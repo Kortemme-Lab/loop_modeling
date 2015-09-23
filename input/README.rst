@@ -49,10 +49,13 @@ ions.pdbs
 structures
     The directory containing all the PDB and loop files used by the benchmark.  
     The .pdb files are in the standard (non-Rosetta) numbering.
-    loop_definitions.json contains the definition of the loops in PDB numbering
+    loop_definitions.json contains the definition of all loops in PDB numbering
     as given in Mandell, Coutsias, & Kortemme (doi:10.1038/nmeth0809-551).
-    The .loop files follow the Rosetta file format and use Rosetta numbering. These
-    files are used in the Rosetta methods contained in the repository.
+    The .loop.json files contain the loop definitions in PDB numbering using a
+    JSON format recognized by Rosetta.
+    The .loop files contain the loop definitions in the older Rosetta loop file 
+    format which uses Rosetta numbering. These files are used in the Rosetta 
+    methods contained in the repository.
 
 preparation
     In principle, the directory containing the scripts that were used to 
