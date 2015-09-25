@@ -1,442 +1,482 @@
 {
     "154l": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 164, 
+        "EndResidueID": " 164 ", 
         "PassedFilter": false, 
         "Sequence": "NVRSYARMDIGT", 
-        "StartResidue": 153
+        "StartResidueID": " 153 "
     }, 
     "1a8d": {
-        "Chain": "A", 
-        "EndResidue": 166, 
+        "chainID": "A", 
+        "DOI": "10.1002/prot.21990", 
+        "EndResidueID": " 166 ", 
         "PassedFilter": true, 
-        "StartResidue": 155
+        "Sequence": "DLPDKFNAYLAN", 
+        "StartResidueID": " 155 "
     }, 
     "1arb": {
-        "Chain": "A", 
-        "EndResidue": 193, 
+        "chainID": "A", 
+        "DOI": "10.1002/prot.21990", 
+        "EndResidueID": " 193 ", 
         "PassedFilter": true, 
-        "StartResidue": 182
+        "Sequence": "WQPSGGVTEPGS", 
+        "StartResidueID": " 182 "
     }, 
     "1arp": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 212, 
+        "EndResidueID": " 212 ", 
         "PassedFilter": false, 
         "Sequence": "LDSTPQVFDTQF", 
-        "StartResidue": 201
+        "StartResidueID": " 201 "
     }, 
     "1bhe": {
-        "Chain": "A", 
-        "EndResidue": 132, 
+        "chainID": "A", 
+        "DOI": "10.1002/prot.21990", 
+        "EndResidueID": " 132 ", 
         "PassedFilter": true, 
-        "StartResidue": 121
+        "Sequence": "GQGGVKLQDKKV", 
+        "StartResidueID": " 121 "
     }, 
     "1bn8": {
-        "Chain": "A", 
-        "EndResidue": 309, 
+        "chainID": "A", 
+        "DOI": "10.1002/prot.21990", 
+        "EndResidueID": " 309 ", 
         "PassedFilter": true, 
-        "StartResidue": 298
+        "Sequence": "STSSSSYPFSYA", 
+        "StartResidueID": " 298 "
     }, 
     "1c5e": {
-        "Chain": "A", 
-        "EndResidue": 93, 
+        "chainID": "A", 
+        "DOI": "10.1002/prot.21990", 
+        "EndResidueID": "  93 ", 
         "PassedFilter": true, 
-        "StartResidue": 82
+        "Sequence": "YEDVLWPEAASD", 
+        "StartResidueID": "  82 "
     }, 
     "1cb0": {
-        "Chain": "A", 
-        "EndResidue": 44, 
+        "chainID": "A", 
+        "DOI": "10.1002/prot.21990", 
+        "EndResidueID": "  44 ", 
         "PassedFilter": true, 
-        "StartResidue": 33
+        "Sequence": "YVDTPFGKPSDA", 
+        "StartResidueID": "  33 "
     }, 
     "1cnv": {
-        "Chain": "A", 
-        "EndResidue": 199, 
+        "chainID": "A", 
+        "DOI": "10.1002/prot.21990", 
+        "EndResidueID": " 199 ", 
         "PassedFilter": true, 
-        "StartResidue": 188
+        "Sequence": "FYNDRSCQYSTG", 
+        "StartResidueID": " 188 "
     }, 
     "1cs6": {
-        "Chain": "A", 
-        "EndResidue": 156, 
+        "chainID": "A", 
+        "DOI": "10.1002/prot.21990", 
+        "EndResidueID": " 156 ", 
         "PassedFilter": true, 
-        "StartResidue": 145
+        "Sequence": "NEFPNFIPADGR", 
+        "StartResidueID": " 145 "
     }, 
     "1ctm": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 20, 
+        "EndResidueID": "  20 ", 
         "PassedFilter": false, 
         "Sequence": "YENPREATGRIV", 
-        "StartResidue": 9
+        "StartResidueID": "   9 "
     }, 
     "1cyo": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 23, 
+        "EndResidueID": "  23 ", 
         "PassedFilter": true, 
         "Sequence": "IQKHNNSKSTWL", 
-        "StartResidue": 12
+        "StartResidueID": "  12 "
     }, 
     "1dqz": {
-        "Chain": "A", 
-        "EndResidue": 220, 
+        "chainID": "A", 
+        "DOI": "10.1002/prot.21990", 
+        "EndResidueID": " 220 ", 
         "PassedFilter": true, 
-        "StartResidue": 209
+        "Sequence": "CGNGTPSDLGGD", 
+        "StartResidueID": " 209 "
     }, 
     "1dts": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 52, 
+        "EndResidueID": "  52 ", 
         "PassedFilter": true, 
         "Sequence": "SGSEKTPEGLRN", 
-        "StartResidue": 41
+        "StartResidueID": "  41 "
     }, 
     "1eco": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 46, 
+        "EndResidueID": "  46 ", 
         "PassedFilter": true, 
         "Sequence": "MAKFTQFAGKDL", 
-        "StartResidue": 35
+        "StartResidueID": "  35 "
     }, 
     "1ede": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 161, 
+        "EndResidueID": " 161 ", 
         "PassedFilter": true, 
         "Sequence": "CLMTDPVTQPAF", 
-        "StartResidue": 150
+        "StartResidueID": " 150 "
     }, 
     "1exm": {
-        "Chain": "A", 
-        "EndResidue": 302, 
+        "chainID": "A", 
+        "DOI": "10.1002/prot.21990", 
+        "EndResidueID": " 302 ", 
         "PassedFilter": true, 
-        "StartResidue": 291
+        "Sequence": "RGVSREEVERGQ", 
+        "StartResidueID": " 291 "
     }, 
     "1ezm": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 133, 
+        "EndResidueID": " 133 ", 
         "PassedFilter": true, 
         "Sequence": "FGDGATMFYPLV", 
-        "StartResidue": 122
+        "StartResidueID": " 122 "
     }, 
     "1f46": {
-        "Chain": "A", 
-        "EndResidue": 75, 
+        "chainID": "A", 
+        "DOI": "10.1002/prot.21990", 
+        "EndResidueID": "  75 ", 
         "PassedFilter": true, 
-        "StartResidue": 64
+        "Sequence": "MVKPGTFDPEMK", 
+        "StartResidueID": "  64 "
     }, 
     "1hfc": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 176, 
+        "EndResidueID": " 176 ", 
         "PassedFilter": false, 
         "Sequence": "RGDHRDNSPFDG", 
-        "StartResidue": 165
+        "StartResidueID": " 165 "
     }, 
     "1i7p": {
-        "Chain": "A", 
-        "EndResidue": 74, 
+        "chainID": "A", 
+        "DOI": "10.1002/prot.21990", 
+        "EndResidueID": "  74 ", 
         "PassedFilter": true, 
-        "StartResidue": 63
+        "Sequence": "LPSPQHILGLPI", 
+        "StartResidueID": "  63 "
     }, 
     "1ivd": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 376, 
+        "EndResidueID": " 376 ", 
         "PassedFilter": false, 
         "Sequence": "TISKDLRSGYET", 
-        "StartResidue": 365
+        "StartResidueID": " 365 "
     }, 
     "1m3s": {
-        "Chain": "A", 
-        "EndResidue": 79, 
+        "chainID": "A", 
+        "DOI": "10.1002/prot.21990", 
+        "EndResidueID": "  79 ", 
         "PassedFilter": true, 
-        "StartResidue": 68
+        "Sequence": "VGEILTPPLAEG", 
+        "StartResidueID": "  68 "
     }, 
     "1ms9": {
-        "Chain": "A", 
-        "EndResidue": 540, 
+        "chainID": "A", 
+        "DOI": "10.1002/prot.21990", 
+        "EndResidueID": " 540 ", 
         "PassedFilter": true, 
-        "StartResidue": 529
+        "Sequence": "GSTPVTPTGSWE", 
+        "StartResidueID": " 529 "
     }, 
     "1msc": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 20, 
+        "EndResidueID": "  20 ", 
         "PassedFilter": true, 
         "Sequence": "LVDNGGTGDVTV", 
-        "StartResidue": 9
+        "StartResidueID": "   9 "
     }, 
     "1my7": {
-        "Chain": "A", 
-        "EndResidue": 265, 
+        "chainID": "A", 
+        "DOI": "10.1002/prot.21990", 
+        "EndResidueID": " 265 ", 
         "PassedFilter": true, 
-        "StartResidue": 254
+        "Sequence": "TPPYADPSLQAP", 
+        "StartResidueID": " 254 "
     }, 
     "1onc": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 34, 
+        "EndResidueID": "  34 ", 
         "PassedFilter": true, 
         "Sequence": "MSTNLFHCKDKN", 
-        "StartResidue": 23
+        "StartResidueID": "  23 "
     }, 
     "1oth": {
-        "Chain": "A", 
-        "EndResidue": 80, 
+        "chainID": "A", 
+        "DOI": "10.1002/prot.21990", 
+        "EndResidueID": "  80 ", 
         "PassedFilter": true, 
-        "StartResidue": 69
+        "Sequence": "QKGEYLPLLQGK", 
+        "StartResidueID": "  69 "
     }, 
     "1oyc": {
-        "Chain": "A", 
-        "EndResidue": 214, 
+        "chainID": "A", 
+        "DOI": "10.1002/prot.21990", 
+        "EndResidueID": " 214 ", 
         "PassedFilter": true, 
-        "StartResidue": 203
+        "Sequence": "DPHSNTRTDEYG", 
+        "StartResidueID": " 203 "
     }, 
     "1pbe": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 140, 
+        "EndResidueID": " 140 ", 
         "PassedFilter": true, 
         "Sequence": "LHDLQGERPYVT", 
-        "StartResidue": 129
+        "StartResidueID": " 129 "
     }, 
     "1pmy": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 88, 
+        "EndResidueID": "  88 ", 
         "PassedFilter": false, 
         "Sequence": "KCAPHYMMGMVA", 
-        "StartResidue": 77
+        "StartResidueID": "  77 "
     }, 
     "1prn": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 26, 
+        "EndResidueID": "  26 ", 
         "PassedFilter": false, 
         "Sequence": "VEDRGVGLEDTI", 
-        "StartResidue": 15
+        "StartResidueID": "  15 "
     }, 
     "1qlw": {
-        "Chain": "A", 
-        "EndResidue": 42, 
+        "chainID": "A", 
+        "DOI": "10.1002/prot.21990", 
+        "EndResidueID": "  42 ", 
         "PassedFilter": true, 
-        "StartResidue": 31
+        "Sequence": "ETLSLSPKYDAH", 
+        "StartResidueID": "  31 "
     }, 
     "1rcf": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 99, 
+        "EndResidueID": "  99 ", 
         "PassedFilter": false, 
         "Sequence": "TGDQIGYADNFQ", 
-        "StartResidue": 88
+        "StartResidueID": "  88 "
     }, 
     "1rro": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 28, 
+        "EndResidueID": "  28 ", 
         "PassedFilter": true, 
         "Sequence": "ECQDPDTFEPQK", 
-        "StartResidue": 17
+        "StartResidueID": "  17 "
     }, 
     "1scs": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 210, 
+        "EndResidueID": " 210 ", 
         "PassedFilter": false, 
         "Sequence": "IKSPDSHPADGI", 
-        "StartResidue": 199
+        "StartResidueID": " 199 "
     }, 
     "1srp": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 322, 
+        "EndResidueID": " 322 ", 
         "PassedFilter": true, 
         "Sequence": "SDVGGLKGNVSI", 
-        "StartResidue": 311
+        "StartResidueID": " 311 "
     }, 
     "1t1d": {
-        "Chain": "A", 
-        "EndResidue": 138, 
+        "chainID": "A", 
+        "DOI": "10.1002/prot.21990", 
+        "EndResidueID": " 138 ", 
         "PassedFilter": true, 
-        "StartResidue": 127
+        "Sequence": "SGGRLRRPVNVP", 
+        "StartResidueID": " 127 "
     }, 
     "1tca": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 316, 
+        "EndResidueID": " 316 ", 
         "PassedFilter": true, 
         "Sequence": "AVGKRTCSGIVT", 
-        "StartResidue": 305
+        "StartResidueID": " 305 "
     }, 
     "1thg": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 138, 
+        "EndResidueID": " 138 ", 
         "PassedFilter": true, 
         "Sequence": "WIYGGAFVYGSS", 
-        "StartResidue": 127
+        "StartResidueID": " 127 "
     }, 
     "1thw": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 189, 
+        "EndResidueID": " 189 ", 
         "PassedFilter": true, 
         "Sequence": "PDAFSYVLDKPT", 
-        "StartResidue": 178
+        "StartResidueID": " 178 "
     }, 
     "1tib": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 110, 
+        "EndResidueID": " 110 ", 
         "PassedFilter": true, 
         "Sequence": "EINDICSGCRGH", 
-        "StartResidue": 99
+        "StartResidueID": "  99 "
     }, 
     "1tml": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 254, 
+        "EndResidueID": " 254 ", 
         "PassedFilter": true, 
         "Sequence": "STTNTGDPMIDA", 
-        "StartResidue": 243
+        "StartResidueID": " 243 "
     }, 
     "1xif": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 214, 
+        "EndResidueID": " 214 ", 
         "PassedFilter": true, 
         "Sequence": "IERLERPELYGV", 
-        "StartResidue": 203
+        "StartResidueID": " 203 "
     }, 
     "2cpl": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 156, 
+        "EndResidueID": " 156 ", 
         "PassedFilter": true, 
         "Sequence": "FGSRNGKTSKKI", 
-        "StartResidue": 145
+        "StartResidueID": " 145 "
     }, 
     "2cyp": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 202, 
+        "EndResidueID": " 202 ", 
         "PassedFilter": false, 
         "Sequence": "WGAANNVFTNEF", 
-        "StartResidue": 191
+        "StartResidueID": " 191 "
     }, 
     "2ebn": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 147, 
+        "EndResidueID": " 147 ", 
         "PassedFilter": true, 
         "Sequence": "YQTPPPSGFVTP", 
-        "StartResidue": 136
+        "StartResidueID": " 136 "
     }, 
     "2exo": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 304, 
+        "EndResidueID": " 304 ", 
         "PassedFilter": true, 
         "Sequence": "LVWDASYAKKPA", 
-        "StartResidue": 293
+        "StartResidueID": " 293 "
     }, 
     "2pgd": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 372, 
+        "EndResidueID": " 372 ", 
         "PassedFilter": false, 
         "Sequence": "WRGGCIIRSVFL", 
-        "StartResidue": 361
+        "StartResidueID": " 361 "
     }, 
     "2pia": {
-        "Chain": "A", 
-        "EndResidue": 41, 
+        "chainID": "A", 
+        "DOI": "10.1002/prot.21990", 
+        "EndResidueID": "  41 ", 
         "PassedFilter": true, 
-        "StartResidue": 30
+        "Sequence": "DPQGAPLPPFEA", 
+        "StartResidueID": "  30 "
     }, 
     "2rn2": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 101, 
+        "EndResidueID": " 101 ", 
         "PassedFilter": true, 
         "Sequence": "WKTADKKPVKNV", 
-        "StartResidue": 90
+        "StartResidueID": "  90 "
     }, 
     "2sil": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 266, 
+        "EndResidueID": " 266 ", 
         "PassedFilter": true, 
         "Sequence": "ETKDFGKTWTEF", 
-        "StartResidue": 255
+        "StartResidueID": " 255 "
     }, 
     "2sns": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 122, 
+        "EndResidueID": " 122 ", 
         "PassedFilter": false, 
         "Sequence": "VAYVYKPNNTHE", 
-        "StartResidue": 111
+        "StartResidueID": " 111 "
     }, 
     "2tgi": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 59, 
+        "EndResidueID": "  59 ", 
         "PassedFilter": true, 
         "Sequence": "CPYLWSSDTQHS", 
-        "StartResidue": 48
+        "StartResidueID": "  48 "
     }, 
     "3cla": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 187, 
+        "EndResidueID": " 187 ", 
         "PassedFilter": true, 
         "Sequence": "AKYQQEGDRLLL", 
-        "StartResidue": 176
+        "StartResidueID": " 176 "
     }, 
     "3cox": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 489, 
+        "EndResidueID": " 489 ", 
         "PassedFilter": false, 
         "Sequence": "VPGNVGVNPFVT", 
-        "StartResidue": 478
+        "StartResidueID": " 478 "
     }, 
     "3hsc": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 83, 
+        "EndResidueID": "  83 ", 
         "PassedFilter": true, 
         "Sequence": "RLIGRRFDDAVV", 
-        "StartResidue": 72
+        "StartResidueID": "  72 "
     }, 
     "451c": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 27, 
+        "EndResidueID": "  27 ", 
         "PassedFilter": false, 
         "Sequence": "HAIDTKMVGPAY", 
-        "StartResidue": 16
+        "StartResidueID": "  16 "
     }, 
     "4enl": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 383, 
+        "EndResidueID": " 383 ", 
         "PassedFilter": false, 
         "Sequence": "SHRSGETEDTFI", 
-        "StartResidue": 372
+        "StartResidueID": " 372 "
     }, 
     "4i1b": {
-        "Chain": "A", 
+        "chainID": "A", 
         "DOI": "10.1110/ps.9.9.1753", 
-        "EndResidue": 57, 
+        "EndResidueID": "  57 ", 
         "PassedFilter": true, 
         "Sequence": "FVQGEESNDKIP", 
-        "StartResidue": 46
+        "StartResidueID": "  46 "
     }
 }
