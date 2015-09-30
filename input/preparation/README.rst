@@ -19,5 +19,5 @@ backbone atoms (N, CA, and C only) back into the pruned, preminimized Rosetta st
 conformation (almost linearly and equidistantly spacing backbone atoms). This code can also
 be found in this script and could be adapted for other pruned input.
 
-This script relies on the Kortemme Lab tools repository which will be made at https://github.com/Kortemme-Lab/tools.
+This script relies on the Kortemme Lab tools repository which will be made available at https://github.com/Kortemme-Lab/tools.
 
