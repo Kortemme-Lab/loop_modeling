@@ -48,7 +48,7 @@ end loop residues using Rosetta residue numbering and can additionally specify a
 a "skip rate" (this only matters when multiple loops are being sampled), and a boolean indicating
 whether or not the initial loop coordinates should be discarded.
 
-The sets of structures constituting benchmark sets are specified in the *.pdbs files. These
+The sets of structures constituting benchmark sets are specified in the \*.pdbs files. These
 files are simply newline-delimited lists of PDB files to be used in a benchmark. Their
 file extension does not matter. The reason for having multiple benchmark sets is mainly for
 the purposes of debugging and development.
@@ -80,25 +80,25 @@ structures
     The directory containing all the PDB and loop files used by the benchmark.  
     The .pdb files are in the standard (RCSB) numbering.
 
-structures\loop_definitions.json
+structures/loop_definitions.json
     Contains the definition of all loops as given in Mandell, Coutsias, &
     Kortemme (doi:10.1038/nmeth0809-551) in PDB numbering.
 
-structures\rcsb\original
+structures/rcsb/original
     The PDB files as downloaded from the RCSB website.
 
-structures\rcsb\pruned
+structures/rcsb/pruned
     The RCSB files with the loop residues and surrounding sidechains removed. These
     are the input files for generic methods.
 
-structures\rosetta\preminimized
+structures/rosetta/preminimized
     The original RCSB files minimized in the Rosetta force field.
 
-structures\rosetta\pruned
+structures/rosetta/pruned
     The preminimized structures above with the loop residues and surrounding sidechains removed.
     The .loop.json files contain the loop definitions in PDB numbering using a JSON format recognized by Rosetta.
 
-structures\rosetta\kic
+structures/rosetta/kic
     The pruned structures above with the loop residue backbone atoms (N, CA, C only) added in a non-native
     conformation (see ``preparation/README.rst``). These structures are used for the CCD, KIC, and NGK Rosetta
     loop modeling methods. The .loop files contain the loop definitions in the older Rosetta loop file
