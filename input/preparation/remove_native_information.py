@@ -41,7 +41,7 @@ Setup:
 The tools repository will be added as a Git submodule but can be set up as below. All commands should be run in the
 directory containing this script:
 
-i) git clone https://github.com/Kortemme-Lab/tools
+i) git clone https://github.com/Kortemme-Lab/tools.git
 or
 ii) (For Linux, Mac OS X, Cygwin): Clone the repository elsewhere and:
     ln -s /path/to/tools tools
