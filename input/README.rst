@@ -61,7 +61,7 @@ full.pdbs
     The set of all the structures that make up the canonical loop benchmark.  
     This benchmark was originally published by Mandell et al. in the paper 
     describing the KIC algorithm.  This dataset is a subset of the combined 
-    Wang et al. and Sellers et al. datasets.
+    Fiser et al. and Zhu et al. datasets.
 
 mini.pdbs
     A reduced set of structures that useful for getting a rough view of the 
@@ -73,27 +73,44 @@ ions.pdbs
     are not located near the loop being sampled.  This set maybe useful for 
     debugging a protocol that's having a hard time loading ions.
 
+full\_*.pdbs, mini\_*.pdbs ions\_*.pdbs
+    Versions of the above lists specific to particular methods.
+
 structures
     The directory containing all the PDB and loop files used by the benchmark.  
-    The .pdb files are in the standard (non-Rosetta) numbering.
-    loop_definitions.json contains the definition of all loops in PDB numbering
-    as given in Mandell, Coutsias, & Kortemme (doi:10.1038/nmeth0809-551).
-    The .loop.json files contain the loop definitions in PDB numbering using a
-    JSON format recognized by Rosetta.
-    The .loop files contain the loop definitions in the older Rosetta loop file 
-    format which uses Rosetta numbering. These files are used in the Rosetta 
-    methods contained in the repository.
+    The .pdb files are in the standard (RCSB) numbering.
+
+structures\loop_definitions.json
+    Contains the definition of all loops as given in Mandell, Coutsias, &
+    Kortemme (doi:10.1038/nmeth0809-551) in PDB numbering.
+
+structures\rcsb\original
+    The PDB files as downloaded from the RCSB website.
+
+structures\rcsb\pruned
+    The RCSB files with the loop residues and surrounding sidechains removed. These
+    are the input files for generic methods.
+
+structures\rosetta\preminimized
+    The original RCSB files minimized in the Rosetta force field.
+
+structures\rosetta\pruned
+    The preminimized structures above with the loop residues and surrounding sidechains removed.
+    The .loop.json files contain the loop definitions in PDB numbering using a JSON format recognized by Rosetta.
+
+structures\rosetta\kic
+    The pruned structures above with the loop residue backbone atoms (N, CA, C only) added in a non-native
+    conformation (see ``preparation/README.rst``). These structures are used for the CCD, KIC, and NGK Rosetta
+    loop modeling methods. The .loop files contain the loop definitions in the older Rosetta loop file
+    format which uses Rosetta numbering.
 
 preparation
-    In principle, the directory containing the scripts that were used to 
-    prepare the benchmark structures.  In practice, these scripts don't work 
-    right now and I don't know exactly how the structures were prepared.  See 
-    ``preparation/README.rst`` for more information.
+    This directory containing the scripts that were used to prepare the benchmark structures. At present, details for
+    the preminimization Rosetta step are incomplete. The "pruning" scripts are available here.
 
 fragments
-    Fragment files used by some of the protocols (e.g. CCD and KIC with 
-    fragments)  These files contain coordinates of peptide fragments in the PDB 
-    with sequence similarity to the loops in the benchmark.
+    Fragment files used by some of the protocols (e.g. CCD and KIC with fragments)  These files contain coordinates of
+    peptide fragments in the PDB with sequence similarity to the loops in the benchmark.
 
 
 Adding structures
