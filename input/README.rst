@@ -53,6 +53,16 @@ files are simply newline-delimited lists of PDB files to be used in a benchmark.
 file extension does not matter. The reason for having multiple benchmark sets is mainly for
 the purposes of debugging and development.
 
+Notes
+=====
+
+Seven of the benchmark PDB files are either homodimers or homotrimers. We have kept all chains
+in the included files. When coordinates were removed, they were only removed from one chain (always
+chain A). Some non-canonical residues in the RCSB structures (*e.g.* PCA) were removed in the Rosetta
+structures as were any residues with empty occupancy (*e.g.* in 2pia). There were a limited number of
+atoms with coordinates for multiple conformations. For those atoms, the Rosetta structures use coordinates
+from the A conformation (the occupancies are typically close to 0.5 in these cases).
+
 
 Table of Contents
 =================
