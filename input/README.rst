@@ -94,14 +94,14 @@ structures/loop_definitions.json
     Contains the definition of all loops as given in Mandell, Coutsias, &
     Kortemme (doi:10.1038/nmeth0809-551) in PDB numbering.
 
-structures/rcsb/original
+structures/rcsb/reference
     The PDB files as downloaded from the RCSB website.
 
 structures/rcsb/pruned
     The RCSB files with the loop residues and surrounding sidechains removed. These
     are the input files for generic methods.
 
-structures/rosetta/preminimized
+structures/rosetta/reference
     The original RCSB files minimized in the Rosetta force field.
 
 structures/rosetta/pruned
