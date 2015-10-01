@@ -6,7 +6,7 @@ case in the loop benchmark is associated with two types of input: a PDB file
 describing the protein structure and a loop definition identifying the region
 where the loop should be inserted.
 
-The structural files (input/structures/rcsb/original) identified by the datasets
+The structural files (input/structures/rcsb/reference) identified by the datasets
 contain the coordinates for the loop region which allows us to determine how closely
 a computational method can predict the loop structure. Depending on the method,
 including the loop and surrounding sidechain coordinates may bias the prediction
@@ -30,7 +30,7 @@ sequence and a reference to the publication which included the case in its datas
 
 We also provide input files for use with Rosetta methods which have been preminimized in the
 Rosetta all-atom force field (input/structures/rosetta). First, the full structures were
-minimized in the force field / score function (input/structures/rosetta/preminimized). The
+minimized in the force field / score function (input/structures/rosetta/reference). The
 Rosetta score terms are included for each structure. Next, we removed the loop residues from
 the structures as we did for the original structures (input/structures/rosetta/pruned). The
 Rosetta methods considered here perform optimally if the N and CA atoms of the first loop
