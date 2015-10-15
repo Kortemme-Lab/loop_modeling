@@ -73,9 +73,16 @@ class LoopPredictionSet(object):
     ### Informational functions
 
 
-    #def compute_rmsds(self, reference_pdb_residue_matrix):
-    #    for lp in self.loop_predictions:
-    #        assert(lp.pdb_loop_residue_matrix)
+    def compute_rmsds(self, reference_pdb_residue_matrix):
+        for lp in self.loop_predictions:
+            assert(not(lp.pdb_loop_residue_matrix is None))
+            lp.rmsd = compute_rmsd_by_matrix(reference_pdb_residue_matrix, lp.pdb_loop_residue_matrix)
+
+
+    def check_rmsds(self, reference_pdb_residue_matrix):
+        for lp in self.loop_predictions:
+            assert(not(lp.pdb_loop_residue_matrix is None) and (lp.rmsd != None))
+            assert(lp.rmsd == compute_rmsd_by_matrix(reference_pdb_residue_matrix, lp.pdb_loop_residue_matrix))
 
 
     def fraction_with_rmsd_lt(self, x, allow_failure = False, strict = True):
@@ -302,7 +309,7 @@ def compute_rmsds(results_folder, expectn, top_x, get_run_details = get_kic_run_
 
     # Analyze the performance for each case in the benchmark
     for pdb_id in pdb_ids:
-        colortext.message('Computing RMSDs for {0}.'.format(pdb_id))
+
         rcsb_reference_pdb = os.path.join(rcsb_references, pdb_id + '.pdb')
         assert(os.path.exists(rcsb_reference_pdb))
         rosetta_reference_pdb = os.path.join(rosetta_references, pdb_id + '.pdb')
@@ -319,16 +326,21 @@ def compute_rmsds(results_folder, expectn, top_x, get_run_details = get_kic_run_
         rcsb_reference_matrix = PDB.extract_xyz_matrix_from_loop_json(PDB.from_filepath(rcsb_reference_pdb).structure_lines, loop_sets, atoms_of_interest = backbone_atoms, expected_num_residues = 12, expected_num_residue_atoms = 4)
         rosetta_reference_matrix = PDB.extract_xyz_matrix_from_loop_json(PDB.from_filepath(rosetta_reference_pdb).structure_lines, loop_sets, atoms_of_interest = backbone_atoms, expected_num_residues = 12, expected_num_residue_atoms = 4)
 
+        colortext.wgreen('\n\nReading in the run details for {0}:'.format(pdb_id))
         get_run_details = get_kic_run_details
         details = get_run_details(results_folder, pdb_id)
         for d in details:
-            # Compute the RMSD for this case for the structure using the pandas dataframe
-            # It is more efficient to do this after truncation if truncating by score but in the general case users will
-            # probably want to consider all predictions. If not (e.g. for testing) then arbitrary subsets can be chosen
-            # in the loop above
-            loop_prediction_rmsd = compute_rmsd_by_matrix(rcsb_reference_matrix, d['pdb_loop_residue_matrix'])
-            assert(loop_prediction_rmsd == compute_rmsd_by_matrix(rosetta_reference_matrix, d['pdb_loop_residue_matrix']))
-            loop_prediction_set.add(d['id'], d['score'], pdb_id = pdb_id, rmsd = loop_prediction_rmsd, pdb_path = d['predicted_structure'], pdb_loop_residue_matrix = d['pdb_loop_residue_matrix'])
+            loop_prediction = loop_prediction_set.add(d['id'], d['score'], pdb_id = pdb_id, rmsd = None, pdb_path = d['predicted_structure'], pdb_loop_residue_matrix = d['pdb_loop_residue_matrix'])
+        print(' Done')
+
+        # Compute the RMSD for this case for the structure using the pandas dataframe
+        # It is more efficient to do this after truncation if truncating by score but in the general case users will
+        # probably want to consider all predictions. If not (e.g. for testing) then arbitrary subsets can be chosen
+        # in the loop above
+        colortext.wgreen('Computing RMSDs for {0}:'.format(pdb_id))
+        loop_prediction_set.compute_rmsds(rcsb_reference_matrix)
+        loop_prediction_set.check_rmsds(rosetta_reference_matrix)
+        print(' Done\n')
 
         # Truncate the structures to the top expectn-scoring files
         loop_prediction_set.sort_by_score()
@@ -394,9 +406,6 @@ def compute_rmsds(results_folder, expectn, top_x, get_run_details = get_kic_run_
 
         csv_file.append('\t'.join(map(str, [pdb_id, expectn, total_percent_subanstrom[pdb_id], top_x_percent_subanstrom[pdb_id], best_score, top_x_score, median_scoring_structures[pdb_id].score, worst_score, closest_score, top_1_rmsd, top_x_rmsd, closest_rmsd])))
         break
-
-    print('\n'.join(csv_file))
-    sys.exit(0)
 
     # Add a column of median percent subangstrom values
     for top_x_var, values_by_pdb in sorted(percent_subangrom_by_top_x.iteritems()):
