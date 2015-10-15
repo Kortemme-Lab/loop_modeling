@@ -327,9 +327,6 @@ def complete_benchmark(benchmark_id, nstruct=None):
         name = benchmark_id
         benchmark_records = [r for r in session.query(database.Benchmarks).filter(database.Benchmarks.name == benchmark_id)]
         print('')
-        print(set([r.rosetta_script for r in benchmark_records]))
-        for r in benchmark_records:
-            print(type(json.loads(r.rosetta_script_vars)))
         benchmark_variables = dict(
             rosetta_script = set([r.rosetta_script for r in benchmark_records]),
             rosetta_script_vars = [json.loads(r.rosetta_script_vars) for r in benchmark_records],
