@@ -1,6 +1,6 @@
-input/structures/1c5e.pdb
-input/structures/1cyo.pdb
-input/structures/1exm.pdb
-input/structures/2cpl.pdb
-input/structures/3cla.pdb
-input/structures/1oth.pdb
+input/structures/rcsb/pruned/1c5e.pdb
+input/structures/rcsb/pruned/1cyo.pdb
+input/structures/rcsb/pruned/1exm.pdb
+input/structures/rcsb/pruned/2cpl.pdb
+input/structures/rcsb/pruned/3cla.pdb
+input/structures/rcsb/pruned/1oth.pdb

@@ -79,11 +79,15 @@ rosetta_path = os.path.abspath(settings.rosetta)
 rosetta_scripts = os.path.join(rosetta_path, 'source', 'bin', 'rosetta_scripts.mysql.linuxgccrelease')
 rosetta_database = os.path.join(rosetta_path, 'database')
 
+# This assumes that the script is being passed a structure in a folder with a sibling folder containing a reference structure with the same filename
+reference_structure = os.path.join(os.path.split(os.path.split(pdb_path)[0])[0], 'reference', os.path.split(pdb_path)[1])
+assert(os.path.exists(reference_structure))
+
 rosetta_command = [
         rosetta_scripts,
         '-database', rosetta_database,
         '-in:file:s', pdb_path,
-        '-in:file:native', pdb_path,
+        '-in:file:native', reference_structure,
         '-inout:dbms:mode', 'mysql',
         '-inout:dbms:database_name', settings.db_name,
         '-inout:dbms:user', settings.db_user,

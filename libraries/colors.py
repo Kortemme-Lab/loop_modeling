@@ -24,10 +24,12 @@ white, black = '#ffffff', '#000000'
 grey = '#eeeeec', '#d3d7cf', '#babdb6', '#888a85', '#555753', '#2e3436'
 
 red =    '#ef2929', '#cc0000', '#a40000'
+#red =    '', '#fa770b', '#cc0000', '#a40000'
 orange = '#fcaf3e', '#f57900', '#ce5c00'
 yellow = '#fce94f', '#edd400', '#c4a000'
 green =  '#8ae234', '#73d216', '#4e9a06'
 blue =   '#729fcf', '#3465a4', '#204a87'
+#blue =   '','#00b0f0', '#3465a4', '#204a87'
 purple = '#ad7fa8', '#75507b', '#5c3566'
 brown =  '#e9b96e', '#c17d11', '#8f5902'
 

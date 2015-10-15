@@ -6,3 +6,5 @@
 .*.sw*
 .nfs*
 *.pdf
+*passwd*
+*.pse

@@ -32,7 +32,7 @@ def get_benchmark_root():
 def get_settings_path():
     return os.path.join(get_benchmark_root(), 'settings.conf')
 
-def load(arguments={}, interactive=True):
+def load(arguments={}, interactive=True, allow_failure = False):
     """
     Load the various settings needed by the benchmark either from the command 
     line or from 'settings.conf'.  The settings are loaded into module level 
@@ -163,7 +163,12 @@ in 'settings.conf'.  Default values for the following settings are needed:
     # Invoke the password command to get the database password.
 
     global db_password
-    db_password = subprocess.check_output(db_password_cmd, shell=True).strip()
+    try:
+        db_password = subprocess.check_output(db_password_cmd, shell=True).strip()
+    except:
+        if not allow_failure:
+            raise
+
 
 def show():
     print 'rosetta:  ', rosetta
