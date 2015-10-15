@@ -8,6 +8,9 @@ import pprint
 
 import pandas
 import numpy
+from rpy2.robjects.packages import importr
+import rpy2.robjects as ro
+import pandas.rpy.common as com
 
 from tools import colortext
 from tools.fs.fsio import read_file, get_file_lines, write_file
@@ -70,7 +73,7 @@ class LoopPredictionSet(object):
         self.loop_predictions.sort(cmp = lambda a, b: LoopPrediction.sort_by_score(a, b))
 
 
-    ### Informational functions
+    ### Computational functions
 
 
     def compute_rmsds(self, reference_pdb_residue_matrix):
@@ -83,6 +86,9 @@ class LoopPredictionSet(object):
         for lp in self.loop_predictions:
             assert(not(lp.pdb_loop_residue_matrix is None) and (lp.rmsd != None))
             assert(lp.rmsd == compute_rmsd_by_matrix(reference_pdb_residue_matrix, lp.pdb_loop_residue_matrix))
+
+
+    ### Informational functions
 
 
     def fraction_with_rmsd_lt(self, x, allow_failure = False, strict = True):
@@ -405,8 +411,8 @@ def compute_rmsds(results_folder, expectn, top_x, get_run_details = get_kic_run_
         print('Top {0} RMSD (predicted vs Rosetta/RCSB reference structure): {1}'.format(top_x, top_x_rmsd))
 
         csv_file.append('\t'.join(map(str, [pdb_id, expectn, total_percent_subanstrom[pdb_id], top_x_percent_subanstrom[pdb_id], best_score, top_x_score, median_scoring_structures[pdb_id].score, worst_score, closest_score, top_1_rmsd, top_x_rmsd, closest_rmsd])))
-        break
 
+        
     # Add a column of median percent subangstrom values
     for top_x_var, values_by_pdb in sorted(percent_subangrom_by_top_x.iteritems()):
         assert(sorted(values_by_pdb.keys()) == sorted(pdb_ids))
