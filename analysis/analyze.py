@@ -70,7 +70,6 @@ import pprint
 from libraries import docopt
 
 import pandas
-import numpy
 from rpy2.robjects.packages import importr
 import rpy2.robjects as ro
 import pandas.rpy.common as com
