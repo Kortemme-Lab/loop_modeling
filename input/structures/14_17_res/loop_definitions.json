@@ -1,0 +1,218 @@
+{
+    "1o97": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": " 169 ", 
+        "PassedFilter": true, 
+        "Sequence": "RPSVFKPLEGAGSP", 
+        "StartResidueID": " 156 ", 
+        "chainID": "D"
+    }, 
+    "1ock": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": " 222 ", 
+        "PassedFilter": true, 
+        "Sequence": "GRSEFSGIVPAKAP", 
+        "StartResidueID": " 209 ", 
+        "chainID": "A"
+    }, 
+    "1r6x": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": "  85 ", 
+        "PassedFilter": true, 
+        "Sequence": "SRLADGTLWTIPIT", 
+        "StartResidueID": "  72 ", 
+        "chainID": "A"
+    }, 
+    "1ra0": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": " 375 ", 
+        "PassedFilter": true, 
+        "Sequence": "LNLQDYGIAAGNSAN", 
+        "StartResidueID": " 361 ", 
+        "chainID": "A"
+    }, 
+    "1rdq": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": " 285 ", 
+        "PassedFilter": true, 
+        "Sequence": "LLQVDLTKRFGNLK", 
+        "StartResidueID": " 272 ", 
+        "chainID": "E"
+    }, 
+    "1rv9": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": " 238 ", 
+        "PassedFilter": true, 
+        "Sequence": "GTHCTVLERDTFFS", 
+        "StartResidueID": " 225 ", 
+        "chainID": "A"
+    }, 
+    "1s95": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": " 491 ", 
+        "PassedFilter": true, 
+        "Sequence": "TAVPHPNVKPMAYAN", 
+        "StartResidueID": " 477 ", 
+        "chainID": "A"
+    }, 
+    "1xu1": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": " 234 ", 
+        "PassedFilter": true, 
+        "Sequence": "PRANAKLSLSPHGT", 
+        "StartResidueID": " 221 ", 
+        "chainID": "A"
+    }, 
+    "1zhx": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": " 406 ", 
+        "PassedFilter": true, 
+        "Sequence": "NLSTKNAPSGTLVGD", 
+        "StartResidueID": " 392 ", 
+        "chainID": "A"
+    }, 
+    "2aeb": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": " 170 ", 
+        "PassedFilter": true, 
+        "Sequence": "IPDVPGFSWVTPCIS", 
+        "StartResidueID": " 156 ", 
+        "chainID": "B"
+    }, 
+    "2b0t": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": " 715 ", 
+        "PassedFilter": true, 
+        "Sequence": "VQGGATDLGGYYSPN", 
+        "StartResidueID": " 701 ", 
+        "chainID": "A"
+    }, 
+    "2bwr": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": " 282 ", 
+        "PassedFilter": true, 
+        "Sequence": "KDFGVNSGWRVEKH", 
+        "StartResidueID": " 269 ", 
+        "chainID": "A"
+    }, 
+    "2c0h": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": "  53 ", 
+        "PassedFilter": true, 
+        "Sequence": "QAWVNYARDFGHNQ", 
+        "StartResidueID": "  40 ", 
+        "chainID": "A"
+    }, 
+    "2cjp": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": "  72 ", 
+        "PassedFilter": true, 
+        "Sequence": "DLRGYGDTTGAPLND", 
+        "StartResidueID": "  58 ", 
+        "chainID": "A"
+    }, 
+    "2hdw": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": " 147 ", 
+        "PassedFilter": true, 
+        "Sequence": "DPSYTGESGGQPRNVAS", 
+        "StartResidueID": " 131 ", 
+        "chainID": "A"
+    }, 
+    "2o2k": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": "1234 ", 
+        "PassedFilter": true, 
+        "Sequence": "SNLKSKYFAVGKIS", 
+        "StartResidueID": "1221 ", 
+        "chainID": "A"
+    }, 
+    "2puh": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": "  85 ", 
+        "PassedFilter": true, 
+        "Sequence": "DSPGFNKSDAVVMDEQ", 
+        "StartResidueID": "  70 ", 
+        "chainID": "A"
+    }, 
+    "2v3v": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": " 396 ", 
+        "PassedFilter": true, 
+        "Sequence": "WGLPEGRIAPEPGYH", 
+        "StartResidueID": " 382 ", 
+        "chainID": "A"
+    }, 
+    "3a3p": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": " 300 ", 
+        "PassedFilter": true, 
+        "Sequence": "DSNDNIASFSNRQPE", 
+        "StartResidueID": " 286 ", 
+        "chainID": "A"
+    }, 
+    "3a64": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": " 364 ", 
+        "PassedFilter": true, 
+        "Sequence": "SPASHVPAPEAGEWF", 
+        "StartResidueID": " 350 ", 
+        "chainID": "A"
+    }, 
+    "3b40": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": " 402 ", 
+        "PassedFilter": true, 
+        "Sequence": "SDFNDGGGVDGWKD", 
+        "StartResidueID": " 389 ", 
+        "chainID": "A"
+    }, 
+    "3bb7": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": " 245 ", 
+        "PassedFilter": true, 
+        "Sequence": "SEMQYGGPNEGSGAY", 
+        "StartResidueID": " 231 ", 
+        "chainID": "A"
+    }, 
+    "3cnq": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": "  63 ", 
+        "PassedFilter": true, 
+        "Sequence": "FVPSETNPFQDNNS", 
+        "StartResidueID": "  50 ", 
+        "chainID": "S"
+    }, 
+    "3css": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": " 109 ", 
+        "PassedFilter": true, 
+        "Sequence": "LLRDVPSSDVISIDR", 
+        "StartResidueID": "  95 ", 
+        "chainID": "A"
+    }, 
+    "3ea1": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": " 150 ", 
+        "PassedFilter": true, 
+        "Sequence": "YFVDPIFLKTEGNIK", 
+        "StartResidueID": " 136 ", 
+        "chainID": "A"
+    }, 
+    "3f1l": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": " 112 ", 
+        "PassedFilter": true, 
+        "Sequence": "HNAGLLGDVCPMSEQ", 
+        "StartResidueID": "  98 ", 
+        "chainID": "A"
+    }, 
+    "3h2g": {
+        "DOI": "10.1002/prot.23129", 
+        "EndResidueID": " 140 ", 
+        "PassedFilter": true, 
+        "Sequence": "DYLGLGKSNYAYHPYLH", 
+        "StartResidueID": " 124 ", 
+        "chainID": "A"
+    }
+}
