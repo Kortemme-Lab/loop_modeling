@@ -1,3 +1,64 @@
+#!/usr/bin/env python2
+
+# The MIT License (MIT)
+#
+# Copyright (c) 2015 Shane O'Connor
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+"""\
+This script analyzes loop modeling prediction runs and produces the metrics for the benchmark. It has been written to
+be generic and includes support for analyzing some standard Rosetta loop modeling methods (KIC, NGK).
+
+Usage:
+    analyze.py --output_directory <argument> --prefix <argument> [--data_extraction_method <argument> --expectn <argument> --topx <argument> --test_mode]
+
+Options:
+
+    -o --output_directory OUTPUT_DIR
+        The path to the directory containing the prediction results.
+
+    -p --prefix PREFIX
+        A prefix used to name the output files.
+
+    -m --data_extraction_method METHOD_NAME
+        The function used to extract the data from the predictions. If you are adding your own method to the benchmark
+        capture then you will need to implement a data extraction function. See "Method-specific functions" in this file.
+        This defaults to the Rosetta KIC method. [default: KIC]
+
+    --expectn EXPECTN
+        The expected number of predicted structures expected per case. This is a useful check to make sure that all runs were successful
+        and the analysis is using all expected data. [default: 500]
+
+    --topx TOPX
+        The number of best-scoring predictions to use to calculate the TopX metrics e.g. lowest RMSD among the top X-scoring
+        models. [default: 5]
+
+    --test_mode
+        Used to test the analysis script. This setting limits expectn to 10, only considers 10 benchmark cases, and sets
+        the test_mode variable in the data extraction method. Based on this variable, data extraction methods should limit
+        the number of structures read per benchmark case to 10.
+
+Authors:
+    Shane O'Connor
+"""
+
 import sys
 import os
 import math
@@ -5,6 +66,8 @@ import glob
 import json
 import time
 import pprint
+
+from libraries import docopt
 
 import pandas
 import numpy
@@ -219,25 +282,28 @@ class LoopPrediction(object):
             s += self.pdb_path
         return s
 
+
 ###
 #  Method-specific functions
 #
-#  Each computational method should implement a function which accepts a results_folder and pdb_id parameter and returns
+#  Each computational method should implement a function which accepts a output_directory and pdb_id parameter and returns
 #  the results from a prediction run as a list of dicts with the keys id, score, predicted_structure, and pdb_loop_residue_matrix where:
 #    - id is a unique identifier for the prediction e.g. an integer;
 #    - score is a integer or float value assigning a score or rank to a prediction;
 #    - predicted_structure is the path to a file for the predicted structure;
 #    - pdb_loop_residue_matrix is a pandas dataframe containing the coordinates for the loop residue heavy atoms (N, CA, C, O).
 #      This can be constructed using the PDB.extract_xyz_matrix_from_loop_json function.
+#  The method should then be added to the data_extraction_methods dict.
 #
-#  A concrete example is given below for the Rosetta KIC methods contained in the repository.
+#  A concrete example, get_kic_run_details, is given below for the Rosetta KIC methods contained in the repository.
 ###
 
 
-def get_kic_run_details(results_folder, pdb_id):
+def get_kic_run_details(output_directory, pdb_id, test_mode = False):
     '''This function returns the details required to set up the analysis for the Rosetta KIC and NGK methods.'''
     details = []
-    for sc_file in glob.glob(os.path.join(results_folder, '{0}*.sc'.format(pdb_id))):
+    c = 0
+    for sc_file in glob.glob(os.path.join(output_directory, '{0}*.sc'.format(pdb_id))):
 
         # Determine the id
         sc_filename = os.path.split(sc_file)[1]
@@ -252,7 +318,7 @@ def get_kic_run_details(results_folder, pdb_id):
         total_score = float(sc_lines[2].split()[1])
 
         # Determine the filepath of the predicted structure
-        associated_pdb_file = os.path.join(results_folder, '{0}_{0}{1}_0001.pdb'.format(pdb_id, run_id))
+        associated_pdb_file = os.path.join(output_directory, '{0}_{0}{1}_0001.pdb'.format(pdb_id, run_id))
 
         # Extract the PDB coordinates into a pandas dataframe (HDF5 format)
         assert(os.path.exists(associated_pdb_file))
@@ -273,17 +339,33 @@ def get_kic_run_details(results_folder, pdb_id):
             predicted_structure = associated_pdb_file,
             pdb_loop_residue_matrix = pdb_loop_residue_matrix,
         ))
+        if test_mode:
+            c += 1
+            if c >= 10:
+                break
+
     return details
 
 
-def compute_rmsds(results_folder, expectn, top_x, get_run_details = get_kic_run_details):
+data_extraction_methods = dict(
+    KIC = get_kic_run_details,
+)
+
+
+###
+#  Main function
+###
+
+
+def extract_analysis_data(output_directory, data_extraction_method, expectn, top_x, prefix, test_mode = False):
     '''This is the main function in this script and is where the basic analysis is compiled.
 
-       results_folder should contain the results of the prediction run.
+       output_directory should contain the results of the prediction run.
+       data_extraction_method should be a function pointer to the method-specific function used to retrieve the prediction results e.g. get_kic_run_details
        expectn specifies how many predictions we expect to find (useful in case some jobs failed).
        top_x specifies how many of the best-scoring predictions should be used to generate the TopX metric results e.g.
        the Top5 RMSD metric value measures the lowest RMSD amongst the five best-scoring structures.
-       get_run_details is a function pointer to the method-specific function used to retrieve the prediction results.
+       prefix is used to name the output files.
     '''
 
     # Sanity check
@@ -313,6 +395,10 @@ def compute_rmsds(results_folder, expectn, top_x, get_run_details = get_kic_run_
     # Read in the benchmark input
     pdb_ids = [os.path.splitext(os.path.split(s.strip())[1])[0] for s in get_file_lines('../input/full.pdbs') if s.strip()]
 
+    # Truncate the benchmark input for test mode
+    if test_mode:
+        pdb_ids = pdb_ids[:10]
+
     # Analyze the performance for each case in the benchmark
     for pdb_id in pdb_ids:
 
@@ -333,8 +419,7 @@ def compute_rmsds(results_folder, expectn, top_x, get_run_details = get_kic_run_
         rosetta_reference_matrix = PDB.extract_xyz_matrix_from_loop_json(PDB.from_filepath(rosetta_reference_pdb).structure_lines, loop_sets, atoms_of_interest = backbone_atoms, expected_num_residues = 12, expected_num_residue_atoms = 4)
 
         colortext.wgreen('\n\nReading in the run details for {0}:'.format(pdb_id))
-        get_run_details = get_kic_run_details
-        details = get_run_details(results_folder, pdb_id)
+        details = data_extraction_method(output_directory, pdb_id, test_mode = test_mode)
         for d in details:
             loop_prediction = loop_prediction_set.add(d['id'], d['score'], pdb_id = pdb_id, rmsd = None, pdb_path = d['predicted_structure'], pdb_loop_residue_matrix = d['pdb_loop_residue_matrix'])
         print(' Done')
@@ -412,16 +497,15 @@ def compute_rmsds(results_folder, expectn, top_x, get_run_details = get_kic_run_
 
         csv_file.append('\t'.join(map(str, [pdb_id, expectn, total_percent_subanstrom[pdb_id], top_x_percent_subanstrom[pdb_id], best_score, top_x_score, median_scoring_structures[pdb_id].score, worst_score, closest_score, top_1_rmsd, top_x_rmsd, closest_rmsd])))
 
-        
     # Add a column of median percent subangstrom values
     for top_x_var, values_by_pdb in sorted(percent_subangrom_by_top_x.iteritems()):
         assert(sorted(values_by_pdb.keys()) == sorted(pdb_ids))
         median_value = sorted(values_by_pdb.values())[len(pdb_ids) / 2]
         percentage_subangstrom_over_top_X_plot_input.append('Median\t{1}\t{2}'.format(pdb_id, top_x_var, median_value))
 
-    write_file('analysis.csv', '\n'.join(csv_file))
-    write_file('analysis.tsv', '\n'.join(csv_file))
-    write_file('percentage_subangstrom_over_top_X.tsv', '\n'.join(percentage_subangstrom_over_top_X_plot_input))
+    write_file('{0}analysis.csv'.format(prefix), '\n'.join(csv_file))
+    write_file('{0}analysis.tsv'.format(prefix), '\n'.join(csv_file))
+    write_file('{0}percentage_subangstrom_over_top_X.tsv'.format(prefix), '\n'.join(percentage_subangstrom_over_top_X_plot_input))
 
 
 # todo: invoke R
@@ -455,86 +539,56 @@ ggsave('percentage_subangstrom_over_top_X.png');
 '''
 
 
-def get_atoms(pdb_filepath, start_pdb_residue_id, stop_pdb_residue_id, atoms_of_interest = backbone_atoms, expected_num_residues = None, expected_num_residue_atoms = None):
-    atoms = {}
-    found_start = False
-    found_end = False
-    for l in PDB.from_filepath(pdb_filepath).structure_lines:
-        res_id = None
-        atom_type = None
-        if l.startswith('ATOM  '):
-            res_id = l[21:27]
-            atom_type = l[12:16].strip()
-            if res_id == start_pdb_residue_id:
-                found_start = True
-            if res_id == stop_pdb_residue_id:
-                assert(found_start)
-                found_end = True
-
-        if found_end and res_id != stop_pdb_residue_id:
-            break
-
-        if found_start and l.startswith('ATOM  ') and (not(atoms_of_interest) or (atom_type in atoms_of_interest)):
-            assert(res_id and atom_type and not(atoms.get(res_id, {}).get(atom_type)))
-            atoms[res_id] = atoms.get(res_id, {})
-            atoms[res_id][atom_type] = (float(l[30:38]), float(l[38:46]), float(l[46:54]))
-
-    if expected_num_residues != None:
-        assert(len(atoms) == expected_num_residues)
-    if expected_num_residue_atoms != None:
-        for res_id, atom_details in atoms.iteritems():
-            assert(len(atom_details) == expected_num_residue_atoms)
-    return atoms
-
-
-def calculate_rmsd_from_pdb_files(pdb1_filepath, pdb2_filepath, start_pdb_residue_id, stop_pdb_residue_id, atoms_of_interest = backbone_atoms, expected_num_residues = None, expect_all_atoms_per_residue = False):
-
-    expected_num_residue_atoms = None
-    if expect_all_atoms_per_residue:
-        expected_num_residue_atoms = len(atoms_of_interest)
-
-    atoms1 = get_atoms(pdb1_filepath, start_pdb_residue_id, stop_pdb_residue_id, atoms_of_interest = atoms_of_interest, expected_num_residues = expected_num_residues, expected_num_residue_atoms = expected_num_residue_atoms)
-    atoms2 = get_atoms(pdb2_filepath, start_pdb_residue_id, stop_pdb_residue_id, atoms_of_interest = atoms_of_interest, expected_num_residues = expected_num_residues, expected_num_residue_atoms = expected_num_residue_atoms)
-
-    for k, v in atoms1.iteritems():
-        if expect_all_atoms_per_residue:
-            assert(len(v) == len(atoms_of_interest))
-    for k, v in atoms2.iteritems():
-        if expect_all_atoms_per_residue:
-            assert(len(v) == len(atoms_of_interest))
-    assert(atoms1.keys() == atoms2.keys())
-
-    c = 0.0
-    total = 0.0
-    for res_id, atoms in sorted(atoms1.iteritems()):
-        for atom, xyz1 in sorted(atoms.iteritems()):
-            xyz2 = atoms2[res_id].get(atom)
-            if expect_all_atoms_per_residue:
-                assert(xyz2)
-            if xyz2:
-                c += 1.0
-                for w in range(3):
-                    total += ((xyz2[w] - xyz1[w]) * (xyz2[w] - xyz1[w]))
-    total = float(total) / float(c)
-    total = math.sqrt(total)
-    return (total)
-
 if __name__ == '__main__':
-    # todo: replace with docopt
-    expectn = 500
-    if len(sys.argv) == 3:
+
+    try:
+        arguments = docopt.docopt(__doc__.format(**locals()))
+        print(arguments)
+
+        output_directory = arguments['--output_directory']
         try:
-            expectn = int(sys.argv[2])
+            output_directory = os.path.abspath(os.path.expanduser(output_directory))
+            print(output_directory)
+            assert(os.path.exists(output_directory))
         except:
-            print('Error: The second argument must be the expected number of structures for case.')
+            print('\nError: The path "{0}" could not be found.\n'.format(output_directory))
             sys.exit(1)
-        sys.argv = sys.argv[:2]
-    if len(sys.argv) == 2:
-        structure_path = sys.argv[1]
-        if not os.path.exists(structure_path):
-            print('Error: The path "{0}" does not exist.'.format(structure_path))
+
+        try:
+            expectn = int(arguments['--expectn'])
+            assert(expectn > 0)
+        except:
+            print('\nError: expectn (the expected number of structures for case) must be a non-zero positive integer.\n')
             sys.exit(1)
-        compute_rmsds(structure_path, expectn, 5)
-    else:
-        print('Error: Please specify a path containing the .sc and .pdb files e.g. "{0} /some/path".'.format(sys.argv[0]))
+
+        try:
+            topx = int(arguments['--topx'])
+            assert(topx > 0)
+        except:
+            print('\nError: TopX (the number of best-scoring structures to consider for certain metrics) must be a non-zero positive integer.\n')
+            sys.exit(1)
+
+        prefix = ''.join([c for c in arguments['--prefix'] if c.isalpha() or c.isdigit() or c in list(' _-@#%^&()[]<>=+')]).strip()
+        if not prefix:
+            print('\nError: The prefix "{0}" is invalid (some characters may have been removed for filesystem compatibility).\n'.format(structure_path))
+            sys.exit(1)
+
+        data_extraction_method_name = arguments['--data_extraction_method']
+        if not data_extraction_method_name in data_extraction_methods:
+            print('\nError: The data extraction method "{0}" could not be found in the script.\n'.format(data_extraction_method_name))
+            sys.exit(1)
+        data_extraction_method = data_extraction_methods[data_extraction_method_name]
+
+        test_mode = False
+        if arguments['--test_mode']:
+            expectn = 10
+            test_mode = True
+
+    except Exception, e:
+        print('Failed while parsing arguments: %s.' % str(e))
         sys.exit(1)
+
+    # Run the analysis
+    extract_analysis_data(output_directory, data_extraction_method, expectn, topx, prefix, test_mode = test_mode)
+
+
