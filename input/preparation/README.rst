@@ -3,14 +3,14 @@ minpack.sh, preprocess.sh, preprocess_all.sh input preparation scripts
 
 These scripts were used to prepare all of the input files for Rosetta in a uniform way however they are
 currently missing some functionality. We have archived them mainly to include the Rosetta flags used in
-the preparation. The structures in input/structures/rosetta/reference have been minimized in the Rosetta
+the preparation. The structures in input/structures/*loop length*/rosetta/reference have been minimized in the Rosetta
 all-atom force field (score function).
 
 remove_native_information.py input preparation script
 =====================================================
 
 This script was used to remove the loop residues and surrounding chains from both the original
-(input/structures/rcsb/reference) and the Rosetta-minimized (input/structures/rosetta/reference) structures. The
+(input/structures/*loop length*/rcsb/reference) and the Rosetta-minimized (input/structures/*loop length*/rosetta/reference) structures. The
 resulting structures are stored in the respective sibling directory named "pruned". This was done to remove
 possible native conformational bias in the loop region.
 

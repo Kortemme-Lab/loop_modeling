@@ -1,17 +1,23 @@
 Input data
 ==========
-The structures comprising the loop modeling benchmark were compiled from 
+This folder contains data for both the 12-residue loop modeling benchmark and the
+14- to 17-residue loop modeling benchmark. The former dataset was used in the development
+of the Rosetta Kinematic Closure (KIC) protocol by Mandell et al. (references below)
+while the latter was used in the development of the Next-Generation KIC (NGK) protocol
+developed by Stein & Kortemme.
+
+The structures comprising the 12-residue loop modeling benchmark were compiled from
 datasets published by Fiser et al. and Zhu et al. (references below). Each
 case in the loop benchmark is associated with two types of input: a PDB file
 describing the protein structure and a loop definition identifying the region
 where the loop should be inserted.
 
-The structural files (input/structures/rcsb/reference) identified by the datasets
+The structural files (input/structures/*loop length*/rcsb/reference) identified by the datasets
 contain the coordinates for the loop region which allows us to determine how closely
 a computational method can predict the loop structure. Depending on the method,
 including the loop and surrounding sidechain coordinates may bias the prediction
 by including native structural information. For this reason, we have included
-input files with the loop residues and surrounding sidechains removed (input/structures/rcsb/pruned).
+input files with the loop residues and surrounding sidechains removed (input/structures/*loop length*/rcsb/pruned).
 For the sidechain removal, we chose to remove any sidechain with a heavy atom within
 10 angstroms of any heavy atom of a loop residue. The code used to remove these
 coordinates can be found in the input/preparation directory. This allows us to benchmark
@@ -19,7 +25,7 @@ methods using the type of input to which loop modeling methods will commonly be 
 in practice.
 
 Loop definitions specify the regions to be modeled. We have included those in JSON_
-format (input/structures/loop_definitions.json). There is one loop definition per
+format (input/structures/*loop length*/loop_definitions.json). There is one loop definition per
 PDB structure and the definition identifies the chain, first residue, and last residue
 of the loop where the residue identifiers use the PDB format (columns 23-27 of the coordinate
 records). The loop definitions are taken from the Mandell et al. paper and include loops
@@ -29,16 +35,16 @@ should be considered in this benchmark). The definition also includes the canoni
 sequence and a reference to the publication which included the case in its dataset.
 
 We also provide input files for use with Rosetta methods which have been preminimized in the
-Rosetta all-atom force field (input/structures/rosetta). First, the full structures were
-minimized in the force field / score function (input/structures/rosetta/reference). The
+Rosetta all-atom force field (input/structures/*loop length*/rosetta). First, the full structures were
+minimized in the force field / score function (input/structures/*loop length*/rosetta/reference). The
 Rosetta score terms are included for each structure. Next, we removed the loop residues from
-the structures as we did for the original structures (input/structures/rosetta/pruned). The
+the structures as we did for the original structures (input/structures/*loop length*/rosetta/pruned). The
 Rosetta methods considered here perform optimally if the N and CA atoms of the first loop
 residue and the CA and C atoms of the last loop residue are retained so we have done so. The
 information needed to rebuild the loop (the loop definition and sequence) are provided in a
 JSON and FASTA file for each case, with the JSON files again using PDB residue identifiers.
 Finally, a set of structures for use with particular Rosetta loop modeling methods (CCD, KIC, NGK)
-are provided (input/structures/rosetta/kic). We added the loop residue backbone atoms back
+are provided (input/structures/*loop length*/rosetta/kic). We added the loop residue backbone atoms back
 into these structures but in an arbitrary and non-native conformation and provided Rosetta
 loop definition files using Rosetta residue numbering (consecutive positive, non-zero integers).
 These structures are currently used to benchmark certain Rosetta methods.
@@ -67,48 +73,53 @@ from the A conformation (the occupancies are typically close to 0.5 in these cas
 Table of Contents
 =================
 
-full.pdbs
-    The set of all the structures that make up the canonical loop benchmark.  
+loops12.pdbs
+    The set of all the structures that make up the canonical short loops benchmark.
     This benchmark was originally published by Mandell et al. in the paper 
     describing the KIC algorithm.  This dataset is a subset of the combined 
     Fiser et al. and Zhu et al. datasets.
 
+loops17.pdbs
+    The set of all the structures that make up the canonical longer loops benchmark.
+    This benchmark was originally published by Stein & Kortemme in the paper
+    describing the NGK algorithm.  This dataset is a subset of the Zhao et al. dataset.
+
 mini.pdbs
-    A reduced set of structures that useful for getting a rough view of the 
+    A reduced set of the short loop structures that useful for getting a rough view of the
     performance of an algorithm.  A mix of easy, medium, and hard structures 
     are included in this set.
 
 ions.pdbs
-    The set of all structures containing metal ions.  In most cases the ions 
+    The set of all short loop structures containing metal ions.  In most cases the ions
     are not located near the loop being sampled.  This set maybe useful for 
     debugging a protocol that's having a hard time loading ions.
 
-full\_*.pdbs, mini\_*.pdbs ions\_*.pdbs
+loops12\_*.pdbs, loops17\_*.pdbs, mini\_*.pdbs ions\_*.pdbs
     Versions of the above lists specific to particular methods.
 
 structures
     The directory containing all the PDB and loop files used by the benchmark.  
     The .pdb files are in the standard (RCSB) numbering.
 
-structures/loop_definitions.json
+structures/12_res/loop_definitions.json
     Contains the definition of all loops as given in Mandell, Coutsias, &
     Kortemme (doi:10.1038/nmeth0809-551) in PDB numbering.
 
-structures/rcsb/reference
+structures/*loop length*/rcsb/reference
     The PDB files as downloaded from the RCSB website.
 
-structures/rcsb/pruned
+structures/*loop length*/rcsb/pruned
     The RCSB files with the loop residues and surrounding sidechains removed. These
     are the input files for generic methods.
 
-structures/rosetta/reference
+structures/*loop length*/rosetta/reference
     The original RCSB files minimized in the Rosetta force field.
 
-structures/rosetta/pruned
+structures/*loop length*/rosetta/pruned
     The preminimized structures above with the loop residues and surrounding sidechains removed.
     The .loop.json files contain the loop definitions in PDB numbering using a JSON format recognized by Rosetta.
 
-structures/rosetta/kic
+structures/*loop length*/rosetta/kic
     The pruned structures above with the loop residue backbone atoms (N, CA, C only) added in a non-native
     conformation (see ``preparation/README.rst``). These structures are used for the CCD, KIC, and NGK Rosetta
     loop modeling methods. The .loop files contain the loop definitions in the older Rosetta loop file
@@ -150,9 +161,15 @@ refinement of comparative models: predicting loops in inexact environments.
 Proteins 72: 959–971. doi: 10.1002/prot.21990
 http://www.jacobsonlab.org/decoy.htm
 
+Stein, A, Kortemme, T (2013). Improvements to Robotics-Inspired Conformational
+Sampling in Rosetta. PLoS ONE 8(5):e63090. doi: 10.1371/journal.pone.0063090.
+
 Wang C, Bradley P, Baker D (2007). Protein-protein docking with backbone
-flexibility. Journal of molecular biology 373: 503–519. doi: 
-10.1016/j.jmb.2007.07.050 
+flexibility. Journal of molecular biology 373: 503–519.
+doi: 10.1016/j.jmb.2007.07.050
+
+Zhao S, Zhu K, Li J, Friesner RA (2011). Progress in super long loop prediction.
+Proteins 79: 2920–2935. doi: 10.1002/prot.23129
 
 Zhu K, Pincus, DL, Zhao S, Friesner RA (2006). Long loop prediction using the
 protein local optimization program. Proteins 65: 438–452. doi: 10.1002/prot.21040

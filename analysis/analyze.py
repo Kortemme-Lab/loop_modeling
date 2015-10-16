@@ -371,7 +371,7 @@ def extract_analysis_data(output_directory, data_extraction_method, expectn, top
     assert(top_x <= expectn)
 
     # Set up reference structures
-    structures_folder = '../input/structures'
+    structures_folder = os.path.join('..', 'input', 'structures', '12_res')
     rcsb_references = os.path.join(structures_folder, 'rcsb', 'reference')
     rosetta_references = os.path.join(structures_folder, 'rosetta', 'reference')
 

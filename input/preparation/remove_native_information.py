@@ -134,8 +134,8 @@ def prepare_structures(file_filter, output_directory, loop_definitions, require_
 
 def create_pruned_structures(output_directory):
     loop_definitions = json.loads(read_file('../structures/loop_definitions.json'))
-    prepare_structures('../structures/rcsb/original/*.pdb', os.path.join(output_directory, 'rcsb'), loop_definitions)
-    prepare_structures('../structures/rosetta/preminimized/*.pdb', os.path.join(output_directory, 'rosetta'), loop_definitions)
+    prepare_structures('../structures/12_res/rcsb/original/*.pdb', os.path.join(output_directory, '12_res_rcsb'), loop_definitions)
+    prepare_structures('../structures/12_res/rosetta/preminimized/*.pdb', os.path.join(output_directory, '12_res_rosetta'), loop_definitions)
 
 
 def add_missing_residues(output_directory):
