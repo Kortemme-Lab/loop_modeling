@@ -5,7 +5,7 @@ import json
 from tools import colortext
 from tools.bio.rcsb import retrieve_pdb
 from tools.bio.pdb import PDB
-from tools.fs.fsio import write_file
+from tools.fs.fsio import read_file, write_file
 
 # This list was compiled from the supplementals in Stein & Kortemme (doi:10.1371/journal.pone.0063090) and referenced with
 # Zhao et al. (doi:10.1002/prot.23129) to get the chain information
@@ -91,8 +91,6 @@ def setup_pdb_files_and_loop_definitions():
                 loop_sequence += respair[1].ResidueAA
             if str(respair[1]) == PDB.ChainResidueID2String(chain_id, end_residue):
                 break
-        print(loop_sequence)
-        print(len(loop_sequence))
         assert(14 <= len(loop_sequence) <= 17)
 
         #import sys
@@ -110,4 +108,39 @@ def setup_pdb_files_and_loop_definitions():
     loop_definitions_path = os.path.join('..', 'structures', '14_17_res', 'loop_definitions.json')
     if not os.path.exists(loop_definitions_path):
         write_file(loop_definitions_path, json.dumps(loop_definitions, indent = 4, sort_keys = True))
+
+
+def create_loop_json_files():
+    loop_definitions = json.loads(read_file(os.path.join('..', 'structures', '14_17_res', 'loop_definitions.json')))
+
+    for pdb_id, details in sorted(loop_definitions.iteritems()):
+
+        # The residues happen to not have insertion codes
+        EndResidueID = int(details['EndResidueID'])
+        StartResidueID = int(details['EndResidueID'])
+
+        loop_json = {
+            "LoopSet": [
+                {
+                    "cut": None,
+                    "extras": {
+                        "extend": None,
+                        "skip_rate": None
+                    },
+                    "start": {
+                        "chainID": details['chainID'],
+                        "iCode": " ",
+                        "resSeq": StartResidueID
+                    },
+                    "stop": {
+                        "chainID": details['chainID'],
+                        "iCode": " ",
+                        "resSeq": EndResidueID
+                    }
+                }
+            ]
+        }
+        loop_json_filepath = os.path.join('..', 'structures', '14_17_res', 'rosetta', 'pruned', '{0}.loop.json'.format(pdb_id))
+        if not os.path.exists(loop_json_filepath):
+            write_file(loop_json_filepath, json.dumps(loop_json, sort_keys = True, indent = 4))
 
