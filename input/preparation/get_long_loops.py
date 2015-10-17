@@ -1,5 +1,6 @@
 import os
 import pprint
+import math
 import json
 
 from tools import colortext
@@ -116,16 +117,16 @@ def create_loop_json_files():
     for pdb_id, details in sorted(loop_definitions.iteritems()):
 
         # The residues happen to not have insertion codes
+        StartResidueID = int(details['StartResidueID'])
         EndResidueID = int(details['EndResidueID'])
-        StartResidueID = int(details['EndResidueID'])
 
         loop_json = {
             "LoopSet": [
                 {
-                    "cut": None,
+                    "cut": int(StartResidueID + (math.ceil((EndResidueID - StartResidueID) / 2.0))),
                     "extras": {
-                        "extend": None,
-                        "skip_rate": None
+                        "extend": True,
+                        "skip_rate": 0
                     },
                     "start": {
                         "chainID": details['chainID'],
