@@ -1,0 +1,21 @@
+{
+    "LoopSet": [
+        {
+            "cut": null, 
+            "extras": {
+                "extend": null, 
+                "skip_rate": null
+            }, 
+            "start": {
+                "chainID": "S", 
+                "iCode": " ", 
+                "resSeq": 50
+            }, 
+            "stop": {
+                "chainID": "S", 
+                "iCode": " ", 
+                "resSeq": 63
+            }
+        }
+    ]
+}
