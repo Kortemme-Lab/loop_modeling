@@ -1,10 +1,10 @@
 {
     "LoopSet": [
         {
-            "cut": null, 
+            "cut": 276, 
             "extras": {
-                "extend": null, 
-                "skip_rate": null
+                "extend": true, 
+                "skip_rate": 0
             }, 
             "start": {
                 "chainID": "A", 
