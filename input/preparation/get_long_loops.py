@@ -94,8 +94,6 @@ def setup_pdb_files_and_loop_definitions():
                 break
         assert(14 <= len(loop_sequence) <= 17)
 
-        #import sys
-        #sys.exit(0)
         assert(pdb_id not in loop_definitions)
         loop_definitions[pdb_id] = dict(
             chainID = chain_id,
