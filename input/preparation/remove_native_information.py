@@ -89,7 +89,7 @@ from tools.general.strutil import remove_trailing_line_whitespace as normalize_p
 from tools.rosetta.input_files import LoopsFile
 
 
-def prepare_structures(file_filter, output_directory, loop_definitions, require_filter = True, create_partial_structures = False):
+def prepare_structures(file_filter, output_directory, loop_definitions, require_filter = True, create_partial_structures = False, expected_min_loop_length = None, expected_max_loop_length = None):
     search_radius = 10.0
 
     if not(os.path.exists(output_directory)):
@@ -97,6 +97,7 @@ def prepare_structures(file_filter, output_directory, loop_definitions, require_
 
     # Iterate through the dataset cases
     for pdb_file in sorted(glob.glob(file_filter)):
+
         pdb_prefix = os.path.splitext(os.path.split(pdb_file)[1])[0].lower()
 
         # Read the benchmark loop definition
@@ -111,7 +112,7 @@ def prepare_structures(file_filter, output_directory, loop_definitions, require_
 
         # Remove the loops and surrounding sidechain atoms from the structure
         b = Bonsai(read_file(pdb_file))
-        bonsai, cutting, PSE_file, PSE_script, FASTA_file = b.prune_loop_for_kic(loops, search_radius, expected_loop_length = 12, generate_pymol_session = True)
+        bonsai, cutting, PSE_file, PSE_script, FASTA_file = b.prune_loop_for_kic(loops, search_radius, expected_min_loop_length = expected_min_loop_length, expected_max_loop_length = expected_max_loop_length, generate_pymol_session = True)
 
         # Create a PyMOL session file for visual inspection
         write_file(os.path.join(output_directory, '{0}.pse'.format(pdb_prefix)), PSE_file)
@@ -133,9 +134,12 @@ def prepare_structures(file_filter, output_directory, loop_definitions, require_
 
 
 def create_pruned_structures(output_directory):
-    loop_definitions = json.loads(read_file('../structures/loop_definitions.json'))
-    prepare_structures('../structures/12_res/rcsb/original/*.pdb', os.path.join(output_directory, '12_res_rcsb'), loop_definitions)
-    prepare_structures('../structures/12_res/rosetta/preminimized/*.pdb', os.path.join(output_directory, '12_res_rosetta'), loop_definitions)
+    #loop_definitions_12 = json.loads(read_file('../structures/12_res/loop_definitions.json'))
+    #prepare_structures('../structures/12_res/rcsb/reference/*.pdb', os.path.join(output_directory, '12_res_rcsb'), loop_definitions_12, expected_min_loop_length = 12, expected_max_loop_length = 12)
+    #prepare_structures('../structures/12_res/rosetta/preminimized/*.pdb', os.path.join(output_directory, '12_res_rosetta'), loop_definitions_12, expected_min_loop_length = 12, expected_max_loop_length = 12)
+    loop_definitions_14_17 = json.loads(read_file('../structures/14_17_res/loop_definitions.json'))
+    #prepare_structures('../structures/14_17_res/rcsb/reference/*.pdb', os.path.join(output_directory, '14_17_res'), loop_definitions_14_17, expected_min_loop_length = 14, expected_max_loop_length = 17)
+    prepare_structures('../structures/14_17_res/rosetta/reference/*.pdb', os.path.join(output_directory, '14_17_res'), loop_definitions_14_17, expected_min_loop_length = 14, expected_max_loop_length = 17)
 
 
 def add_missing_residues(output_directory):
@@ -246,7 +250,8 @@ if __name__ == '__main__':
             if e: colortext.error(str(e))
             colortext.warning(trc)
 
+        print('here')
         #create_pruned_structures(output_directory)
-        add_missing_residues(output_directory)
+        #add_missing_residues(output_directory)
 
 
