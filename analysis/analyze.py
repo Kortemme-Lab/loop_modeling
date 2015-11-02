@@ -27,7 +27,7 @@ This script analyzes loop modeling prediction runs and produces the metrics for 
 be generic and includes support for analyzing some standard Rosetta loop modeling methods (KIC, NGK).
 
 Usage:
-    analyze.py --output_directory <argument> --prefix <argument> [--data_extraction_method <argument> --expectn <argument> --topx <argument> --test_mode]
+    analyze.py --output_directory <argument> --prefix <argument> [--data_extraction_method <argument> --expectn <argument> --topx <argument> --test_mode --dataset <argument>]
 
 Options:
 
@@ -41,6 +41,9 @@ Options:
         The function used to extract the data from the predictions. If you are adding your own method to the benchmark
         capture then you will need to implement a data extraction function. See "Method-specific functions" in this file.
         This defaults to the Rosetta KIC method. [default: KIC]
+
+    -d --dataset DATASET
+        The name of the dataset used for the benchmark run. Valid values are "12_res" and "14_17_res". [default: 12_res]
 
     --expectn EXPECTN
         The expected number of predicted structures expected per case. This is a useful check to make sure that all runs were successful
@@ -298,7 +301,7 @@ class LoopPrediction(object):
 ###
 
 
-def get_kic_run_details(output_directory, pdb_id, test_mode = False):
+def get_kic_run_details(output_directory, pdb_id, loop_sets, test_mode = False):
     '''This function returns the details required to set up the analysis for the Rosetta KIC and NGK methods.'''
     details = []
     c = 0
@@ -356,7 +359,7 @@ data_extraction_methods = dict(
 ###
 
 
-def extract_analysis_data(output_directory, data_extraction_method, expectn, top_x, prefix, test_mode = False):
+def extract_analysis_data(dataset_list_file, output_directory, data_extraction_method, expectn, top_x, prefix, test_mode = False):
     '''This is the main function in this script and is where the basic analysis is compiled.
 
        output_directory should contain the results of the prediction run.
@@ -392,7 +395,7 @@ def extract_analysis_data(output_directory, data_extraction_method, expectn, top
     csv_file = ['\t'.join(['PDB ID', 'Models', '%<1.0A', 'Top{0} %<1.0A'.format(top_x), 'Best score', 'Top{0} score'.format(top_x), 'Median score', 'Worst score', 'Closest score', 'Top1 RMSD', 'Top{0} RMSD'.format(top_x), 'Closest RMSD'])]
 
     # Read in the benchmark input
-    pdb_ids = [os.path.splitext(os.path.split(s.strip())[1])[0] for s in get_file_lines('../input/full.pdbs') if s.strip()]
+    pdb_ids = [os.path.splitext(os.path.split(s.strip())[1])[0] for s in get_file_lines(dataset_list_file) if s.strip()]
 
     # Truncate the benchmark input for test mode
     if test_mode:
@@ -406,7 +409,7 @@ def extract_analysis_data(output_directory, data_extraction_method, expectn, top
         rosetta_reference_pdb = os.path.join(rosetta_references, pdb_id + '.pdb')
         assert(os.path.exists(rosetta_reference_pdb))
         assert(len(pdb_id) == 4)
-        loops_file = os.path.join('../input/structures/rosetta/pruned/{0}.loop.json'.format(pdb_id))
+        loops_file = os.path.join(structures_folder, 'rosetta', 'pruned', '{0}.loop.json'.format(pdb_id))
         loop_sets = json.loads(read_file(loops_file))
         assert(len(loop_sets['LoopSet']) == 1)
 
@@ -418,7 +421,7 @@ def extract_analysis_data(output_directory, data_extraction_method, expectn, top
         rosetta_reference_matrix = PDB.extract_xyz_matrix_from_loop_json(PDB.from_filepath(rosetta_reference_pdb).structure_lines, loop_sets, atoms_of_interest = backbone_atoms, expected_num_residues = 12, expected_num_residue_atoms = 4)
 
         colortext.wgreen('\n\nReading in the run details for {0}:'.format(pdb_id))
-        details = data_extraction_method(output_directory, pdb_id, test_mode = test_mode)
+        details = data_extraction_method(output_directory, pdb_id, loop_sets, test_mode = test_mode)
         for d in details:
             loop_prediction = loop_prediction_set.add(d['id'], d['score'], pdb_id = pdb_id, rmsd = None, pdb_path = d['predicted_structure'], pdb_loop_residue_matrix = d['pdb_loop_residue_matrix'])
         print(' Done')
@@ -542,12 +545,10 @@ if __name__ == '__main__':
 
     try:
         arguments = docopt.docopt(__doc__.format(**locals()))
-        print(arguments)
 
         output_directory = arguments['--output_directory']
         try:
             output_directory = os.path.abspath(os.path.expanduser(output_directory))
-            print(output_directory)
             assert(os.path.exists(output_directory))
         except:
             print('\nError: The path "{0}" could not be found.\n'.format(output_directory))
@@ -578,6 +579,15 @@ if __name__ == '__main__':
             sys.exit(1)
         data_extraction_method = data_extraction_methods[data_extraction_method_name]
 
+        allowed_datasets = {
+            '12_res' : '../input/short_loops.pdbs',
+            '14_17_res' : '../input/long_loops.pdbs',
+        }
+        dataset = arguments['--dataset']
+        if dataset not in allowed_datasets:
+            raise Exception('The dataset "{0}" is not currently allowed. Valid arguments are: "{1}".'.format(dataset, '", "'.join(sorted(allowed_datasets.keys()))))
+        dataset_list_file = allowed_datasets[dataset]
+
         test_mode = False
         if arguments['--test_mode']:
             expectn = 10
@@ -588,6 +598,6 @@ if __name__ == '__main__':
         sys.exit(1)
 
     # Run the analysis
-    extract_analysis_data(output_directory, data_extraction_method, expectn, topx, prefix, test_mode = test_mode)
+    extract_analysis_data(dataset_list_file, output_directory, data_extraction_method, expectn, topx, prefix, test_mode = test_mode)
 
 
