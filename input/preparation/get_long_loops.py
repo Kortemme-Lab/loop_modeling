@@ -37,7 +37,7 @@ loop_definitions = '''
 3cnq	1.71A	S:50-S:63
 3css	1.70A	A:95-A:109
 3ea1	1.75A	A:136-A:150
-3f1l	0.95A	A:98-A:112  # Note: this was A:99-A:113 in Zhao et al.
+3f1l	0.95A	A:99-A:113  # Note: this is A:98-A:112 in the Stein & Kortemme supplementals but A:99-A:113 in Zhao et al. The latter matches computations run by Stein.
 3h2g	1.86A	A:124-A:140
 '''
 
