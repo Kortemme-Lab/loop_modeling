@@ -38,7 +38,8 @@ We also provide input files for use with Rosetta methods which have been premini
 Rosetta all-atom force field (input/structures/*loop length*/rosetta). First, the full structures were
 minimized in the force field / score function (input/structures/*loop length*/rosetta/reference). The
 Rosetta score terms are included for each structure. Next, we removed the loop residues from
-the structures as we did for the original structures (input/structures/*loop length*/rosetta/pruned). The
+the structures as we did for the original structures (input/structures/*loop length*/rosetta/pruned).
+We also remove HETATM records at this point. The
 Rosetta methods considered here perform optimally if the N and CA atoms of the first loop
 residue and the CA and C atoms of the last loop residue are retained so we have done so. The
 information needed to rebuild the loop (the loop definition and sequence) are provided in a
