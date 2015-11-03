@@ -29,7 +29,8 @@ Functions to help remove particular side-chains or atoms from a PDB structure. T
 it is included to document how the input structures were generated. There are two functions in this script:
  - create_pruned_structures removes the loop residues and surrounding sidechains (10A) for each dataset case from both the
    RCSB structures and the structures minimized using the Rosetta force field. The outputs are a PDB structure and a FASTA
-   file of the removed loop sequence. We do this to remove native bias from the dataset;
+   file of the removed loop sequence. We do this to remove native bias from the dataset. The function removes HETATM records
+   for the Rosetta sequences;
  - add_missing_residues adds the residues in the FASTA file back into the Rosetta-minimized structures in a non-native
    conformation (backbone atoms are placed almost equidistantly in a straight line between the buttressing residues) and
    creates a Rosetta .loop file in Rosetta numbering (residues are numbered sequentially using integers starting from 1).
@@ -89,7 +90,7 @@ from tools.general.strutil import remove_trailing_line_whitespace as normalize_p
 from tools.rosetta.input_files import LoopsFile
 
 
-def prepare_structures(file_filter, output_directory, loop_definitions, require_filter = True, create_partial_structures = False, expected_min_loop_length = None, expected_max_loop_length = None):
+def prepare_structures(file_filter, output_directory, loop_definitions, require_filter = True, create_partial_structures = False, expected_min_loop_length = None, expected_max_loop_length = None, remove_hetatm = False):
     search_radius = 10.0
 
     if not(os.path.exists(output_directory)):
@@ -110,8 +111,17 @@ def prepare_structures(file_filter, output_directory, loop_definitions, require_
         if require_filter and not loop_definition['PassedFilter']:
             continue
 
+        # Read in the PDB content, removing HETATM lines if requested
+        pdb_content = read_file(pdb_file)
+        if remove_hetatm:
+            new_content = []
+            for l in pdb_content.split('\n'):
+                if not l.startswith('HETATM'):
+                    new_content.append(l)
+            pdb_content = '\n'.join(new_content)
+
         # Remove the loops and surrounding sidechain atoms from the structure
-        b = Bonsai(read_file(pdb_file))
+        b = Bonsai(pdb_content)
         bonsai, cutting, PSE_file, PSE_script, FASTA_file = b.prune_loop_for_kic(loops, search_radius, expected_min_loop_length = expected_min_loop_length, expected_max_loop_length = expected_max_loop_length, generate_pymol_session = True)
 
         # Create a PyMOL session file for visual inspection
@@ -134,20 +144,32 @@ def prepare_structures(file_filter, output_directory, loop_definitions, require_
 
 
 def create_pruned_structures(output_directory):
-    #loop_definitions_12 = json.loads(read_file('../structures/12_res/loop_definitions.json'))
-    #prepare_structures('../structures/12_res/rcsb/reference/*.pdb', os.path.join(output_directory, '12_res_rcsb'), loop_definitions_12, expected_min_loop_length = 12, expected_max_loop_length = 12)
-    #prepare_structures('../structures/12_res/rosetta/preminimized/*.pdb', os.path.join(output_directory, '12_res_rosetta'), loop_definitions_12, expected_min_loop_length = 12, expected_max_loop_length = 12)
+    loop_definitions_12 = json.loads(read_file('../structures/12_res/loop_definitions.json'))
+    prepare_structures('../structures/12_res/rcsb/reference/*.pdb', os.path.join(output_directory, '12_res_rcsb'), loop_definitions_12, expected_min_loop_length = 12, expected_max_loop_length = 12)
+    prepare_structures('../structures/12_res/rosetta/preminimized/*.pdb', os.path.join(output_directory, '12_res_rosetta'), loop_definitions_12, expected_min_loop_length = 12, expected_max_loop_length = 12)
     loop_definitions_14_17 = json.loads(read_file('../structures/14_17_res/loop_definitions.json'))
-    #prepare_structures('../structures/14_17_res/rcsb/reference/*.pdb', os.path.join(output_directory, '14_17_res'), loop_definitions_14_17, expected_min_loop_length = 14, expected_max_loop_length = 17)
-    prepare_structures('../structures/14_17_res/rosetta/reference/*.pdb', os.path.join(output_directory, '14_17_res'), loop_definitions_14_17, expected_min_loop_length = 14, expected_max_loop_length = 17)
+    prepare_structures('../structures/14_17_res/rcsb/reference/*.pdb', os.path.join(output_directory, '14_17_res'), loop_definitions_14_17, expected_min_loop_length = 14, expected_max_loop_length = 17, remove_hetatm = True)
+    prepare_structures('../structures/14_17_res/rosetta/reference/*.pdb', os.path.join(output_directory, '14_17_res'), loop_definitions_14_17, expected_min_loop_length = 14, expected_max_loop_length = 17, remove_hetatm = True)
 
 
-def add_missing_residues(output_directory):
+def add_missing_residues(root_output_directory):
     '''Add the removed loop residue backbone atoms back into the Rosetta preminimized structures but in a clearly non-native manner.'''
 
-    output_directory = os.path.join(output_directory, 'rosetta')
-    if not(os.path.exists(output_directory)):
-        os.mkdir(output_directory)
+    # Set up the run
+    input_directories = [
+        ['..', 'structures', '12_res', 'rosetta', 'pruned'],
+        ['..', 'structures', '14_17_res', 'rosetta', 'pruned'],
+    ]
+
+    cases = []
+    for input_directory in input_directories:
+        output_directory = os.path.join(root_output_directory, input_directory[2], input_directory[3], input_directory[4])
+        try:
+            os.makedirs(output_directory)
+        except: pass
+        if not(os.path.exists(output_directory)):
+            raise Exception('The output directory {0} could not be created.')
+        cases.append((os.path.join(*input_directory), output_directory))
 
     # Determine path to RosettaScripts
     rosetta_scripts_binary = None
@@ -172,66 +194,73 @@ def add_missing_residues(output_directory):
         raise colortext.Exception('No RosettaScripts binary could be located in {0}.'.format(rosetta_binary_path))
     rosetta_scripts_binary = rosetta_scripts_binary[1]
 
-    # Iterate through the dataset cases
-    file_filter = '../structures/rosetta/pruned/*.pdb'
-    for pdb_file in sorted(glob.glob(file_filter)):
-        pdb_prefix = os.path.splitext(os.path.split(pdb_file)[1])[0].lower()
-        file_prefix = os.path.splitext(pdb_file)[0]
-        fasta_file = file_prefix + '.fasta'
-        loop_file = file_prefix + '.loop.json'
-        assert(os.path.exists(fasta_file))
-        assert(os.path.exists(loop_file))
+    for c in cases:
+        pruned_structure_directory = c[0]
+        output_directory = c[1]
 
-        # Convert the FASTA headers back into PDB residue IDs
-        fasta_contents = read_file(fasta_file)
-        headers = [l for l in fasta_contents.split('\n') if l.startswith('>')]
-        assert(len(headers) == 1)
-        header = headers[0]
-        pdb_residue_ids = [PDB.ChainResidueID2String(l[0], l[1:]) for l in header[header.find('Residues ') + 9:].split(';')]
+        # Iterate through the dataset cases
+        colortext.message('Adding loop residues back to the pruned structures in {0}.'.format(pruned_structure_directory))
+        file_filter = os.path.join(pruned_structure_directory, '*.pdb')
+        for pdb_file in sorted(glob.glob(file_filter)):
+            pdb_prefix = os.path.splitext(os.path.split(pdb_file)[1])[0].lower()
+            file_prefix = os.path.splitext(pdb_file)[0]
+            fasta_file = file_prefix + '.fasta'
+            loop_file = file_prefix + '.loop.json'
+            assert(os.path.exists(fasta_file))
+            assert(os.path.exists(loop_file))
 
-        # Add the missing atoms atoms back into the PDB file
-        spackler = Spackler.from_filepath(pdb_file)
-        new_pdb_content = spackler.add_backbone_atoms_linearly_from_loop_filepaths(loop_file, fasta_file, pdb_residue_ids)
-        write_file(os.path.join(output_directory, '{0}.pdb'.format(pdb_prefix)), new_pdb_content)
+            # Convert the FASTA headers back into PDB residue IDs
+            fasta_contents = read_file(fasta_file)
+            headers = [l for l in fasta_contents.split('\n') if l.startswith('>')]
+            assert(len(headers) == 1)
+            header = headers[0]
+            pdb_residue_ids = [PDB.ChainResidueID2String(l[0], l[1:]) for l in header[header.find('Residues ') + 9:].split(';')]
 
-        # Create a Rosetta .loop file
-        loop_set = json.loads(read_file(loop_file)).get('LoopSet')
-        assert(len(loop_set) == 1)
-        start_res = '{chainID}{resSeq:>4d}{iCode}'.format(**loop_set[0]['start'])
-        end_res = '{chainID}{resSeq:>4d}{iCode}'.format(**loop_set[0]['stop'])
-
-        success, result = get_pdb_contents_to_pose_residue_map(new_pdb_content, rosetta_scripts_binary, None, pdb_id = None, extra_flags = '-ignore_zero_occupancy false -ignore_unrecognized_res')
-
-        if not success:
-            colortext.error('Failed on {0}.'.format(pdb_prefix))
-            raise colortext.Exception('\n'.join(result))
-        else:
-            if not start_res in result:
-                raise colortext.Exception('Could not find the starting residue in the PDB -> Rosetta residue mapping.')
-            elif not end_res in result:
-                raise colortext.Exception('Could not find the starting residue in the PDB -> Rosetta residue mapping.')
-            start_rosetta_res = result[start_res]['pose_residue_id']
-            end_rosetta_res = result[end_res]['pose_residue_id']
-            if not end_rosetta_res > start_rosetta_res:
-                raise colortext.Exception('The end residue have a higher index number than the starting residue.')
-            loop_file_content = 'LOOP {0} {1}\n'.format(start_rosetta_res, end_rosetta_res)
-
-            # Create the new PDB file with the loop residue backbone atoms added back in
+            # Add the missing atoms atoms back into the PDB file
+            spackler = Spackler.from_filepath(pdb_file)
+            new_pdb_content = spackler.add_backbone_atoms_linearly_from_loop_filepaths(loop_file, fasta_file, pdb_residue_ids)
             write_file(os.path.join(output_directory, '{0}.pdb'.format(pdb_prefix)), new_pdb_content)
 
-            # Create a loop file in Rosetta numbering for protocols which require that format (the loopmodel code currently
-            # requires this at the time of writing)
-            write_file(os.path.join(output_directory, '{0}.loop'.format(pdb_prefix)), loop_file_content)
+            # Create a Rosetta .loop file
+            loop_set = json.loads(read_file(loop_file)).get('LoopSet')
+            assert(len(loop_set) == 1)
+            start_res = '{chainID}{resSeq:>4d}{iCode}'.format(**loop_set[0]['start'])
+            end_res = '{chainID}{resSeq:>4d}{iCode}'.format(**loop_set[0]['stop'])
 
-            # Remove this block after removing the old .loop files
-            lfc = loop_file_content.strip().split()
-            ofc = read_file(os.path.join('..', 'structures', 'rosetta', pdb_prefix + '.loop')).strip().split()
-            assert(lfc[1] == ofc[0] and lfc[2] == ofc[1])
+            success, result = get_pdb_contents_to_pose_residue_map(new_pdb_content, rosetta_scripts_binary, None, pdb_id = None, extra_flags = '-ignore_zero_occupancy false -ignore_unrecognized_res')
 
-        sys.stdout.write('.')
-        sys.stdout.flush()
+            if not success:
+                colortext.error('Failed on {0}.'.format(pdb_prefix))
+                raise colortext.Exception('\n'.join(result))
+            else:
+                if not start_res in result:
+                    raise colortext.Exception('Could not find the starting residue in the PDB -> Rosetta residue mapping.')
+                elif not end_res in result:
+                    raise colortext.Exception('Could not find the starting residue in the PDB -> Rosetta residue mapping.')
+                start_rosetta_res = result[start_res]['pose_residue_id']
+                end_rosetta_res = result[end_res]['pose_residue_id']
+                if not end_rosetta_res > start_rosetta_res:
+                    raise colortext.Exception('The end residue have a higher index number than the starting residue.')
+                loop_file_content = 'LOOP {0} {1}\n'.format(start_rosetta_res, end_rosetta_res)
 
-    print('')
+                # Create the new PDB file with the loop residue backbone atoms added back in
+                write_file(os.path.join(output_directory, '{0}.pdb'.format(pdb_prefix)), new_pdb_content)
+
+                # Create a loop file in Rosetta numbering for protocols which require that format (the loopmodel code currently
+                # requires this at the time of writing)
+                write_file(os.path.join(output_directory, '{0}.loop'.format(pdb_prefix)), loop_file_content)
+
+                # Remove this block after removing the old .loop files
+                #lfc = loop_file_content.strip().split()
+                #old_loop_file = [f for f in glob.glob('../structures/14_17_res/rosetta/kic/{0}*.loop'.format(pdb_prefix))]
+                #assert(len(old_loop_file) == 1)
+                #ofc = read_file(old_loop_file[0]).strip().split()
+                #assert(lfc[0] == ofc[0] and lfc[1] == ofc[1] and lfc[2] == ofc[2])
+                #write_file(os.path.join(output_directory, '{0}.loop'.format(pdb_prefix)), (' '.join(ofc)) + '\n')
+
+            sys.stdout.write('.')
+            sys.stdout.flush()
+        print('')
 
 
 if __name__ == '__main__':
@@ -250,8 +279,7 @@ if __name__ == '__main__':
             if e: colortext.error(str(e))
             colortext.warning(trc)
 
-        print('here')
         #create_pruned_structures(output_directory)
-        #add_missing_residues(output_directory)
+        add_missing_residues(output_directory)
 
 
