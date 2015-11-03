@@ -250,14 +250,6 @@ def add_missing_residues(root_output_directory):
                 # requires this at the time of writing)
                 write_file(os.path.join(output_directory, '{0}.loop'.format(pdb_prefix)), loop_file_content)
 
-                # Remove this block after removing the old .loop files
-                #lfc = loop_file_content.strip().split()
-                #old_loop_file = [f for f in glob.glob('../structures/14_17_res/rosetta/kic/{0}*.loop'.format(pdb_prefix))]
-                #assert(len(old_loop_file) == 1)
-                #ofc = read_file(old_loop_file[0]).strip().split()
-                #assert(lfc[0] == ofc[0] and lfc[1] == ofc[1] and lfc[2] == ofc[2])
-                #write_file(os.path.join(output_directory, '{0}.loop'.format(pdb_prefix)), (' '.join(ofc)) + '\n')
-
             sys.stdout.write('.')
             sys.stdout.flush()
         print('')
