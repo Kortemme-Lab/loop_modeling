@@ -201,10 +201,10 @@
     }, 
     "3f1l": {
         "DOI": "10.1002/prot.23129", 
-        "EndResidueID": " 112 ", 
+        "EndResidueID": " 113 ",
         "PassedFilter": true, 
-        "Sequence": "HNAGLLGDVCPMSEQ", 
-        "StartResidueID": "  98 ", 
+        "Sequence": "NAGLLGDVCPMSEQN",
+        "StartResidueID": "  99 ",
         "chainID": "A"
     }, 
     "3h2g": {

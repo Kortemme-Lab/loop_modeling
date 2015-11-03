@@ -9,12 +9,12 @@
             "start": {
                 "chainID": "A", 
                 "iCode": " ", 
-                "resSeq": 98
+                "resSeq": 99
             }, 
             "stop": {
                 "chainID": "A", 
                 "iCode": " ", 
-                "resSeq": 112
+                "resSeq": 113
             }
         }
     ]
