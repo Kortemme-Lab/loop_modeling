@@ -116,7 +116,8 @@ import sys
 
 from libraries import utilities
 from libraries import settings
-from libraries import database
+#from libraries import database
+from libraries.dataController import DataController 
 from check_progress import get_progress
 
 
@@ -185,32 +186,42 @@ def run_benchmark(name, script, pdbs,
     git_diff = subprocess.check_output(
             shlex.split('git diff'), cwd=settings.rosetta).strip()
 
-    # Test the database connection
-
-    try: database.test_connect()
-    except RuntimeError, error: 
-        print error
-        sys.exit(1)
+    # Create the the benchmark
+    data_controller = DataController('database')
+    benchmark_define_dict = { 'name':name, 'script':script, 'nstruct':nstruct,
+                              'user':getpass.getuser(), 'desc':desc,
+                              'vars':json.dumps(vars), 'flags':flags, 'fragments':fragments,
+                              'git_commit':git_commit, 'git_diff':git_diff,
+                              'fast':fast, 'non_random':non_random }
+    benchmark_id = data_controller.create_benchmark(benchmark_define_dict,
+                                                    pdbs)
     
-    # Create an entry in the benchmarks table.
-    with database.connect() as session:
-        benchmark = database.Benchmarks(
-                name, script, nstruct,
-                user=getpass.getuser(), desc=desc,
-                vars=json.dumps(vars), flags=flags, fragments=fragments,
-                git_commit=git_commit, git_diff=git_diff,
-                fast=fast, non_random=non_random,
-        )
-
-        for pdb in pdbs:
-            benchmark_input = database.BenchmarkInputs(pdb)
-            benchmark.input_pdbs.append(benchmark_input)
-
-        session.add(benchmark); session.flush()
-        benchmark_id = str(benchmark.id)
-
-    print "Your benchmark \"{0}\" (id={1}) has been created".format(
-            name, benchmark_id)
+##    # Test the database connection
+##
+##    try: database.test_connect()
+##    except RuntimeError, error: 
+##        print error
+##        sys.exit(1)
+##    
+##    # Create an entry in the benchmarks table.
+##    with database.connect() as session:
+##        benchmark = database.Benchmarks(
+##                name, script, nstruct,
+##                user=getpass.getuser(), desc=desc,
+##                vars=json.dumps(vars), flags=flags, fragments=fragments,
+##                git_commit=git_commit, git_diff=git_diff,
+##                fast=fast, non_random=non_random,
+##        )
+##
+##        for pdb in pdbs:
+##            benchmark_input = database.BenchmarkInputs(pdb)
+##            benchmark.input_pdbs.append(benchmark_input)
+##
+##        session.add(benchmark); session.flush()
+##        benchmark_id = str(benchmark.id)
+##
+##    print "Your benchmark \"{0}\" (id={1}) has been created".format(
+##            name, benchmark_id)
 
     # Submit the benchmark to the cluster.
 
@@ -241,43 +252,81 @@ def resume_benchmark(benchmark_id, nstruct=None):
 
     if nstruct is not None: nstruct = int(nstruct)
 
-    # Read the job parameters from the database.
+    # Read the job parameters from the saved data
 
-    with database.connect() as session:
-        benchmark = session.query(database.Benchmarks).get(benchmark_id)
-        num_pdbs = len(benchmark.input_pdbs)
+    benchmark_define_dict = dataController('database').get_benchmark_define_dict(benchmark_id)
+    num_pdbs = len(benchmark_define_dict['input_pdbs'])
 
-        # Make sure the right version of rosetta is being used.
+    # Make sure the right version of rosetta is being used.
 
-        git_commit = subprocess.check_output(
-                shlex.split('git rev-parse HEAD'),
-                cwd=settings.rosetta).strip()
+    git_commit = subprocess.check_output(
+            shlex.split('git rev-parse HEAD'),
+            cwd=settings.rosetta).strip()
 
-        git_diff = subprocess.check_output(
-                shlex.split('git diff'),
-                cwd=settings.rosetta).strip()
+    git_diff = subprocess.check_output(
+            shlex.split('git diff'),
+            cwd=settings.rosetta).strip()
 
-        if benchmark.git_commit != git_commit:
-            message = "Benchmark \"{0}\" was run with rosetta commit #{1}, but commit #{2} is currently checked out.  Press [Ctrl-C] to abort or [Enter] to continue."
-            message = textwrap.fill(message.format(benchmark.id, benchmark.git_commit[:8], git_commit[:8]))
-            raw_input(message)
+    if benchmark_define_dict['git_commit'] != git_commit:
+        message = "Benchmark \"{0}\" was run with rosetta commit #{1}, but commit #{2} is currently checked out.  Press [Ctrl-C] to abort or [Enter] to continue."
+        message = textwrap.fill(message.format(benchmark_define_dict['id'], benchmark_define_dict['git_commit'][:8], git_commit[:8]))
+        raw_input(message)
 
-        elif benchmark.git_diff != git_diff:
-            message = "Uncommitted changes have been made to rosetta since benchmark \"{0}\" was run.  Press [Ctrl-C] to abort or [Enter] to continue."
-            message = textwrap.fill(message.format(benchmark.id))
-            raw_input(message)
+    elif benchmark_define_dict['git_diff'] != git_diff:
+        message = "Uncommitted changes have been made to rosetta since benchmark \"{0}\" was run.  Press [Ctrl-C] to abort or [Enter] to continue."
+        message = textwrap.fill(message.format(benchmark_define_dict['id']))
+        raw_input(message)
 
-        # Build the qsub command.
+    # Build the qsub command.
 
-        if benchmark.fast:
-            qsub_command += '-t', '1-{0}'.format((nstruct or 10) * num_pdbs)
-            qsub_command += '-l', 'h_rt=0:30:00'
-        else:
-            qsub_command += '-t', '1-{0}'.format((nstruct or 500) * num_pdbs)
-            qsub_command += '-l', 'h_rt=4:00:00'
+    if benchmark_define_dict['fast']:
+        qsub_command += '-t', '1-{0}'.format((nstruct or 10) * num_pdbs)
+        qsub_command += '-l', 'h_rt=0:30:00'
+    else:
+        qsub_command += '-t', '1-{0}'.format((nstruct or 500) * num_pdbs)
+        qsub_command += '-l', 'h_rt=4:00:00'
 
-        print "Your benchmark \"{0}\" (id={1}) is being resumed".format(
-                benchmark.name, benchmark_id)
+    print "Your benchmark \"{0}\" (id={1}) is being resumed".format(
+            benchmark_define_dict['name'], benchmark_id)
+
+
+##    # Read the job parameters from the database.
+##
+##    with database.connect() as session:
+##        benchmark = session.query(database.Benchmarks).get(benchmark_id)
+##        num_pdbs = len(benchmark.input_pdbs)
+##
+##        # Make sure the right version of rosetta is being used.
+##
+##        git_commit = subprocess.check_output(
+##                shlex.split('git rev-parse HEAD'),
+##                cwd=settings.rosetta).strip()
+##
+##        git_diff = subprocess.check_output(
+##                shlex.split('git diff'),
+##                cwd=settings.rosetta).strip()
+##
+##        if benchmark.git_commit != git_commit:
+##            message = "Benchmark \"{0}\" was run with rosetta commit #{1}, but commit #{2} is currently checked out.  Press [Ctrl-C] to abort or [Enter] to continue."
+##            message = textwrap.fill(message.format(benchmark.id, benchmark.git_commit[:8], git_commit[:8]))
+##            raw_input(message)
+##
+##        elif benchmark.git_diff != git_diff:
+##            message = "Uncommitted changes have been made to rosetta since benchmark \"{0}\" was run.  Press [Ctrl-C] to abort or [Enter] to continue."
+##            message = textwrap.fill(message.format(benchmark.id))
+##            raw_input(message)
+##
+##        # Build the qsub command.
+##
+##        if benchmark.fast:
+##            qsub_command += '-t', '1-{0}'.format((nstruct or 10) * num_pdbs)
+##            qsub_command += '-l', 'h_rt=0:30:00'
+##        else:
+##            qsub_command += '-t', '1-{0}'.format((nstruct or 500) * num_pdbs)
+##            qsub_command += '-l', 'h_rt=4:00:00'
+##
+##        print "Your benchmark \"{0}\" (id={1}) is being resumed".format(
+##                benchmark.name, benchmark_id)
 
     # Submit the job.
 
@@ -323,21 +372,28 @@ def complete_benchmark(benchmark_id, nstruct=None):
         if not bins[d_bin]:
             del bins[d_bin]
 
-    with database.connect() as session:
-        name = benchmark_id
-        benchmark_records = [r for r in session.query(database.Benchmarks).filter(database.Benchmarks.name == benchmark_id)]
-        print('')
-        benchmark_variables = dict(
-            rosetta_script = set([r.rosetta_script for r in benchmark_records]),
-            rosetta_script_vars = [json.loads(r.rosetta_script_vars) for r in benchmark_records],
-            rosetta_flags = set([r.rosetta_flags for r in benchmark_records]),
-            rosetta_fragments = set([r.rosetta_fragments for r in benchmark_records]),
-            fast = set([r.fast for r in benchmark_records]),
-            non_random = set([r.non_random for r in benchmark_records]),
-        )
-        for x in range(0, len(benchmark_variables['rosetta_script_vars']) - 1):
-            if benchmark_variables['rosetta_script_vars'][x] != benchmark_variables['rosetta_script_vars'][x + 1]:
-                sys.exit('Exception (ambiguity): The benchmark {0} has multiple RosettaScript variable values associated with previous runs: "{1}".'.format(benchmark_id, '", "'.join(map(str, sorted(benchmark_variables['rosetta_script_vars'])))))
+    name = benchmark_id
+    benchmark_variables = dataController('database').get_benchmark_variables( benchmark_id )
+    for x in range(0, len(benchmark_variables['rosetta_script_vars']) - 1):
+        if benchmark_variables['rosetta_script_vars'][x] != benchmark_variables['rosetta_script_vars'][x + 1]:
+            sys.exit('Exception (ambiguity): The benchmark {0} has multiple RosettaScript variable values associated with previous runs: "{1}".'.format(benchmark_id, '", "'.join(map(str, sorted(benchmark_variables['rosetta_script_vars'])))))
+
+
+##    with database.connect() as session:
+##        name = benchmark_id
+##        benchmark_records = [r for r in session.query(database.Benchmarks).filter(database.Benchmarks.name == benchmark_id)]
+##        print('')
+##        benchmark_variables = dict(
+##            rosetta_script = set([r.rosetta_script for r in benchmark_records]),
+##            rosetta_script_vars = [json.loads(r.rosetta_script_vars) for r in benchmark_records],
+##            rosetta_flags = set([r.rosetta_flags for r in benchmark_records]),
+##            rosetta_fragments = set([r.rosetta_fragments for r in benchmark_records]),
+##            fast = set([r.fast for r in benchmark_records]),
+##            non_random = set([r.non_random for r in benchmark_records]),
+##        )
+##        for x in range(0, len(benchmark_variables['rosetta_script_vars']) - 1):
+##            if benchmark_variables['rosetta_script_vars'][x] != benchmark_variables['rosetta_script_vars'][x + 1]:
+##                sys.exit('Exception (ambiguity): The benchmark {0} has multiple RosettaScript variable values associated with previous runs: "{1}".'.format(benchmark_id, '", "'.join(map(str, sorted(benchmark_variables['rosetta_script_vars'])))))
 
     for k, v in sorted(benchmark_variables.iteritems()):
         if len(v) == 0:

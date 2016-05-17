@@ -37,7 +37,8 @@ import json
 
 from libraries import utilities
 from libraries import settings; settings.load(interactive=False)
-from libraries import database
+#from libraries import database
+from libraries.dataController import DataController 
 
 # Parse arguments.
 
@@ -49,19 +50,32 @@ task_id = int(os.environ['SGE_TASK_ID']) - 1
 benchmark_id = int(sys.argv[1])
 
 # Figure out which loop to benchmark.
+benchmark_define_dict = DataController('database').get_benchmark_define_dict(benchmark_id)
+script_path = benchmark_define_dict['script']
+script_vars = benchmark_define_dict['vars']
+flags_path = benchmark_define_dict['flags']
+fragments_path = benchmark_define_dict['fragments']
+fast = benchmark_define_dict['fast']
+non_random = benchmark_define_dict['non_random']
+input_pdbs = benchmark_define_dict['input_pdbs']
+pdb_path = input_pdbs[task_id % len(input_pdbs)].pdb_path
+pdb_tag = os.path.splitext(os.path.basename(pdb_path))[0]
+loop_path = re.sub('\.pdb(\.gz)?$', '.loop', pdb_path)
 
-with database.connect() as session:
-    benchmark = session.query(database.Benchmarks).get(benchmark_id)
-    script_path = benchmark.rosetta_script
-    script_vars = json.loads(benchmark.rosetta_script_vars or '[]')
-    flags_path = benchmark.rosetta_flags
-    fragments_path = benchmark.rosetta_fragments
-    fast = benchmark.fast
-    input_pdbs = benchmark.input_pdbs
-    pdb_path = input_pdbs[task_id % len(input_pdbs)].pdb_path
-    pdb_tag = os.path.splitext(os.path.basename(pdb_path))[0]
-    loop_path = re.sub('\.pdb(\.gz)?$', '.loop', pdb_path)
-    non_random = benchmark.non_random
+### Figure out which loop to benchmark.
+##
+##with database.connect() as session:
+##    benchmark = session.query(database.Benchmarks).get(benchmark_id)
+##    script_path = benchmark.rosetta_script
+##    script_vars = json.loads(benchmark.rosetta_script_vars or '[]')
+##    flags_path = benchmark.rosetta_flags
+##    fragments_path = benchmark.rosetta_fragments
+##    fast = benchmark.fast
+##    input_pdbs = benchmark.input_pdbs
+##    pdb_path = input_pdbs[task_id % len(input_pdbs)].pdb_path
+##    pdb_tag = os.path.splitext(os.path.basename(pdb_path))[0]
+##    loop_path = re.sub('\.pdb(\.gz)?$', '.loop', pdb_path)
+##    non_random = benchmark.non_random
 
 # Set LD_LIBRARY_PATH so that the MySQL libraries can be found.
 
@@ -125,11 +139,13 @@ stdout, stderr = utilities.tee(rosetta_command, env=rosetta_env)
 protocol_match = re.search("protocol_id '([1-9][0-9]*)'", stdout)
 protocol_id = protocol_match.groups()[0] if protocol_match else None
 
-with database.connect() as session:
-    if protocol_id is not None:
-        benchmark_map = database.BenchmarkProtocols(benchmark_id, protocol_id)
-        session.add(benchmark_map)
-        session.commit()  # Make sure the protocol mapping is saved even if 
-                          # something else messes up this transaction later on.
-    log_row = database.TracerLogs(benchmark_id, protocol_id, stdout, stderr)
-    session.add(log_row)
+DataController('database').write_log(benchmark_id, protocol_id, stdout, stderr)
+
+##with database.connect() as session:
+##    if protocol_id is not None:
+##        benchmark_map = database.BenchmarkProtocols(benchmark_id, protocol_id)
+##        session.add(benchmark_map)
+##        session.commit()  # Make sure the protocol mapping is saved even if 
+##                          # something else messes up this transaction later on.
+##    log_row = database.TracerLogs(benchmark_id, protocol_id, stdout, stderr)
+##    session.add(log_row)
