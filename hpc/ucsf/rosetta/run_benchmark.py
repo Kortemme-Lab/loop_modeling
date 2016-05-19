@@ -103,6 +103,9 @@ Options:
     --keep-old-data
         When a benchmark run is submitted to the cluster, the stdout and stderr files from previous runs are deleted
         from the output directory. To prevent this deletion from occurring, use this flag.
+
+    --use-database
+        Report the data to a database if specified. Otherwise dump the data to the disk directly.
 """
 
 import getpass
@@ -160,7 +163,7 @@ def compile_rosetta():
 
 def run_benchmark(name, script, pdbs,
         vars=(), flags=None, fragments=None, nstruct=None,
-        desc=None, fast=False, non_random=True):
+        desc=None, fast=False, non_random=True, use_database=False):
 
     if nstruct is not None:
         try: nstruct = int(nstruct)
@@ -187,10 +190,10 @@ def run_benchmark(name, script, pdbs,
             shlex.split('git diff'), cwd=settings.rosetta).strip()
 
     # Create the the benchmark
-    data_controller = DataController('database')
+    data_controller = DataController('database') if use_database else DataController('disk')
     benchmark_define_dict = { 'name':name, 'script':script, 'nstruct':nstruct,
                               'user':getpass.getuser(), 'desc':desc,
-                              'vars':json.dumps(vars), 'flags':flags, 'fragments':fragments,
+                              'vars':vars, 'flags':flags, 'fragments':fragments,
                               'git_commit':git_commit, 'git_diff':git_diff,
                               'fast':fast, 'non_random':non_random }
     benchmark_id = data_controller.create_benchmark(benchmark_define_dict,
@@ -226,8 +229,7 @@ def run_benchmark(name, script, pdbs,
     # Submit the benchmark to the cluster.
 
     qsub_command = 'qsub',
-    benchmark_command = 'loop_benchmark.py', benchmark_id
-
+    benchmark_command = 'loop_benchmark.py', benchmark_id, '--use-database' if use_database else '--not-use-database'
 
     if fast:
         qsub_command += '-t', '1-{0}'.format(nstruct * len(pdbs))
@@ -244,9 +246,9 @@ def run_benchmark(name, script, pdbs,
     subprocess.call(qsub_command + benchmark_command, cwd=qsub_cwd)
 
 
-def resume_benchmark(benchmark_id, nstruct=None):
+def resume_benchmark(benchmark_id, nstruct=None, use_database=False):
     qsub_command = 'qsub',
-    benchmark_command = 'loop_benchmark.py', benchmark_id
+    benchmark_command = 'loop_benchmark.py', benchmark_id, '--use-database' if use_database else '--not-use-database'
 
     # You get weird errors if you forget to cast nstruct from string to int.
 
@@ -254,7 +256,8 @@ def resume_benchmark(benchmark_id, nstruct=None):
 
     # Read the job parameters from the saved data
 
-    benchmark_define_dict = dataController('database').get_benchmark_define_dict(benchmark_id)
+    data_controller = DataController('database') if use_database else DataController('disk')
+    benchmark_define_dict = data_controller.get_benchmark_define_dict(benchmark_id)
     num_pdbs = len(benchmark_define_dict['input_pdbs'])
 
     # Make sure the right version of rosetta is being used.
@@ -336,9 +339,9 @@ def resume_benchmark(benchmark_id, nstruct=None):
     subprocess.call(qsub_command + benchmark_command)
 
 
-def complete_benchmark(benchmark_id, nstruct=None):
+def complete_benchmark(benchmark_id, nstruct=None, use_database=False):
     qsub_command = 'qsub',
-    benchmark_command = 'loop_benchmark.py', benchmark_id
+    benchmark_command = 'loop_benchmark.py', benchmark_id, '--use-database' if use_database else '--not-use-database'
 
     # You get weird errors if you forget to cast nstruct from string to int.
 
@@ -373,7 +376,8 @@ def complete_benchmark(benchmark_id, nstruct=None):
             del bins[d_bin]
 
     name = benchmark_id
-    benchmark_variables = dataController('database').get_benchmark_variables( benchmark_id )
+    data_controller = DataController('database') if use_database else DataController('disk')
+    benchmark_variables = data_controller.get_benchmark_variables( benchmark_id )
     for x in range(0, len(benchmark_variables['rosetta_script_vars']) - 1):
         if benchmark_variables['rosetta_script_vars'][x] != benchmark_variables['rosetta_script_vars'][x + 1]:
             sys.exit('Exception (ambiguity): The benchmark {0} has multiple RosettaScript variable values associated with previous runs: "{1}".'.format(benchmark_id, '", "'.join(map(str, sorted(benchmark_variables['rosetta_script_vars'])))))
@@ -423,7 +427,7 @@ if __name__ == '__main__':
         # Compile rosetta.
 
         if arguments['--complete']:
-            complete_benchmark(arguments['--complete'])
+            complete_benchmark(arguments['--complete'], arguments['--use-database'])
             sys.exit(1)
 
         if not arguments['--execute-only']:
@@ -438,7 +442,7 @@ if __name__ == '__main__':
 
         if arguments['--resume'] is not None:
             benchmark_id = arguments['--resume']
-            resume_benchmark(benchmark_id, arguments['--nstruct'])
+            resume_benchmark(benchmark_id, arguments['--nstruct'], arguments['--use-database'])
         
         else:
             name = arguments['<name>']
@@ -475,6 +479,7 @@ if __name__ == '__main__':
                     desc=arguments['--desc'],
                     fast=arguments['--fast'],
                     non_random=arguments['--non-random'],
+                    use_database=arguments['--use-database']
             )
 
     except KeyboardInterrupt:

@@ -42,15 +42,17 @@ from libraries.dataController import DataController
 
 # Parse arguments.
 
-if len(sys.argv) != 2 or 'SGE_TASK_ID' not in os.environ:
-    print 'Usage: SGE_TASK_ID=<id> loop_benchmark.py <benchmark_id>'
+if len(sys.argv) != 3 or 'SGE_TASK_ID' not in os.environ:
+    print 'Usage: SGE_TASK_ID=<id> loop_benchmark.py <benchmark_id> <if_use_database>'
     sys.exit(1)
 
 task_id = int(os.environ['SGE_TASK_ID']) - 1
 benchmark_id = int(sys.argv[1])
+use_database = sys.argv[2]=='--use-database'
+data_controller = DataController('database') if use_database else DataController('disk')
 
 # Figure out which loop to benchmark.
-benchmark_define_dict = DataController('database').get_benchmark_define_dict(benchmark_id)
+benchmark_define_dict = data_controller.get_benchmark_define_dict(benchmark_id)
 script_path = benchmark_define_dict['script']
 script_vars = benchmark_define_dict['vars']
 flags_path = benchmark_define_dict['flags']
@@ -102,18 +104,22 @@ rosetta_command = [
         '-database', rosetta_database,
         '-in:file:s', pdb_path,
         '-in:file:native', reference_structure,
-        '-inout:dbms:mode', 'mysql',
-        '-inout:dbms:database_name', settings.db_name,
-        '-inout:dbms:user', settings.db_user,
-        '-inout:dbms:password', settings.db_password,
-        '-inout:dbms:host', settings.db_host,
-        '-inout:dbms:port', settings.db_port,
         '-out:nooutput',
         '-parser:protocol', script_path,
         '-parser:script_vars',
             'loop_file={0}'.format(loop_path),
             'fast={0}'.format('yes' if fast else 'no'),
 ]         + script_vars
+
+if use_database:
+    rosetta_command += [
+        '-inout:dbms:mode', 'mysql',
+        '-inout:dbms:database_name', settings.db_name,
+        '-inout:dbms:user', settings.db_user,
+        '-inout:dbms:password', settings.db_password,
+        '-inout:dbms:host', settings.db_host,
+        '-inout:dbms:port', settings.db_port,
+    ]
 
 if flags_path is not None:
     rosetta_command += ['@', flags_path]
@@ -139,7 +145,7 @@ stdout, stderr = utilities.tee(rosetta_command, env=rosetta_env)
 protocol_match = re.search("protocol_id '([1-9][0-9]*)'", stdout)
 protocol_id = protocol_match.groups()[0] if protocol_match else None
 
-DataController('database').write_log(benchmark_id, protocol_id, stdout, stderr)
+data_controller.write_log(benchmark_id, protocol_id, stdout, stderr, task_id)
 
 ##with database.connect() as session:
 ##    if protocol_id is not None:
