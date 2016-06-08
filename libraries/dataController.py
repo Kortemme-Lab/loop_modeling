@@ -38,6 +38,12 @@ class DataController:
     def write_log(self, benchmark_id, protocol_id, stdout, stderr, job_id=0):
         return self.implement.write_log(benchmark_id, protocol_id, stdout, stderr, job_id) 
       
+    def get_benchmark_list_by_name(self, database_name):
+        return self.implement.get_benchmark_list_by_name(database_name)  
+
+    def get_progress(self, database_name, benchmark_name):
+        return self.implement.get_progress(database_name, benchmark_name)
+
 class DatabaseDataController:
     '''
     Implementation of DataController on databases.
@@ -110,6 +116,74 @@ class DatabaseDataController:
             log_row = database.TracerLogs(benchmark_id, protocol_id, stdout, stderr)
             session.add(log_row)
 
+    def get_benchmark_list_by_name(self, database_name):
+        with database.connect(db_name = database_name) as session:
+            return [r.name for r in session.execute('SELECT DISTINCT name from benchmarks ORDER BY benchmark_id DESC')]
+       
+    def get_progress(self, database_name, benchmark_name):
+        # Create an entry in the benchmarks table.
+        with database.connect(db_name = database_name) as session:
+    
+            messages = ['']
+    
+            # Use the latest benchmark's name if none was supplied
+            if not benchmark_name:
+                q = session.query(database.Benchmarks).order_by(database.Benchmarks.benchmark_id.desc())
+                if q.count() == 0:
+                    exit('There is no benchmark data in the database "{0}".'.format(database_name))
+                benchmark_name = q.first().name
+                messages.append('No benchmark was selected. Choosing the most recent benchmark: "{0}".\n'.format(benchmark_name))
+    
+            # Retrieve the set of benchmark runs associated the benchmark name
+            q = session.query(database.Benchmarks).filter(database.Benchmarks.name == benchmark_name)
+            if q.count() == 0:
+                exit('There is no benchmark data in the database "{0}" for benchmark "{1}".'.format(database_name, benchmark_name))
+            benchmark_runs = q.all()
+    
+            # Set nstruct to be the maximum value over the runs
+            nstruct = max([b.nstruct for b in benchmark_runs])
+    
+            # Retrieve the set of PDB paths
+            pdb_paths = set()
+            for b in benchmark_runs:
+                pdb_paths = pdb_paths.union(set([q.pdb_path for q in session.query(database.BenchmarkInputs).filter(database.BenchmarkInputs.benchmark_id == b.benchmark_id).all()]))
+    
+            # Retrieve the number of jobs with structures
+            num_cases = len(pdb_paths)
+            benchmark_size = nstruct * num_cases
+            total_count = 0.0
+            pdb_counts = dict.fromkeys(pdb_paths, 0)
+            for r in session.execute('''
+                    SELECT input_tag, COUNT(input_tag)
+                    FROM structures
+                    INNER JOIN batches ON structures.batch_id=batches.batch_id
+                    INNER JOIN benchmark_protocols ON benchmark_protocols.protocol_id=batches.protocol_id
+                    INNER JOIN benchmarks ON benchmarks.benchmark_id=benchmark_protocols.benchmark_id
+                    WHERE benchmarks.name="{0}"
+                    GROUP BY input_tag'''.format(benchmark_name)):
+                total_count += min(r[1], nstruct) # do not count extra jobs
+                assert(r[0] in pdb_paths)
+                pdb_counts[r[0]] = r[1]
+    
+            num_failed = session.execute('''
+                    SELECT COUNT(log_id) AS NumFailed
+                    FROM tracer_logs
+                    INNER JOIN benchmarks ON benchmarks.benchmark_id=tracer_logs.benchmark_id
+                    WHERE stderr <> "" AND benchmarks.name="{0}"'''.format(benchmark_name))
+            for r in num_failed: num_failed = r[0]; break
+            progress = 100 * (total_count/benchmark_size)
+    
+            return dict(
+                Messages = '\n'.join(messages),
+                Progress = progress,
+                StructureCount = num_cases,
+                nstruct = nstruct,
+                TotalCount = benchmark_size,
+                CompletedCount = int(total_count),
+                FailureCount = num_failed,
+                CountPerStructure = pdb_counts,
+            )
+        
     
 class DiskDataController:
     '''
@@ -201,6 +275,51 @@ class DiskDataController:
         #Release the lock
         fcntl.flock(lock_fd, fcntl.LOCK_UN)
         os.close(lock_fd) 
+    
+    def get_benchmark_list_by_name(self, database_name):
+        benchmark_list = []
+        for benchmark_id in os.listdir( self.data_path ):
+            benchmark_define_dict = self.get_benchmark_define_dict( int(benchmark_id) )
+            benchmark_list.append( (benchmark_id, benchmark_define_dict['name']) )
+        return benchmark_list
+       
+    def get_progress(self, database_name, benchmark_name):
+        progress_dict = {}
+        if not benchmark_name:
+            exit( "No benchmark was selected!" )
+        #Get the benchmark ids coresponding to the benchmark name
+        all_benchmark_list = self.get_benchmark_list_by_name(database_name)
+        benchmark_list = [ int(entry[0]) for entry in all_benchmark_list if entry[1] == benchmark_name ]
+        most_recent_id = max( benchmark_list )
+        benchmark_define_dict = self.get_benchmark_define_dict(most_recent_id)
+        #Get the Messages
+        progress_dict['Messages'] = 'Reporting the most recent benchmark with name {0}, id={1}'.format(benchmark_name, most_recent_id)
+        #Get nstruct
+        progress_dict['nstruct'] = benchmark_define_dict['nstruct']
+        pdb_pathes = set( [ i.pdb_path for i in benchmark_define_dict['input_pdbs'] ] )
+        pdb_name_path_dict = {}
+        for p in pdb_pathes:
+            pdb_name_path_dict[ os.path.split(p)[1].split('.')[0] ] = p
+        progress_dict['StructureCount'] = len(pdb_pathes)
+        progress_dict['TotalCount'] = progress_dict['nstruct'] * progress_dict['StructureCount']
+        #Count completed jobs
+        progress_dict['CountPerStructure'] = dict.fromkeys(pdb_pathes, 0)
+        progress_dict['CompletedCount'] = 0
+        with open( os.path.join(self.data_path, str(most_recent_id), benchmark_name+'.results'), 'r' ) as f_result:
+            for line in f_result.readlines():
+                if line.startswith('#'): continue
+                s = line.split()
+                progress_dict['CountPerStructure'][ pdb_name_path_dict[s[0]] ] += 1
+                progress_dict['CompletedCount'] += 1 
+        progress_dict['Progress'] = 100 * progress_dict['CompletedCount']/progress_dict['TotalCount']
+        #Count failed jobs
+        progress_dict['FailureCount'] = 0
+        for log in os.listdir( os.path.join(self.data_path, str(most_recent_id), 'logs') ):
+            with open( os.path.join(self.data_path, str(most_recent_id), 'logs', log) ) as f:
+                log_dict = json.loads( f.read() )  
+                if log_dict['stderr'] != '':
+                    progress_dict['FailureCount'] += 1
+        return progress_dict
 
 class DiskBenchmarkInput:
     ''' For the backward compatibility to the database.BenchmarkInput '''
