@@ -9,6 +9,7 @@ import re
 import fcntl
 import time
 import errno
+from rmsdCalculator import calc_rmsd_from_file
 
 class DataController:
     '''
@@ -201,8 +202,10 @@ class DiskDataController:
         id = self.get_new_benchmark_id()
         benchmark_define_dict['input_pdbs'] = pdbs
         benchmark_define_dict['id'] = id
+        benchmark_define_dict['structures_path'] = os.path.join(self.data_path, id, 'structures')
         os.makedirs( os.path.join( self.data_path, id ) )
         os.makedirs( os.path.join( self.data_path, id, 'logs' ) )
+        os.makedirs( os.path.join( self.data_path, id, 'structures' ) )
         with open( os.path.join( self.data_path, id, 'benchmark_define.json' ), 'w' ) as f:
             f.write(json.dumps(benchmark_define_dict, sort_keys=True, indent=4) )
         with open( os.path.join( self.data_path, id, benchmark_define_dict['name']+'.results' ), 'w' ) as f:
@@ -224,6 +227,14 @@ class DiskDataController:
         # TODO: implement
         return None
     
+    def calc_rmsd(self, loop_file, native_file, modeled_file):
+        residue_list = []
+        with open(loop_file, 'r') as f_loop:
+            s = f_loop.readline().split
+            for i in range(int(s[1]), int(s[2])+1):
+                residue_list.append(i) 
+        self.rmsd = calc_rmsd_from_file(native_file, modeled_file, 0, 0, 'A', 'A', residue_list) 
+    
     def write_log(self, benchmark_id, protocol_id, stdout, stderr, job_id):
         build_time_match = re.search(r"protocols.loop_modeling.LoopModeler: Build Time: ([\d]+) sec", stdout)
         build_time = int(build_time_match.groups()[0]) if build_time_match else None
@@ -231,8 +242,8 @@ class DiskDataController:
         centroid_time = int(centroid_time_match.groups()[0]) if centroid_time_match else None
         fullatom_time_match = re.search(r"protocols.loop_modeling.LoopModeler: Fullatom Time: ([\d]+) sec", stdout)
         fullatom_time = int(fullatom_time_match.groups()[0]) if fullatom_time_match else None
-        rmsd_match = re.search(r"protocols.loop_modeling.LoopModeler: Loop Backbone RMSD: ([\d\.]+)", stdout)
-        rmsd = float(rmsd_match.groups()[0]) if rmsd_match else None
+        #rmsd_match = re.search(r"protocols.loop_modeling.LoopModeler: Loop Backbone RMSD: ([\d\.]+)", stdout)
+        #rmsd = float(rmsd_match.groups()[0]) if rmsd_match else None
         score_match = re.search(r"protocols.loop_modeling.LoopModeler: Total Score: ([-]?[\d\.]+)", stdout)
         score = float(score_match.groups()[0]) if score_match else None
         structure_match = re.search(r"-in:file:s ([\w\/\.]+)", stdout)
@@ -240,7 +251,7 @@ class DiskDataController:
 
         log_dict = { 'benchmark_id':benchmark_id,
                      'protocol_id':protocol_id,
-                     'rmsd':rmsd,
+                     'rmsd':self.rmsd,
                      'score':score,
                      'stderr':stderr,
                      'stdout':stdout,

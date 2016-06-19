@@ -63,6 +63,7 @@ input_pdbs = benchmark_define_dict['input_pdbs']
 pdb_path = input_pdbs[task_id % len(input_pdbs)].pdb_path
 pdb_tag = os.path.splitext(os.path.basename(pdb_path))[0]
 loop_path = re.sub('\.pdb(\.gz)?$', '.loop', pdb_path)
+structures_path = benchmark_define_dict['structures_path']
 
 ### Figure out which loop to benchmark.
 ##
@@ -103,8 +104,6 @@ rosetta_command = [
         rosetta_scripts,
         '-database', rosetta_database,
         '-in:file:s', pdb_path,
-        '-in:file:native', reference_structure,
-        '-out:nooutput',
         '-parser:protocol', script_path,
         '-parser:script_vars',
             'loop_file={0}'.format(loop_path),
@@ -113,12 +112,17 @@ rosetta_command = [
 
 if use_database:
     rosetta_command += [
+        '-in:file:native', reference_structure,
+        '-out:nooutput',
         '-inout:dbms:mode', 'mysql',
         '-inout:dbms:database_name', settings.db_name,
         '-inout:dbms:user', settings.db_user,
         '-inout:dbms:password', settings.db_password,
         '-inout:dbms:host', settings.db_host,
         '-inout:dbms:port', settings.db_port,
+    ]
+else rosetta_command += [
+        '-out:file:o', os.path.join(structures_path, task_id+'.pdb'),
     ]
 
 if flags_path is not None:
@@ -145,6 +149,8 @@ stdout, stderr = utilities.tee(rosetta_command, env=rosetta_env)
 protocol_match = re.search("protocol_id '([1-9][0-9]*)'", stdout)
 protocol_id = protocol_match.groups()[0] if protocol_match else None
 
+if not use_database:
+    data_controller.calc_rmsd(loop_path, reference_structure, os.path.join(structures_path, task_id+'.pdb'))
 data_controller.write_log(benchmark_id, protocol_id, stdout, stderr, task_id)
 
 ##with database.connect() as session:
