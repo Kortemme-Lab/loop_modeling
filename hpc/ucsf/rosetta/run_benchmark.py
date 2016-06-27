@@ -96,6 +96,7 @@ Options:
         rosetta flag files, and "fast" settings as the previous jobs did.  
         However, results may differ if the contents of these files, or the 
         checked out version of rosetta, are changed.
+        This feature has not been implemented for the disk platform.
 
     --complete ID -c ID
         If benchmark ID is missing data, this command queues up extra jobs for the benchmark using the same settings.
@@ -209,7 +210,7 @@ def run_benchmark(name, script, pdbs,
         qsub_command += '-l', 'h_rt=0:30:00'
     else:
         qsub_command += '-t', '1-{0}'.format(nstruct * len(pdbs))
-        qsub_command += '-l', 'h_rt=6:00:00'
+        qsub_command += '-l', 'h_rt=24:00:00'
 
     if not arguments['--keep-old-data']:
         utilities.clear_directory('job_output')
@@ -220,6 +221,11 @@ def run_benchmark(name, script, pdbs,
 
 
 def resume_benchmark(benchmark_id, nstruct=None, use_database=False):
+    
+    # This feature has not been implemented on the disk platfrom
+    if not use_database:
+        raise Exception("resume benchmark has not been implemented on the disk platform!") 
+
     qsub_command = 'qsub',
     benchmark_command = 'loop_benchmark.py', benchmark_id, '--use-database' if use_database else '--not-use-database'
 
@@ -260,7 +266,7 @@ def resume_benchmark(benchmark_id, nstruct=None, use_database=False):
         qsub_command += '-l', 'h_rt=0:30:00'
     else:
         qsub_command += '-t', '1-{0}'.format((nstruct or 500) * num_pdbs)
-        qsub_command += '-l', 'h_rt=4:00:00'
+        qsub_command += '-l', 'h_rt=24:00:00'
 
     print "Your benchmark \"{0}\" (id={1}) is being resumed".format(
             benchmark_define_dict['name'], benchmark_id)
