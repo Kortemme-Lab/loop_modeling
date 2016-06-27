@@ -90,3 +90,21 @@ def require_mysql_connector():
 
         print
 
+def require_biopython():
+    try:
+        import Bio.PDB
+    except ImportError:
+        ask_to_install("Installing biopython.")
+        
+        root_dir = utilities.get_benchmark_root()
+        libs_dir = os.path.join(root_dir, 'libraries')
+        package_dir = os.path.join(libs_dir, 'biopython-1.67')
+        package_archive = package_dir + '.zip'
+
+        unpack_command = 'unzip', '-d', libs_dir, package_archive
+        install_command = shlex.split('python setup.py install --user')
+
+        subprocess.check_call(unpack_command)
+        subprocess.check_call(install_command, cwd=package_dir)
+
+        print
