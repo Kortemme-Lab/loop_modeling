@@ -29,9 +29,7 @@
     </TASKOPERATIONS>
 
     <MOVERS>
-        <LoopModeler name="modeler" loops_file="%%loop_file%%" fast="%%fast%%">
-          <Fullatom ramp_rama="no" ramp_rep="no"/>
-        </LoopModeler>
+        <LoopModeler name="modeler" config="kic" loops_file="%%loop_file%%" fast="%%fast%%" />
     </MOVERS>
 
     <PROTOCOLS>
