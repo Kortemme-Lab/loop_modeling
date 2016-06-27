@@ -47,7 +47,6 @@ Options:
 
 import sys
 from libraries import settings
-#from libraries import database
 from libraries.dataController import DataController
 from libraries import colortext
 
@@ -63,74 +62,6 @@ def exit(message):
 
 def get_progress(data_controller, database_name, benchmark_name):
     return data_controller.get_progress(database_name, benchmark_name)
-
-#    try: database.test_connect(db_name = database_name)
-#    except RuntimeError, error:
-#        print error
-#        sys.exit(1)
-#
-#    # Create an entry in the benchmarks table.
-#    with database.connect(db_name = database_name) as session:
-#
-#        messages = ['']
-#
-#        # Use the latest benchmark's name if none was supplied
-#        if not benchmark_name:
-#            q = session.query(database.Benchmarks).order_by(database.Benchmarks.benchmark_id.desc())
-#            if q.count() == 0:
-#                exit('There is no benchmark data in the database "{0}".'.format(database_name))
-#            benchmark_name = q.first().name
-#            messages.append('No benchmark was selected. Choosing the most recent benchmark: "{0}".\n'.format(benchmark_name))
-#
-#        # Retrieve the set of benchmark runs associated the benchmark name
-#        q = session.query(database.Benchmarks).filter(database.Benchmarks.name == benchmark_name)
-#        if q.count() == 0:
-#            exit('There is no benchmark data in the database "{0}" for benchmark "{1}".'.format(database_name, benchmark_name))
-#        benchmark_runs = q.all()
-#
-#        # Set nstruct to be the maximum value over the runs
-#        nstruct = max([b.nstruct for b in benchmark_runs])
-#
-#        # Retrieve the set of PDB paths
-#        pdb_paths = set()
-#        for b in benchmark_runs:
-#            pdb_paths = pdb_paths.union(set([q.pdb_path for q in session.query(database.BenchmarkInputs).filter(database.BenchmarkInputs.benchmark_id == b.benchmark_id).all()]))
-#
-#        # Retrieve the number of jobs with structures
-#        num_cases = len(pdb_paths)
-#        benchmark_size = nstruct * num_cases
-#        total_count = 0.0
-#        pdb_counts = dict.fromkeys(pdb_paths, 0)
-#        for r in session.execute('''
-#                SELECT input_tag, COUNT(input_tag)
-#                FROM structures
-#                INNER JOIN batches ON structures.batch_id=batches.batch_id
-#                INNER JOIN benchmark_protocols ON benchmark_protocols.protocol_id=batches.protocol_id
-#                INNER JOIN benchmarks ON benchmarks.benchmark_id=benchmark_protocols.benchmark_id
-#                WHERE benchmarks.name="{0}"
-#                GROUP BY input_tag'''.format(benchmark_name)):
-#            total_count += min(r[1], nstruct) # do not count extra jobs
-#            assert(r[0] in pdb_paths)
-#            pdb_counts[r[0]] = r[1]
-#
-#        num_failed = session.execute('''
-#                SELECT COUNT(log_id) AS NumFailed
-#                FROM tracer_logs
-#                INNER JOIN benchmarks ON benchmarks.benchmark_id=tracer_logs.benchmark_id
-#                WHERE stderr <> "" AND benchmarks.name="{0}"'''.format(benchmark_name))
-#        for r in num_failed: num_failed = r[0]; break
-#        progress = 100 * (total_count/benchmark_size)
-#
-#        return dict(
-#            Messages = '\n'.join(messages),
-#            Progress = progress,
-#            StructureCount = num_cases,
-#            nstruct = nstruct,
-#            TotalCount = benchmark_size,
-#            CompletedCount = int(total_count),
-#            FailureCount = num_failed,
-#            CountPerStructure = pdb_counts,
-#        )
 
 
 def get_progress_for_terminal(data_controller, database_name, benchmark_name, only_show_summary):

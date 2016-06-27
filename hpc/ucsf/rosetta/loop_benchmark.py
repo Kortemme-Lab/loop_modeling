@@ -37,7 +37,6 @@ import json
 
 from libraries import utilities
 from libraries import settings; settings.load(interactive=False)
-#from libraries import database
 from libraries.dataController import DataController 
 
 # Parse arguments.
@@ -52,6 +51,7 @@ use_database = sys.argv[2]=='--use-database'
 data_controller = DataController('database') if use_database else DataController('disk')
 
 # Figure out which loop to benchmark.
+
 benchmark_define_dict = data_controller.get_benchmark_define_dict(benchmark_id)
 script_path = benchmark_define_dict['script']
 script_vars = benchmark_define_dict['vars']
@@ -61,24 +61,10 @@ fast = benchmark_define_dict['fast']
 non_random = benchmark_define_dict['non_random']
 input_pdbs = benchmark_define_dict['input_pdbs']
 pdb_path = input_pdbs[task_id % len(input_pdbs)].pdb_path
+pdb_name = os.path.basename(pdb_path).split('.')[0] 
 pdb_tag = os.path.splitext(os.path.basename(pdb_path))[0]
 loop_path = re.sub('\.pdb(\.gz)?$', '.loop', pdb_path)
 structures_path = benchmark_define_dict['structures_path']
-
-### Figure out which loop to benchmark.
-##
-##with database.connect() as session:
-##    benchmark = session.query(database.Benchmarks).get(benchmark_id)
-##    script_path = benchmark.rosetta_script
-##    script_vars = json.loads(benchmark.rosetta_script_vars or '[]')
-##    flags_path = benchmark.rosetta_flags
-##    fragments_path = benchmark.rosetta_fragments
-##    fast = benchmark.fast
-##    input_pdbs = benchmark.input_pdbs
-##    pdb_path = input_pdbs[task_id % len(input_pdbs)].pdb_path
-##    pdb_tag = os.path.splitext(os.path.basename(pdb_path))[0]
-##    loop_path = re.sub('\.pdb(\.gz)?$', '.loop', pdb_path)
-##    non_random = benchmark.non_random
 
 # Set LD_LIBRARY_PATH so that the MySQL libraries can be found.
 
@@ -97,6 +83,7 @@ rosetta_scripts = os.path.join(rosetta_path, 'source', 'bin', 'rosetta_scripts.m
 rosetta_database = os.path.join(rosetta_path, 'database')
 
 # This assumes that the script is being passed a structure in a folder with a sibling folder containing a reference structure with the same filename
+
 reference_structure = os.path.join(os.path.split(os.path.split(pdb_path)[0])[0], 'reference', os.path.split(pdb_path)[1])
 assert(os.path.exists(reference_structure))
 
@@ -121,8 +108,10 @@ if use_database:
         '-inout:dbms:host', settings.db_host,
         '-inout:dbms:port', settings.db_port,
     ]
-else rosetta_command += [
-        '-out:file:o', os.path.join(structures_path, task_id+'.pdb'),
+else:
+    rosetta_command += [
+        #'-in:file:native', reference_structure, ###DEBUG
+        '-out:prefix', structures_path+'/'+str(task_id)+'_',
     ]
 
 if flags_path is not None:
@@ -150,14 +139,6 @@ protocol_match = re.search("protocol_id '([1-9][0-9]*)'", stdout)
 protocol_id = protocol_match.groups()[0] if protocol_match else None
 
 if not use_database:
-    data_controller.calc_rmsd(loop_path, reference_structure, os.path.join(structures_path, task_id+'.pdb'))
+    data_controller.calc_rmsd(loop_path, reference_structure, os.path.join(structures_path, str(task_id)+'_'+pdb_name+'_0001.pdb'))
 data_controller.write_log(benchmark_id, protocol_id, stdout, stderr, task_id)
 
-##with database.connect() as session:
-##    if protocol_id is not None:
-##        benchmark_map = database.BenchmarkProtocols(benchmark_id, protocol_id)
-##        session.add(benchmark_map)
-##        session.commit()  # Make sure the protocol mapping is saved even if 
-##                          # something else messes up this transaction later on.
-##    log_row = database.TracerLogs(benchmark_id, protocol_id, stdout, stderr)
-##    session.add(log_row)

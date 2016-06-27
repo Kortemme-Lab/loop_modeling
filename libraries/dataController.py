@@ -24,26 +24,37 @@ class DataController:
         else:
             raise ValueError('Invalid dataController platform %s' % platform )
     
+
     def create_benchmark(self, benchmark_define_dict, pdbs):
         benchmark_id = self.implement.create_benchmark(benchmark_define_dict, pdbs)
         print( "Your benchmark \"{0}\" (id={1}) has been created".format(
                benchmark_define_dict['name'], benchmark_id) )
         return benchmark_id
         
+
     def get_benchmark_define_dict(self, benchmark_id):
         return self.implement.get_benchmark_define_dict(benchmark_id)
         
+
     def get_benchmark_variables(self, benchmark_id):
         return self.implement.get_benchmark_variables(benchmark_id)
     
+
+    def calc_rmsd(self, loop_file, native_file, modeled_file):
+        return self.implement.calc_rmsd(loop_file, native_file, modeled_file)
+    
+
     def write_log(self, benchmark_id, protocol_id, stdout, stderr, job_id=0):
         return self.implement.write_log(benchmark_id, protocol_id, stdout, stderr, job_id) 
       
+
     def get_benchmark_list_by_name(self, database_name):
         return self.implement.get_benchmark_list_by_name(database_name)  
 
+
     def get_progress(self, database_name, benchmark_name):
         return self.implement.get_progress(database_name, benchmark_name)
+
 
 class DatabaseDataController:
     '''
@@ -55,6 +66,7 @@ class DatabaseDataController:
         except RuntimeError, error: 
             print error
             sys.exit(1)
+
 
     def create_benchmark(self, benchmark_define_dict, pdbs):
         d = benchmark_define_dict
@@ -74,6 +86,7 @@ class DatabaseDataController:
 
             session.add(benchmark); session.flush()
             return str(benchmark.id)
+
 
     def get_benchmark_define_dict(self, benchmark_id):
         benchmark_define_dict = {}
@@ -95,6 +108,7 @@ class DatabaseDataController:
             benchmark_define_dict['input_pdbs'] = benchmark.input_pdbs
         return benchmark_define_dict
 
+
     def get_benchmark_variables(self, benchmark_id):
         benchmark_records = [r for r in session.query(database.Benchmarks).filter(database.Benchmarks.name == benchmark_id)]
         benchmark_variables = dict(
@@ -107,6 +121,7 @@ class DatabaseDataController:
         )
         return benchmark_variables
 
+
     def write_log(self, benchmark_id, protocol_id, stdout, stderr, job_id):
         with database.connect() as session:
             if protocol_id is not None:
@@ -117,10 +132,12 @@ class DatabaseDataController:
             log_row = database.TracerLogs(benchmark_id, protocol_id, stdout, stderr)
             session.add(log_row)
 
+
     def get_benchmark_list_by_name(self, database_name):
         with database.connect(db_name = database_name) as session:
             return [r.name for r in session.execute('SELECT DISTINCT name from benchmarks ORDER BY benchmark_id DESC')]
        
+
     def get_progress(self, database_name, benchmark_name):
         # Create an entry in the benchmarks table.
         with database.connect(db_name = database_name) as session:
@@ -198,6 +215,7 @@ class DiskDataController:
                 print error
                 sys.exit(1)
 
+
     def create_benchmark(self, benchmark_define_dict, pdbs):
         id = self.get_new_benchmark_id()
         benchmark_define_dict['input_pdbs'] = pdbs
@@ -206,15 +224,20 @@ class DiskDataController:
         os.makedirs( os.path.join( self.data_path, id ) )
         os.makedirs( os.path.join( self.data_path, id, 'logs' ) )
         os.makedirs( os.path.join( self.data_path, id, 'structures' ) )
+        
+        # Dump the benchmark definition dictionary into a JSON file
+        
         with open( os.path.join( self.data_path, id, 'benchmark_define.json' ), 'w' ) as f:
             f.write(json.dumps(benchmark_define_dict, sort_keys=True, indent=4) )
         with open( os.path.join( self.data_path, id, benchmark_define_dict['name']+'.results' ), 'w' ) as f:
             f.write('#PDB    Model   Loop_rmsd   Total_energy    Runtime\n')
         return id
     
+
     def get_new_benchmark_id(self):
         current_ids = os.listdir(self.data_path)
         return '0' if 0==len(current_ids) else str(1 + max( [ int(x) for x in current_ids] )) 
+
 
     def get_benchmark_define_dict(self, benchmark_id):
         benchmark_define_dict = None
@@ -223,18 +246,21 @@ class DiskDataController:
         benchmark_define_dict['input_pdbs'] = [DiskBenchmarkInput(pdb_path) for pdb_path in benchmark_define_dict['input_pdbs']]
         return benchmark_define_dict
 
+
     def get_benchmark_variables(self, benchmark_id, job_id):
         # TODO: implement
         return None
     
+
     def calc_rmsd(self, loop_file, native_file, modeled_file):
         residue_list = []
         with open(loop_file, 'r') as f_loop:
-            s = f_loop.readline().split
+            s = f_loop.readline().split()
             for i in range(int(s[1]), int(s[2])+1):
                 residue_list.append(i) 
         self.rmsd = calc_rmsd_from_file(native_file, modeled_file, 0, 0, 'A', 'A', residue_list) 
     
+
     def write_log(self, benchmark_id, protocol_id, stdout, stderr, job_id):
         build_time_match = re.search(r"protocols.loop_modeling.LoopModeler: Build Time: ([\d]+) sec", stdout)
         build_time = int(build_time_match.groups()[0]) if build_time_match else None
@@ -242,8 +268,6 @@ class DiskDataController:
         centroid_time = int(centroid_time_match.groups()[0]) if centroid_time_match else None
         fullatom_time_match = re.search(r"protocols.loop_modeling.LoopModeler: Fullatom Time: ([\d]+) sec", stdout)
         fullatom_time = int(fullatom_time_match.groups()[0]) if fullatom_time_match else None
-        #rmsd_match = re.search(r"protocols.loop_modeling.LoopModeler: Loop Backbone RMSD: ([\d\.]+)", stdout)
-        #rmsd = float(rmsd_match.groups()[0]) if rmsd_match else None
         score_match = re.search(r"protocols.loop_modeling.LoopModeler: Total Score: ([-]?[\d\.]+)", stdout)
         score = float(score_match.groups()[0]) if score_match else None
         structure_match = re.search(r"-in:file:s ([\w\/\.]+)", stdout)
@@ -259,14 +283,20 @@ class DiskDataController:
                      'time_build':build_time,
                      'time_centroid':centroid_time,
                      'time_fullatom':fullatom_time}
+        
+        # Write the log dictionary into a JSON file
+
         with open( os.path.join( self.data_path, str(benchmark_id), 'logs', 'log'+str(job_id)+'.json'), 'w' ) as f:
             f.write( json.dumps(log_dict, sort_keys=True, indent=4) )
-        self.write_result(benchmark_id, job_id, structure, rmsd, score, build_time+centroid_time+fullatom_time)
+        self.write_result(benchmark_id, job_id, structure, self.rmsd, score, build_time+centroid_time+fullatom_time)
+
 
     def write_result(self, benchmark_id, job_id, structure, rmsd, score, runtime):
         benchmark_define_dict = self.get_benchmark_define_dict( benchmark_id )
         model_id = job_id // len(benchmark_define_dict['input_pdbs'])
+
         #Accquire the lock that protects the result file
+
         lock_fd = os.open( os.path.join( self.data_path, str(benchmark_id), 'lock' ), os.O_CREAT)
         while True:
             try:
@@ -283,10 +313,13 @@ class DiskDataController:
         except:
             fcntl.flock(lock_fd, fcntl.LOCK_UN)
             raise
+
         #Release the lock
+
         fcntl.flock(lock_fd, fcntl.LOCK_UN)
         os.close(lock_fd) 
     
+
     def get_benchmark_list_by_name(self, database_name):
         benchmark_list = []
         for benchmark_id in os.listdir( self.data_path ):
@@ -294,18 +327,25 @@ class DiskDataController:
             benchmark_list.append( (benchmark_id, benchmark_define_dict['name']) )
         return benchmark_list
        
+
     def get_progress(self, database_name, benchmark_name):
         progress_dict = {}
         if not benchmark_name:
             exit( "No benchmark was selected!" )
+
         #Get the benchmark ids coresponding to the benchmark name
+
         all_benchmark_list = self.get_benchmark_list_by_name(database_name)
         benchmark_list = [ int(entry[0]) for entry in all_benchmark_list if entry[1] == benchmark_name ]
         most_recent_id = max( benchmark_list )
         benchmark_define_dict = self.get_benchmark_define_dict(most_recent_id)
+
         #Get the Messages
+
         progress_dict['Messages'] = 'Reporting the most recent benchmark with name {0}, id={1}'.format(benchmark_name, most_recent_id)
+
         #Get nstruct
+
         progress_dict['nstruct'] = benchmark_define_dict['nstruct']
         pdb_pathes = set( [ i.pdb_path for i in benchmark_define_dict['input_pdbs'] ] )
         pdb_name_path_dict = {}
@@ -313,7 +353,9 @@ class DiskDataController:
             pdb_name_path_dict[ os.path.split(p)[1].split('.')[0] ] = p
         progress_dict['StructureCount'] = len(pdb_pathes)
         progress_dict['TotalCount'] = progress_dict['nstruct'] * progress_dict['StructureCount']
+
         #Count completed jobs
+
         progress_dict['CountPerStructure'] = dict.fromkeys(pdb_pathes, 0)
         progress_dict['CompletedCount'] = 0
         with open( os.path.join(self.data_path, str(most_recent_id), benchmark_name+'.results'), 'r' ) as f_result:
@@ -323,7 +365,9 @@ class DiskDataController:
                 progress_dict['CountPerStructure'][ pdb_name_path_dict[s[0]] ] += 1
                 progress_dict['CompletedCount'] += 1 
         progress_dict['Progress'] = 100 * progress_dict['CompletedCount']/progress_dict['TotalCount']
+
         #Count failed jobs
+
         progress_dict['FailureCount'] = 0
         for log in os.listdir( os.path.join(self.data_path, str(most_recent_id), 'logs') ):
             with open( os.path.join(self.data_path, str(most_recent_id), 'logs', log) ) as f:
@@ -331,6 +375,7 @@ class DiskDataController:
                 if log_dict['stderr'] != '':
                     progress_dict['FailureCount'] += 1
         return progress_dict
+
 
 class DiskBenchmarkInput:
     ''' For the backward compatibility to the database.BenchmarkInput '''

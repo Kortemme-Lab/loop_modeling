@@ -8,7 +8,9 @@ import Bio.PDB
 class RMSDCalculator():
     '''Calculate the RMSD of a given sequence between two structures''' 
     def __init__(self, chain1, chain2, residue_list):
+        
         #Save residues of each chain into a list, such that residue indices become Rosetta numbers
+        
         chain1_list = [residue for residue in chain1]
         chain2_list = [residue for residue in chain2]
         
@@ -24,11 +26,13 @@ class RMSDCalculator():
                     c2.append( atom.get_coord() )
         self.coord1 = np.array(c1)
         self.coord2 = np.array(c2)
+
          
     def rmsd(self):
         diff = self.coord1 - self.coord2
         l = diff.shape[0]
         return np.sqrt( sum(sum( np.multiply(diff,diff) ))/l )
+
 
 def calc_rmsd_from_file( file1, file2, model1, model2, chain1, chain2, residue_list ):
     parser = Bio.PDB.PDBParser()
