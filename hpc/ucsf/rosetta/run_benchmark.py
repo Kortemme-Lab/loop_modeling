@@ -33,7 +33,7 @@ compiles rosetta with database support before each run.
 Usage:
     run_benchmark.py <name> <script> <pdbs>... [--var=VAR ...] [options]
     run_benchmark.py --resume ID [options]
-    run_benchmark.py --complete ID
+    run_benchmark.py --complete ID [options]
     run_benchmark.py --compile-only
 
 Arguments:
@@ -120,7 +120,6 @@ import sys
 
 from libraries import utilities
 from libraries import settings
-#from libraries import database
 from libraries.dataController import DataController 
 from check_progress import get_progress
 
@@ -164,7 +163,8 @@ def compile_rosetta():
 
 def run_benchmark(name, script, pdbs,
         vars=(), flags=None, fragments=None, nstruct=None,
-        desc=None, fast=False, non_random=True, use_database=False):
+        desc=None, fast=False, non_random=True, use_database=False,
+        complete_run=False, keep_old_data=False):
 
     if nstruct is not None:
         try: nstruct = int(nstruct)
@@ -199,20 +199,28 @@ def run_benchmark(name, script, pdbs,
                               'fast':fast, 'non_random':non_random }
     benchmark_id = data_controller.create_benchmark(benchmark_define_dict,
                                                     pdbs)
-
+    
     # Submit the benchmark to the cluster.
+    submit_benchmark(benchmark_id, nstruct * len(pdbs), fast=fast, use_database=use_database,
+                    complete_run=complete_run, keep_old_data=keep_old_data)
+
+
+def submit_benchmark(benchmark_id, num_tasks, fast=False, use_database=False, complete_run=False,
+                    keep_old_data=False):
+    '''Submit the benchmark to the cluster.'''
 
     qsub_command = 'qsub',
-    benchmark_command = 'loop_benchmark.py', benchmark_id, '--use-database' if use_database else '--not-use-database'
-
+    benchmark_command = ('loop_benchmark.py', str(benchmark_id),
+                        '--use-database' if use_database else '--not-use-database',
+                        '--complete-run' if complete_run else '--not-complete_run')
     if fast:
-        qsub_command += '-t', '1-{0}'.format(nstruct * len(pdbs))
+        qsub_command += '-t', '1-{0}'.format(num_tasks)
         qsub_command += '-l', 'h_rt=0:30:00'
     else:
-        qsub_command += '-t', '1-{0}'.format(nstruct * len(pdbs))
+        qsub_command += '-t', '1-{0}'.format(num_tasks)
         qsub_command += '-l', 'h_rt=24:00:00'
 
-    if not arguments['--keep-old-data']:
+    if not keep_old_data:
         utilities.clear_directory('job_output')
     qsub_command += '-o', 'job_output', '-e', 'job_output'
     qsub_cwd = os.path.dirname(__file__)
@@ -227,7 +235,9 @@ def resume_benchmark(benchmark_id, nstruct=None, use_database=False):
         raise Exception("resume benchmark has not been implemented on the disk platform!") 
 
     qsub_command = 'qsub',
-    benchmark_command = 'loop_benchmark.py', benchmark_id, '--use-database' if use_database else '--not-use-database'
+    benchmark_command = ('loop_benchmark.py', benchmark_id, 
+                        '--use-database' if use_database else '--not-use-database', 
+                        '--not-complete-run')
 
     # You get weird errors if you forget to cast nstruct from string to int.
 
@@ -280,62 +290,71 @@ def resume_benchmark(benchmark_id, nstruct=None, use_database=False):
 
 
 def complete_benchmark(benchmark_id, nstruct=None, use_database=False):
-    qsub_command = 'qsub',
-    benchmark_command = 'loop_benchmark.py', benchmark_id, '--use-database' if use_database else '--not-use-database'
-
+    name = benchmark_id
     # You get weird errors if you forget to cast nstruct from string to int.
 
+    # Get the DataController of the benchmark
+    data_controller = DataController('database') if use_database else DataController('disk')
+    
     # Get the progress data for the job
-    progress_data = get_progress(settings.db_name, benchmark_id)
+    progress_data = get_progress(data_controller, settings.db_name, benchmark_id)
 
     # Set up nstruct
     nstruct = progress_data['nstruct']
     if not nstruct:
         sys.exit('The nstruct variable is not set for this benchmark. Exiting.')
 
-    # Set up the bins for structures that need extra jobs to be run. We run extra jobs in case these fail as well.
-    bins = {5 : [], 10 : [], 20 : [], 30 : []}
-    d_bins = bins.keys()
-    for input_tag, finished_count in progress_data['CountPerStructure'].iteritems():
-        if finished_count < nstruct:
-            missing_count = nstruct - finished_count
-            if missing_count <= 2:
-                bins[5].append(input_tag)
-            elif missing_count <= 5:
-                bins[10].append(input_tag)
-            elif missing_count <= 10:
-                bins[20].append(input_tag)
-            elif missing_count <= 15:
-                bins[30].append(input_tag)
+    if use_database: 
+        # Set up the bins for structures that need extra jobs to be run. We run extra jobs in case these fail as well.
+        bins = {5 : [], 10 : [], 20 : [], 30 : []}
+        d_bins = bins.keys()
+        for input_tag, finished_count in progress_data['CountPerStructure'].iteritems():
+            if finished_count < nstruct:
+                missing_count = nstruct - finished_count
+                if missing_count <= 2:
+                    bins[5].append(input_tag)
+                elif missing_count <= 5:
+                    bins[10].append(input_tag)
+                elif missing_count <= 10:
+                    bins[20].append(input_tag)
+                elif missing_count <= 15:
+                    bins[30].append(input_tag)
+                else:
+                    bin_size = ((int((missing_count - 11)/20.0) + 2) * 20) + 10
+                    bins[bin_size] = bins.get(bin_size, [])
+                    bins[bin_size].append(input_tag)
+        for d_bin in d_bins:
+            if not bins[d_bin]:
+                del bins[d_bin]
+
+        benchmark_variables = data_controller.get_benchmark_variables( benchmark_id )
+        for x in range(0, len(benchmark_variables['rosetta_script_vars']) - 1):
+            if benchmark_variables['rosetta_script_vars'][x] != benchmark_variables['rosetta_script_vars'][x + 1]:
+                sys.exit('Exception (ambiguity): The benchmark {0} has multiple RosettaScript variable values associated with previous runs: "{1}".'.format(benchmark_id, '", "'.join(map(str, sorted(benchmark_variables['rosetta_script_vars'])))))
+
+        for k, v in sorted(benchmark_variables.iteritems()):
+            if len(v) == 0:
+                sys.exit('Exception (missing data): The benchmark {0} has no {1} values associated with previous runs.'.format(benchmark_id, k.replace('_', ' ')))
+            elif k == 'rosetta_script_vars':
+                benchmark_variables[k] = benchmark_variables[k][0]
+            elif len(v) > 1:
+                sys.exit('Exception (ambiguity): The benchmark {0} has multiple {1} values associated with previous runs: "{2}".'.format(benchmark_id, k.replace('_', ' '), '", "'.join(sorted(v))))
             else:
-                bin_size = ((int((missing_count - 11)/20.0) + 2) * 20) + 10
-                bins[bin_size] = bins.get(bin_size, [])
-                bins[bin_size].append(input_tag)
-    for d_bin in d_bins:
-        if not bins[d_bin]:
-            del bins[d_bin]
+                benchmark_variables[k] = v.pop()
 
-    name = benchmark_id
-    data_controller = DataController('database') if use_database else DataController('disk')
-    benchmark_variables = data_controller.get_benchmark_variables( benchmark_id )
-    for x in range(0, len(benchmark_variables['rosetta_script_vars']) - 1):
-        if benchmark_variables['rosetta_script_vars'][x] != benchmark_variables['rosetta_script_vars'][x + 1]:
-            sys.exit('Exception (ambiguity): The benchmark {0} has multiple RosettaScript variable values associated with previous runs: "{1}".'.format(benchmark_id, '", "'.join(map(str, sorted(benchmark_variables['rosetta_script_vars'])))))
+        for nstruct, pdbs in reversed(sorted(bins.iteritems())): # start the longer jobs first
+            run_benchmark(name, benchmark_variables['rosetta_script'], pdbs, vars=benchmark_variables['rosetta_script_vars'],
+                          flags=benchmark_variables['rosetta_flags'], fragments=benchmark_variables['rosetta_fragments'], nstruct=nstruct,
+                          desc=None, fast=benchmark_variables['fast'], non_random=benchmark_variables['non_random'])
 
-    for k, v in sorted(benchmark_variables.iteritems()):
-        if len(v) == 0:
-            sys.exit('Exception (missing data): The benchmark {0} has no {1} values associated with previous runs.'.format(benchmark_id, k.replace('_', ' ')))
-        elif k == 'rosetta_script_vars':
-            benchmark_variables[k] = benchmark_variables[k][0]
-        elif len(v) > 1:
-            sys.exit('Exception (ambiguity): The benchmark {0} has multiple {1} values associated with previous runs: "{2}".'.format(benchmark_id, k.replace('_', ' '), '", "'.join(sorted(v))))
-        else:
-            benchmark_variables[k] = v.pop()
-
-    for nstruct, pdbs in reversed(sorted(bins.iteritems())): # start the longer jobs first
-        run_benchmark(name, benchmark_variables['rosetta_script'], pdbs, vars=benchmark_variables['rosetta_script_vars'],
-                      flags=benchmark_variables['rosetta_flags'], fragments=benchmark_variables['rosetta_fragments'], nstruct=nstruct,
-                      desc=None, fast=benchmark_variables['fast'], non_random=benchmark_variables['non_random'])
+    else:
+        unfinished_task_list = data_controller.get_unfinished_task_list(progress_data['MostRecentID'],
+                                                                        progress_data['TotalCount'])
+        data_controller.create_task_completion_list_file(progress_data['MostRecentID'], unfinished_task_list)
+        benchmark_define_dict = data_controller.get_benchmark_define_dict(progress_data['MostRecentID'])
+        if len(unfinished_task_list) > 0:
+            submit_benchmark(progress_data['MostRecentID'], len(unfinished_task_list), fast=benchmark_define_dict['fast'],
+                            use_database=use_database, complete_run=True, keep_old_data=True)
 
 
 if __name__ == '__main__':

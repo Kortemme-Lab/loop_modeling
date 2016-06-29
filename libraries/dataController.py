@@ -17,6 +17,7 @@ class DataController:
     The lower level implementation could either use databases or dump data to files directly.
     '''
     def __init__(self, platform='disk'):
+        self.platform = platform
         if 'disk' == platform:
             self.implement = DiskDataController()
         elif 'database' == platform:
@@ -51,9 +52,19 @@ class DataController:
     def get_benchmark_list_by_name(self, database_name):
         return self.implement.get_benchmark_list_by_name(database_name)  
 
-
     def get_progress(self, database_name, benchmark_name):
         return self.implement.get_progress(database_name, benchmark_name)
+    
+    def get_unfinished_task_list(self, benchmark_id, num_all_tasks):
+        return self.implement.get_unfinished_task_list(benchmark_id, num_all_tasks)
+
+    def create_task_completion_list_file(self, benchmark_id, unfinished_task_list): 
+        if self.platform == 'disk':
+            return self.implement.create_task_completion_list_file(benchmark_id, unfinished_task_list)
+    
+    def read_task_completion_list(self, benchmark_id):
+        if self.platform == 'disk':
+            return self.implement.read_task_completion_list(benchmark_id)
 
 
 class DatabaseDataController:
@@ -201,6 +212,10 @@ class DatabaseDataController:
                 FailureCount = num_failed,
                 CountPerStructure = pdb_counts,
             )
+    
+    
+    def get_unfinished_task_list(self, benchmark_id, num_all_tasks):
+        return None
         
     
 class DiskDataController:
@@ -284,12 +299,15 @@ class DiskDataController:
                      'time_centroid':centroid_time,
                      'time_fullatom':fullatom_time}
         
-        # Write the log dictionary into a JSON file
+        # Write the log dictionary into a JSON file and write the result atomically
 
-        with open( os.path.join( self.data_path, str(benchmark_id), 'logs', 'log'+str(job_id)+'.json'), 'w' ) as f:
+        log_file = os.path.join( self.data_path, str(benchmark_id), 'logs', 'log'+str(job_id)+'.json') 
+        with open( log_file, 'w' ) as f:
             f.write( json.dumps(log_dict, sort_keys=True, indent=4) )
-        self.write_result(benchmark_id, job_id, structure, self.rmsd, score, build_time+centroid_time+fullatom_time)
-
+        try:
+            self.write_result(benchmark_id, job_id, structure, self.rmsd, score, build_time+centroid_time+fullatom_time)
+        except:
+            os.remove(log_file) 
 
     def write_result(self, benchmark_id, job_id, structure, rmsd, score, runtime):
         benchmark_define_dict = self.get_benchmark_define_dict( benchmark_id )
@@ -338,6 +356,7 @@ class DiskDataController:
         all_benchmark_list = self.get_benchmark_list_by_name(database_name)
         benchmark_list = [ int(entry[0]) for entry in all_benchmark_list if entry[1] == benchmark_name ]
         most_recent_id = max( benchmark_list )
+        progress_dict['MostRecentID'] = most_recent_id
         benchmark_define_dict = self.get_benchmark_define_dict(most_recent_id)
 
         #Get the Messages
@@ -375,6 +394,24 @@ class DiskDataController:
                 if log_dict['stderr'] != '':
                     progress_dict['FailureCount'] += 1
         return progress_dict
+
+
+    def get_unfinished_task_list(self, benchmark_id, num_all_tasks):
+        log_list = os.listdir( os.path.join(self.data_path, str(benchmark_id), 'logs') )
+        finished_task_list = [ int(l.split('.')[0][3:]) for l in log_list ] 
+        unfinished_task_list = list( set(range(0,num_all_tasks)).difference( set(finished_task_list) ) )
+        return unfinished_task_list
+
+    def create_task_completion_list_file(self, benchmark_id, unfinished_task_list): 
+        '''Create a file that contains the list of unfinished tasks'''
+        with open(os.path.join(self.data_path, str(benchmark_id), 'task_completion_list'), 'w') as f:
+            for task_num in unfinished_task_list:
+                f.write(str(task_num)+'\n')
+
+    def read_task_completion_list(self, benchmark_id):
+        '''Read the task completion list file into a list'''
+        with open(os.path.join(self.data_path, str(benchmark_id), 'task_completion_list'), 'r') as f:
+            return [ int(task_num) for task_num in f.readlines() ]
 
 
 class DiskBenchmarkInput:

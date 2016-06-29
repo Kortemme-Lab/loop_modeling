@@ -34,6 +34,7 @@ import optparse
 import subprocess
 import re
 import json
+import gzip
 
 from libraries import utilities
 from libraries import settings; settings.load(interactive=False)
@@ -41,14 +42,16 @@ from libraries.dataController import DataController
 
 # Parse arguments.
 
-if len(sys.argv) != 3 or 'SGE_TASK_ID' not in os.environ:
-    print 'Usage: SGE_TASK_ID=<id> loop_benchmark.py <benchmark_id> <if_use_database>'
+if len(sys.argv) != 4 or 'SGE_TASK_ID' not in os.environ:
+    print 'Usage: SGE_TASK_ID=<id> loop_benchmark.py <benchmark_id> <if_use_database> <if_complete_run>'
     sys.exit(1)
 
-task_id = int(os.environ['SGE_TASK_ID']) - 1
 benchmark_id = int(sys.argv[1])
 use_database = sys.argv[2]=='--use-database'
+complete_run = sys.argv[3]=='--complete-run'
 data_controller = DataController('database') if use_database else DataController('disk')
+task_id = data_controller.read_task_completion_list(benchmark_id)[ int(os.environ['SGE_TASK_ID']) - 1 ] \
+          if complete_run else int(os.environ['SGE_TASK_ID'])-1
 
 # Figure out which loop to benchmark.
 
@@ -112,6 +115,7 @@ else:
     rosetta_command += [
         #'-in:file:native', reference_structure, ###DEBUG
         '-out:prefix', structures_path+'/'+str(task_id)+'_',
+        '-overwrite',
     ]
 
 if flags_path is not None:
@@ -139,6 +143,14 @@ protocol_match = re.search("protocol_id '([1-9][0-9]*)'", stdout)
 protocol_id = protocol_match.groups()[0] if protocol_match else None
 
 if not use_database:
-    data_controller.calc_rmsd(loop_path, reference_structure, os.path.join(structures_path, str(task_id)+'_'+pdb_name+'_0001.pdb'))
+    struct_path = os.path.join(structures_path, str(task_id)+'_'+pdb_name+'_0001.pdb') 
+    data_controller.calc_rmsd(loop_path, reference_structure, struct_path)
+    #compress the pdb file
+    with open(struct_path, 'rb') as f_in:
+        f_out = gzip.open(struct_path+'.gz', 'wb')
+        f_out.writelines(f_in)
+        f_out.close()    
+    os.remove(struct_path)
+
 data_controller.write_log(benchmark_id, protocol_id, stdout, stderr, task_id)
 
