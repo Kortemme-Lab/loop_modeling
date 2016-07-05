@@ -46,7 +46,7 @@ run_benchmark.py
   protocol (as a rosetta script), and a list of PDB files.  The name is just 
   used to refer back to the benchmark later and can be pretty much anything.  
   The rosetta script format is described `here 
-  <https://www.rosettacommons.org/docs/latest/RosettaScripts.html>`_.  The only 
+  <https://www.rosettacommons.org/demos/latest/tutorials/scripting_with_rosettascripts/scripting_with_rosettascripts>`_.  The only 
   requirement for the scripts is that they contain a ReportToDB mover 
   configured exactly as shown here::
 
@@ -63,7 +63,8 @@ run_benchmark.py
 
   The first time you run this script, you will be prompted for a number of 
   settings required by the benchmark.  These include the path to rosetta, the 
-  URL to the database used for IO (see next paragraph), and other miscellaneous 
+  URL to the database used for IO (just use the default setting if you want to 
+  benchmark without a MySQL database), and other miscellaneous 
   things.  These settings are then saved in a file called ``settings.conf`` in 
   the root directory of the repository.  This is a regular text file and can be 
   edited by hand if you ever need to change any of your settings.  These is 
@@ -71,10 +72,11 @@ run_benchmark.py
   default settings you were prompted for.  For more information about this, 
   consult ``libraries/settings.py``.
   
-  The benchmark is meant to use a MySQL database for IO.  This script fills in 
-  a table with the parameters for each job that needs to run, compiles rosetta 
-  with support for MySQL (not a trivial thing to do), does a bunch of error 
-  checking, and finally submits the benchmark job.  It also has the ability to 
+  The benchmark can work with or without a MySQL database. When the script runs
+  without a MySQL database, it will create a ``data/`` directory to dump all the data. This 
+  script fills in a table with the parameters for each job that needs to run, 
+  compiles rosetta with support for MySQL (not a trivial thing to do), does a bunch 
+  of error checking, and finally submits the benchmark job.  It also has the ability to 
   resume a previous benchmark, which can be really useful when something goes 
   wrong.  Note that this script is written specifically for the cluster at UCSF 
   and will not work anywhere else.  If you are trying to adapt the loop 
@@ -88,11 +90,12 @@ update_rosetta.py
 
 loop_benchmark.py
     This is the script that is actually submitted to the cluster to run the 
-    benchmark jobs.  It reads its parameters from the MySQL database and runs 
-    rosetta.  If you are trying to adapt the benchmark to a different system, 
-    this is where you should look to figure out the precise rosetta command 
-    lines that are being called.  Note that this script should only be invoked 
-    by the cluster scheduler; you are never meant to invoke it yourself.
+    benchmark jobs.  It reads its parameters from either the MySQL database or,
+    the ``data/`` directory and runs rosetta.  If you are trying to adapt the 
+    benchmark to a different system, this is where you should look to figure 
+    out the precise rosetta command lines that are being called.  Note that this 
+    script should only be invoked by the cluster scheduler; you are never meant 
+    to invoke it yourself.
 
 Example Command Lines
 ---------------------

@@ -19,15 +19,25 @@ Running the benchmark
 ---------------------
 The benchmark is only designed to run without modification on the QB3 cluster 
 at UCSF.  On that cluster, the commands to run the benchmark will look 
-something like the examples below.  More information on what these commands do 
-and how they can be configured is given in the README.rst files in their 
-respective directories::
+something like the examples below. The benchmark scripts can work with or without
+a MySQL server. To use with MySQL::
 
   cd hpc/ucsf/rosetta
-  ./run_benchmark.py B1 benchmarks/kic.xml input/full.pdbs
+  ./run_benchmark.py B1 benchmarks/kic_no_sfxn_ramp.xml input/mini_rosetta.pdbs --use-database
 
   cd ../../../analysis
   ./make_report B1
+
+To use without a MySQL server::
+  
+  cd hpc/ucsf/rosetta
+  ./run_benchmark.py B1 benchmarks/kic_no_sfxn_ramp_disk.xml input/mini_rosetta.pdbs
+
+  cd ../../../analysis
+  ./make_report ../hpc/ucsf/rosetta/B1/0/B1.results
+
+More information on what these commands do and how they can be configured is 
+given in the README.rst files in their respective directories.
 
 Table of Contents
 -----------------

@@ -26,26 +26,25 @@ score function weights.
 
 Protocol Descriptions
 ---------------------
-kic.xml
-    This script carries out "Next Generation KIC" as described by Stein et al.  
-    This is based on the analytic KIC move for sampling closed backbones.  Phi 
-    and psi torsions are picked from the 2-body Ramachandran distribution, 
-    omega torsions are sampled and are picked from a narrow empirical 
-    distribution, and both the score function and the temperature are ramped 
-    over the course of the simulation.  After each backbone move, the sidechain 
-    rotamers are optimized and the entire loop region in minimized by steepest 
-    descent before the resulting conformation is subjected to the Metropolis 
-    criterion.
+kic_disk.xml
+    This script carries "Kinematic Closure". Use this file when run without databases.
 
 kic_with_frags.xml
     This script carries out "KIC with Fragments", which has not yet been 
     published.  It uses a library of fragments culled from the PDB to sample 
     phi, psi, and omega torsions.  Note that you cannot use this script unless 
     you first generate a fragment library.  In the future we plan to include 
-    the fragment library in the benchmark.
+    the fragment library in the benchmark. Use this file when run with a MySQL database.
+
+kic_with_frags_disk.xml
+    Same protocol to kic_with_frags.xml. Use this file when run without databases.
 
 kic_no_sfxn_ramp.xml
-    This is dummy protocol we use just for comparison to other things.
+    This is dummy protocol we use just for comparison to other things. Use this
+    file when run with a MySQL database.
+
+kic_no_sfxn_ramp_disk.xml
+    Same protocol to kic_no_sfxn_ramp.xml. Use this file when run without databases.
 
 legacy/loopmodel.xml
     This script is a thin wrapper around the legacy rosetta ``loopmodel`` app, 
