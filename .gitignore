@@ -1,5 +1,6 @@
 /settings.conf
-/job_output
+hpc/ucsf/rosetta/job_output/
+hpc/ucsf/rosetta/data/
 /reports
 .idea/*
 *.pyc
