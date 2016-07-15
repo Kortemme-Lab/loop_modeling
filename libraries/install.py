@@ -90,6 +90,7 @@ def require_mysql_connector():
 
         print
 
+
 def require_biopython():
     try:
         import Bio.PDB
@@ -106,5 +107,18 @@ def require_biopython():
 
         subprocess.check_call(unpack_command)
         subprocess.check_call(install_command, cwd=package_dir)
+
+        print
+
+
+def require_klab():
+    try:
+        import klab
+    except ImportError:
+        ask_to_install("Installing klab.")
+
+        install_command = ['pip', 'install', '--user', '-e',
+                           'git+https://github.com/Kortemme-Lab/klab.git#egg=klab']
+        subprocess.check_call(install_command)
 
         print

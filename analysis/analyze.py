@@ -77,11 +77,12 @@ from rpy2.robjects.packages import importr
 import rpy2.robjects as ro
 import pandas.rpy.common as com
 
-from tools import colortext
-from tools.fs.fsio import read_file, get_file_lines, write_file
-from tools.bio.pdb import PDB
-from tools.bio.basics import backbone_atoms
-from tools.pymath.cartesian.rmsd import compute_rmsd_by_matrix
+install.require_klab()
+from klab import colortext
+from klab.fs.fsio import read_file, get_file_lines, write_file
+from klab.bio.pdb import PDB
+from klab.bio.basics import backbone_atoms
+from klab.pymath.cartesian.rmsd import compute_rmsd_by_matrix
 
 
 class LoopPredictionSet(object):

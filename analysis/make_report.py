@@ -85,6 +85,7 @@ from libraries import settings
 from libraries import statistics
 from libraries import utilities
 from libraries import colortext
+from libraries import install
 
 top_x = 5
 

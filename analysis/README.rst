@@ -81,6 +81,7 @@ The ``make_report.py`` script requires:
 
 - pdflatex with booktabs, graphicx, fullpage, hyperref
 - gnuplot
+- [klab](https://github.com/Kortemme-Lab/klab)
 
 Input Formats
 -------------
