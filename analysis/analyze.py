@@ -71,6 +71,7 @@ import time
 import pprint
 
 from libraries import docopt
+from libraries import install
 
 import pandas
 from rpy2.robjects.packages import importr
