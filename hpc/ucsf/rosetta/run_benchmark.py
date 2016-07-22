@@ -421,7 +421,8 @@ if __name__ == '__main__':
                     desc=arguments['--desc'],
                     fast=arguments['--fast'],
                     non_random=arguments['--non-random'],
-                    use_database=arguments['--use-database']
+                    use_database=arguments['--use-database'],
+                    keep_old_data=arguments['--keep-old-data']
             )
 
     except KeyboardInterrupt:
