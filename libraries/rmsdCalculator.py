@@ -16,7 +16,7 @@ class RMSDCalculator():
         
         c1 = []
         c2 = []
-        valid_atoms = ['N', 'CA', 'C' ] #Only include the backbone atoms
+        valid_atoms = ['N', 'CA', 'C', 'O' ] #Only include the backbone atoms
         for residue in residue_list:
             for atom in chain1_list[residue]:
                 if atom.get_name() in valid_atoms:
