@@ -278,13 +278,20 @@ class DiskDataController:
 
     def write_log(self, benchmark_id, protocol_id, stdout, stderr, job_id):
         build_time_match = re.search(r"protocols.loop_modeling.LoopModeler: Build Time: ([\d]+) sec", stdout)
-        build_time = int(build_time_match.groups()[0]) if build_time_match else None
+        build_time = int(build_time_match.groups()[0]) if build_time_match else 0
+        
         centroid_time_match = re.search(r"protocols.loop_modeling.LoopModeler: Centroid Time: ([\d]+) sec", stdout)
-        centroid_time = int(centroid_time_match.groups()[0]) if centroid_time_match else None
+        centroid_time = int(centroid_time_match.groups()[0]) if centroid_time_match else 0
+        
         fullatom_time_match = re.search(r"protocols.loop_modeling.LoopModeler: Fullatom Time: ([\d]+) sec", stdout)
-        fullatom_time = int(fullatom_time_match.groups()[0]) if fullatom_time_match else None
+        fullatom_time = int(fullatom_time_match.groups()[0]) if fullatom_time_match else 0
+        
         score_match = re.search(r"protocols.loop_modeling.LoopModeler: Total Score: ([-]?[\d\.]+)", stdout)
+        if not score_match:
+            score_match = re.search(r"protocols.loop_build.LoopBuildMover: total_energy ([-]?[\d\.]+)", stdout) #Legacy KIC
+
         score = float(score_match.groups()[0]) if score_match else None
+        
         structure_match = re.search(r"-in:file:s ([\w\/\.]+)", stdout)
         structure = os.path.split(structure_match.groups()[0])[1].split('.')[0] if structure_match else None
 
@@ -307,7 +314,8 @@ class DiskDataController:
         try:
             self.write_result(benchmark_id, job_id, structure, self.rmsd, score, build_time+centroid_time+fullatom_time)
         except:
-            os.remove(log_file) 
+            os.remove(log_file)
+            raise
 
     def write_result(self, benchmark_id, job_id, structure, rmsd, score, runtime):
         benchmark_define_dict = self.get_benchmark_define_dict( benchmark_id )
