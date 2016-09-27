@@ -156,6 +156,10 @@ def compile_rosetta():
 
     compile_command = 'ssh', 'iqint', '; '.join([
             'cd "%s"' % scons_path,
+            # Use newer version of compilers to support c++11
+            # The site.settings file of Rosetta should have /opt/rh/devtoolset-4/root/usr/bin
+            # prepended to PATH
+            'source /opt/rh/devtoolset-4/enable',
             'nohup nice ./scons.py bin -j16 mode=release extras=mysql'])
 
     return subprocess.call(compile_command)
