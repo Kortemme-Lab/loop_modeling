@@ -557,7 +557,7 @@ plot {plot_arguments}
 
         # Calculate the average percent subangstrom predictions.
 
-        average_percent_subA = numpy.median(benchmark.percents_subangstrom)
+        average_percent_subA = numpy.mean(benchmark.percents_subangstrom)
 
         # Calculate the average number of models per loop.
 
