@@ -555,6 +555,10 @@ plot {plot_arguments}
 
         median_percent_subA = numpy.median(benchmark.percents_subangstrom)
 
+        # Calculate the average percent subangstrom predictions.
+
+        average_percent_subA = numpy.median(benchmark.percents_subangstrom)
+
         # Calculate the average number of models per loop.
 
         models_per_loop = numpy.mean([x.num_models for x in benchmark])
@@ -599,6 +603,7 @@ plot {plot_arguments}
 
 \\begin{{center}}
     Median fraction of sub-\\AA{{}} models: {median_percent_subA:.2f}\\%\\\\
+    Average fraction of sub-\\AA{{}} models: {average_percent_subA:.2f}\\%\\\\
     Average number of models per loop: {models_per_loop:.2f}
 \\end{{center}}
 
