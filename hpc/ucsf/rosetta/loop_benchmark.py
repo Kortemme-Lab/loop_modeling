@@ -42,13 +42,14 @@ from libraries.dataController import DataController
 
 # Parse arguments.
 
-if len(sys.argv) != 4 or 'SGE_TASK_ID' not in os.environ:
-    print 'Usage: SGE_TASK_ID=<id> loop_benchmark.py <benchmark_id> <if_use_database> <if_complete_run>'
+if len(sys.argv) != 5 or 'SGE_TASK_ID' not in os.environ:
+    print 'Usage: SGE_TASK_ID=<id> loop_benchmark.py <benchmark_id> <if_use_database> <if_complete_run> <if_use_native_structure>'
     sys.exit(1)
 
 benchmark_id = int(sys.argv[1])
 use_database = sys.argv[2]=='--use-database'
 complete_run = sys.argv[3]=='--complete-run'
+use_native_structure = sys.argv[4]=='--use-native-structure'
 data_controller = DataController('database') if use_database else DataController('disk')
 task_id = data_controller.read_task_completion_list(benchmark_id)[ int(os.environ['SGE_TASK_ID']) - 1 ] \
           if complete_run else int(os.environ['SGE_TASK_ID'])-1
@@ -113,10 +114,12 @@ if use_database:
     ]
 else:
     rosetta_command += [
-        #'-in:file:native', reference_structure, ###DEBUG
         '-out:prefix', structures_path+'/'+str(task_id)+'_',
         '-overwrite',
     ]
+
+if use_native_structure:
+    rosetta_command += ['-in:file:native',  reference_structure]
 
 if flags_path is not None:
     rosetta_command += ['@', flags_path]

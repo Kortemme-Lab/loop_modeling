@@ -107,6 +107,9 @@ Options:
 
     --use-database
         Report the data to a database if specified. Otherwise dump the data to the disk directly.
+
+    --use-native-structure
+        Pass the native structure to Rosetta.
 """
 
 import getpass
@@ -168,7 +171,7 @@ def compile_rosetta():
 def run_benchmark(name, script, pdbs,
         vars=(), flags=None, fragments=None, nstruct=None,
         desc=None, fast=False, non_random=True, use_database=False,
-        complete_run=False, keep_old_data=False):
+        complete_run=False, keep_old_data=False, use_native_structure=False):
 
     if nstruct is not None:
         try: nstruct = int(nstruct)
@@ -206,17 +209,19 @@ def run_benchmark(name, script, pdbs,
     
     # Submit the benchmark to the cluster.
     submit_benchmark(benchmark_id, nstruct * len(pdbs), fast=fast, use_database=use_database,
-                    complete_run=complete_run, keep_old_data=keep_old_data)
+                    complete_run=complete_run, keep_old_data=keep_old_data, 
+                    use_native_structure=use_native_structure)
 
 
 def submit_benchmark(benchmark_id, num_tasks, fast=False, use_database=False, complete_run=False,
-                    keep_old_data=False):
+                    keep_old_data=False, use_native_structure=False):
     '''Submit the benchmark to the cluster.'''
 
     qsub_command = 'qsub',
     benchmark_command = ('loop_benchmark.py', str(benchmark_id),
                         '--use-database' if use_database else '--not-use-database',
-                        '--complete-run' if complete_run else '--not-complete_run')
+                        '--complete-run' if complete_run else '--not-complete_run',
+                        '--use-native-structure' if use_native_structure else '--not-use-native-structure')
     if fast:
         qsub_command += '-t', '1-{0}'.format(num_tasks)
         qsub_command += '-l', 'h_rt=0:30:00'
@@ -293,7 +298,7 @@ def resume_benchmark(benchmark_id, nstruct=None, use_database=False):
     subprocess.call(qsub_command + benchmark_command)
 
 
-def complete_benchmark(benchmark_id, nstruct=None, use_database=False):
+def complete_benchmark(benchmark_id, nstruct=None, use_database=False, use_native_structure=False):
     name = benchmark_id
     # You get weird errors if you forget to cast nstruct from string to int.
 
@@ -358,7 +363,7 @@ def complete_benchmark(benchmark_id, nstruct=None, use_database=False):
         benchmark_define_dict = data_controller.get_benchmark_define_dict(progress_data['MostRecentID'])
         if len(unfinished_task_list) > 0:
             submit_benchmark(progress_data['MostRecentID'], len(unfinished_task_list), fast=benchmark_define_dict['fast'],
-                            use_database=use_database, complete_run=True, keep_old_data=True)
+                            use_database=use_database, complete_run=True, keep_old_data=True, use_native_structure=use_native_structure)
 
 
 if __name__ == '__main__':
@@ -373,7 +378,7 @@ if __name__ == '__main__':
         # Compile rosetta.
 
         if arguments['--complete']:
-            complete_benchmark(arguments['--complete'], arguments['--use-database'])
+            complete_benchmark(arguments['--complete'], arguments['--use-database'], arguments['--use-native-structure'])
             sys.exit(1)
 
         if not arguments['--execute-only']:
@@ -426,7 +431,8 @@ if __name__ == '__main__':
                     fast=arguments['--fast'],
                     non_random=arguments['--non-random'],
                     use_database=arguments['--use-database'],
-                    keep_old_data=arguments['--keep-old-data']
+                    keep_old_data=arguments['--keep-old-data'],
+                    use_native_structure=arguments['--use-native-structure']
             )
 
     except KeyboardInterrupt:
