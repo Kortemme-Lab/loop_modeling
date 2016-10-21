@@ -623,6 +623,7 @@ plot {plot_arguments}
 
     def make_summary_stats_table(self, benchmark):
         median = lambda x: numpy.median(list(x))
+        average = lambda x: numpy.mean(list(x))
 
         best_top_x_models = benchmark.best_top_x_models
         best_top_x_stats = {
@@ -630,6 +631,7 @@ plot {plot_arguments}
                 'median_rmsd': median(x.rmsd for x in best_top_x_models),
                 'median_score': median(x.score for x in best_top_x_models),
                 'median_runtime': median(x.runtime for x in best_top_x_models),
+                'average_runtime': average(x.runtime for x in best_top_x_models),
         }
 
         lowest_score_models = benchmark.lowest_score_models
@@ -638,6 +640,7 @@ plot {plot_arguments}
                 'median_rmsd': median(x.rmsd for x in lowest_score_models),
                 'median_score': median(x.score for x in lowest_score_models),
                 'median_runtime': median(x.runtime for x in lowest_score_models),
+                'average_runtime': average(x.runtime for x in lowest_score_models),
         }
 
         lowest_rmsd_models = benchmark.lowest_rmsd_models
@@ -646,6 +649,7 @@ plot {plot_arguments}
                 'median_rmsd': median(x.rmsd for x in lowest_rmsd_models),
                 'median_score': median(x.score for x in lowest_rmsd_models),
                 'median_runtime': median(x.runtime for x in lowest_rmsd_models),
+                'average_runtime': average(x.runtime for x in lowest_rmsd_models),
         }
 
         all_models = benchmark.all_models
@@ -654,6 +658,7 @@ plot {plot_arguments}
                 'median_rmsd': median(x.rmsd for x in all_models),
                 'median_score': median(x.score for x in all_models),
                 'median_runtime': median(x.runtime for x in all_models),
+                'average_runtime': average(x.runtime for x in all_models),
         }
 
         median_fraction_subangstrom = median(benchmark.percents_subangstrom)
@@ -661,15 +666,15 @@ plot {plot_arguments}
         # Create the latex page.
 
         table_template = '''\
-\\begin{{tabular}}{{lrrr}}
+\\begin{{tabular}}{{lrrrr}}
 \\toprule
-                          & Median rmsd & Median score & Median time \\\\
-Model selection           &       (\AA) &        (REU) &       (sec) \\\\
+                          & Median rmsd & Median score & Median time & Average time \\\\
+Model selection           &       (\AA) &        (REU) &       (sec) &        (sec) \\\\
 \\midrule
-{0[label]:25s} & {0[median_rmsd]:11.2f} & {0[median_score]:12.2f} & {0[median_runtime]:11.0f} \\\\
-{1[label]:25s} & {1[median_rmsd]:11.2f} & {1[median_score]:12.2f} & {1[median_runtime]:11.0f} \\\\
-{2[label]:25s} & {2[median_rmsd]:11.2f} & {2[median_score]:12.2f} & {2[median_runtime]:11.0f} \\\\
-{3[label]:25s} & {3[median_rmsd]:11.2f} & {3[median_score]:12.2f} & {3[median_runtime]:11.0f} \\\\
+{0[label]:25s} & {0[median_rmsd]:11.2f} & {0[median_score]:12.2f} & {0[median_runtime]:11.0f} & {0[average_runtime]:11.0f} \\\\
+{1[label]:25s} & {1[median_rmsd]:11.2f} & {1[median_score]:12.2f} & {1[median_runtime]:11.0f} & {1[average_runtime]:11.0f} \\\\
+{2[label]:25s} & {2[median_rmsd]:11.2f} & {2[median_score]:12.2f} & {2[median_runtime]:11.0f} & {2[average_runtime]:11.0f} \\\\
+{3[label]:25s} & {3[median_rmsd]:11.2f} & {3[median_score]:12.2f} & {3[median_runtime]:11.0f} & {3[average_runtime]:11.0f} \\\\
 \\bottomrule
 \\end{{tabular}}
 '''
