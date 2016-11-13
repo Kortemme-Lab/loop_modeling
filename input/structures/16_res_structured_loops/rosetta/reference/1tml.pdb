@@ -4176,7 +4176,7 @@ REMARK PackingRes, 1 A, 2 A, 3 A, 4 A, 5 A, 6 A, 7 A, 8 A, 9 A, 10 A, 11 A, 12 A
 REMARK DesignRes
 
 # All scores below are weighted scores, not raw scores.
-#BEGIN_POSE_ENERGIES_TABLE data/2_16res_structured_loop_kic45/1tml/1tml_0001.pdb
+#BEGIN_POSE_ENERGIES_TABLE data/3_16res_structured_loop_kic45/1tml/1tml_0001.pdb
 label fa_atr fa_rep fa_sol fa_intra_rep fa_elec pro_close hbond_sr_bb hbond_lr_bb hbond_bb_sc hbond_sc dslf_fa13 rama omega fa_dun p_aa_pp yhh_planarity ref total
 weights 1 0.55 0.9375 0.005 0.875 1.25 1.17 1.17 1.17 1.1 1.25 0.25 0.625 0.7 0.4 0.625 1 NA
 pose -1333.65 292.773 735.757 2.64862 -105.167 33.6942 -85.2445 -37.5773 -33.8518 -12.0822 0 -26.9068 38.0586 297.646 -45.6648 0 15.1391 -264.433
@@ -4466,5 +4466,5 @@ ALA_283 -4.3593 0.23982 1.71604 0.00101 0.00045 0 0 0 0 0 0 -0.01375 0.03895 0 -
 ILE_284 -3.78488 0.38086 1.6812 0.02882 -0.01458 0 0 0 0 0 0 -0.09881 0.01136 1.23386 0.04715 0 1.0806 0.56559
 ALA_285 -2.61099 0.16247 1.34188 0.00144 0.06736 0 0 0 0 0 0 -0.33605 0.00387 0 -0.08824 0 0.77374 -0.68451
 ALA:CtermProteinFull_286 -2.54738 0.32668 1.43119 0.00111 0.35646 0 0 0 0 0 0 0 0 0 0 0 0.77374 0.34181
-#END_POSE_ENERGIES_TABLE data/2_16res_structured_loop_kic45/1tml/1tml_0001.pdb
+#END_POSE_ENERGIES_TABLE data/3_16res_structured_loop_kic45/1tml/1tml_0001.pdb
 
