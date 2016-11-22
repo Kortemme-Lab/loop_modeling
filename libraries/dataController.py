@@ -270,9 +270,10 @@ class DiskDataController:
     def calc_rmsd(self, loop_file, native_file, modeled_file):
         residue_list = []
         with open(loop_file, 'r') as f_loop:
-            s = f_loop.readline().split()
-            for i in range(int(s[1]), int(s[2])+1):
-                residue_list.append(i) 
+            for line in f.readlines():
+                s = line().split()
+                for i in range(int(s[1]), int(s[2])+1):
+                    residue_list.append(i) 
         self.rmsd = calc_rmsd_from_file(native_file, modeled_file, 0, 0, 'A', 'A', residue_list) 
     
 
