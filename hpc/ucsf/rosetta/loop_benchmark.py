@@ -23,7 +23,7 @@
 # THE SOFTWARE.
 
 #$ -S /usr/bin/python
-#$ -l mem_free=2G
+#$ -l mem_free=4G
 #$ -l arch=linux-x64
 #$ -l netapp=2G
 #$ -cwd
