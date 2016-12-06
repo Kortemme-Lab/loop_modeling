@@ -282,7 +282,7 @@ def resume_benchmark(benchmark_id, nstruct=None, use_database=False):
 
     if benchmark_define_dict['fast']:
         qsub_command += '-t', '1-{0}'.format((nstruct or 10) * num_pdbs)
-        qsub_command += '-l', 'h_rt=0:30:00'
+        qsub_command += '-l', 'h_rt=24:00:00'
     else:
         qsub_command += '-t', '1-{0}'.format((nstruct or 500) * num_pdbs)
         qsub_command += '-l', 'h_rt=24:00:00'
