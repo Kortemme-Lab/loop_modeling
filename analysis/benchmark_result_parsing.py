@@ -142,7 +142,10 @@ class Benchmark:
         return hash(self.name)
 
     def __iter__(self):
-        return self.loops.itervalues()
+        try:
+            return self.loops.itervalues()
+        except AttributeError:
+            return iter(self.loops.values())
 
     def __len__(self):
         return len(self.loops)
