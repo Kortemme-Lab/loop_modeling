@@ -100,13 +100,36 @@ def require_biopython():
         root_dir = utilities.get_benchmark_root()
         libs_dir = os.path.join(root_dir, 'libraries')
         package_dir = os.path.join(libs_dir, 'biopython-1.67')
-        package_archive = package_dir + '.zip'
+        package_archive = package_dir + '.tar.gz'
 
         unpack_command = 'unzip', '-d', libs_dir, package_archive
         install_command = shlex.split('python setup.py install --user')
 
         subprocess.check_call(unpack_command)
         subprocess.check_call(install_command, cwd=package_dir)
+
+        print
+
+
+def require_flufl_lock():
+    try:
+        import flufl.lock
+    except ImportError:
+        ask_to_install("Installing flufl.lock")
+        
+        root_dir = utilities.get_benchmark_root()
+        libs_dir = os.path.join(root_dir, 'libraries')
+        package_dir = os.path.join(libs_dir, 'flufl.lock-2.4.1')
+        package_archive = package_dir + '.tar.gz'
+
+        unpack_command = 'tar', '-xzv', '-C', libs_dir, '-f', package_archive
+        install_command = '; '.join([
+                'cd {0}'.format(package_dir),
+                'python2 setup.py install --user',
+        ])
+
+        subprocess.check_call(unpack_command)
+        subprocess.check_call(install_command, shell=True)
 
         print
 
