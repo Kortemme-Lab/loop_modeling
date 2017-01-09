@@ -119,7 +119,7 @@ def require_flufl_lock():
         
         root_dir = utilities.get_benchmark_root()
         libs_dir = os.path.join(root_dir, 'libraries')
-        package_dir = os.path.join(libs_dir, 'flufl.lock-2.4.1')
+        package_dir = os.path.join(libs_dir, 'flufl.lock-2.0')
         package_archive = package_dir + '.tar.gz'
 
         unpack_command = 'tar', '-xzv', '-C', libs_dir, '-f', package_archive
