@@ -6,9 +6,13 @@ import database
 import os
 import sys
 import re
-import fcntl
 import time
 import errno
+from datetime import timedelta
+
+from libraries import install
+install.require_flufl_lock()
+from flufl.lock import Lock
 from rmsdCalculator import calc_rmsd_from_file
 
 class DataController:
@@ -322,29 +326,17 @@ class DiskDataController:
         benchmark_define_dict = self.get_benchmark_define_dict( benchmark_id )
         model_id = job_id // len(benchmark_define_dict['input_pdbs'])
 
-        #Accquire the lock that protects the result file
+        #Make a lock
 
-        lock_fd = os.open( os.path.join( self.data_path, str(benchmark_id), 'lock' ), os.O_CREAT)
-        while True:
-            try:
-                fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                break
-            except IOError as e:
-                if e.errno != errno.EAGAIN:
-                    raise
-                else:
-                    time.sleep(0.1)
-        try: 
+        lock_name = os.path.join( self.data_path, str(benchmark_id), 'lock' )
+        lock = Lock('lock_filename')
+        lock.lifetime = timedelta(minutes=10)
+
+        #Write to the result file with a lock
+        
+        with lock:
             with open( os.path.join( self.data_path, str(benchmark_id), benchmark_define_dict['name']+'.results' ), 'a' ) as f:
                 f.write('%s\t%d\t%f\t%f\t%d\n' % (structure, model_id, rmsd, score, runtime) )
-        except:
-            fcntl.flock(lock_fd, fcntl.LOCK_UN)
-            raise
-
-        #Release the lock
-
-        fcntl.flock(lock_fd, fcntl.LOCK_UN)
-        os.close(lock_fd) 
     
 
     def get_benchmark_list_by_name(self, database_name):
