@@ -262,7 +262,7 @@ class Loop:
     @property
     def percent_subangstrom(self):
         num_sub_a = sum(1 for x in self.models if x.rmsd < 1.0)
-        return 100 * num_sub_a / len(self.models)
+        return 100.0 * num_sub_a / len(self.models)
 
 
 class Model:
