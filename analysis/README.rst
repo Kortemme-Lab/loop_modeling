@@ -96,8 +96,8 @@ and as such may be rather difficult for other protocols to mimic.
 
 Flat file format
 ................
-The flat file should be a tab-separated file. The first line in the file should 
-be a header line::
+The flat file should be a tab-separated file. The file must have the extension
+".results". The first line in the file should be a header line::
 
   #PDB	Model	Loop_rmsd	Total_energy	Runtime
 
