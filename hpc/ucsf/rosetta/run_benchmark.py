@@ -163,7 +163,7 @@ def compile_rosetta():
             # The site.settings file of Rosetta should have /opt/rh/devtoolset-4/root/usr/bin
             # prepended to PATH
             'source /opt/rh/devtoolset-4/enable',
-            'nohup nice scl enable python27 ./scons.py bin -j16 mode=release extras=mysql'])
+            'nohup nice scl enable python27 python ./scons.py bin -j16 mode=release extras=mysql'])
 
     return subprocess.call(compile_command)
 
