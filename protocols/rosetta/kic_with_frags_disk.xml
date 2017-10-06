@@ -33,8 +33,9 @@
             name="modeler"
             config="kic_with_frags"
             loops_file="%%loop_file%%"
-            fast="%%fast%%"/>
-
+            fast="%%fast%%">
+        </LoopModeler>
+    
     </MOVERS>
 
     <PROTOCOLS>
