@@ -110,7 +110,7 @@ def get_rosetta_loop_from_pdb_indices(pdb_file, start_id, stop_id, output_pdb_fi
     stop_seqpos = pose.pdb_info().pdb2pose(chain, stop_id[1])
 
     with open(output_loop_file, 'w') as f:
-        f.write('Loop {0} {1} {1} 0 1'.format(start_seqpos, stop_seqpos))
+        f.write('LOOP {0} {1} {1} 0 1'.format(start_seqpos, stop_seqpos))
 
     pose.dump_pdb(output_pdb_file)
 
