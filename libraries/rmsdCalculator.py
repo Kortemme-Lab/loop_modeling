@@ -40,7 +40,7 @@ def calc_rmsd_from_file( file1, file2, residue_list, model1, model2, chain1_id=N
     structure2 = parser.get_structure('', file2)
 
     if chain1_id is None:
-        chain1 = [c for c in structure1[model1]][0].
+        chain1 = [c for c in structure1[model1]][0]
     else:
         chain1 = structure1[model1][chain1_id]
     if chain2_id is None:
