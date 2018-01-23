@@ -36,8 +36,19 @@ class RMSDCalculator():
 
 def calc_rmsd_from_file( file1, file2, residue_list, model1, model2, chain1_id=None, chain2_id=None):
     parser = Bio.PDB.PDBParser()
-    structure1 = parser.get_structure('', file1)
-    structure2 = parser.get_structure('', file2)
+    
+    def load_structure_file(sf):
+        if sf.endswith('.pdb.gz'):
+            with open(sf, 'r') as f:
+                return parser.get_structure('', f)
+        return parser.get_structure('', sf)
+
+    # Load the structures
+   
+    structure1 = load_structure_file(file1)
+    structure2 = load_structure_file(file2)
+
+    # Get the chains
 
     if chain1_id is None:
         chain1 = [c for c in structure1[model1]][0]

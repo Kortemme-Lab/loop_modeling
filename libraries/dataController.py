@@ -45,8 +45,8 @@ class DataController:
         return self.implement.get_benchmark_variables(benchmark_id)
     
 
-    def calc_rmsd(self, loop_file, native_file, modeled_file):
-        return self.implement.calc_rmsd(loop_file, native_file, modeled_file)
+    def calc_rmsd(self, loop_file, native_file, modeled_file, rmsd_calculation_method='standard'):
+        return self.implement.calc_rmsd(loop_file, native_file, modeled_file, rmsd_calculation_method)
     
 
     def write_log(self, benchmark_id, protocol_id, stdout, stderr, job_id=0):
@@ -271,7 +271,7 @@ class DiskDataController:
         return None
     
 
-    def calc_rmsd(self, loop_file, native_file, modeled_file):
+    def calc_rmsd(self, loop_file, native_file, modeled_file, rmsd_calculation_method='standard'):
         residue_list = []
         with open(loop_file, 'r') as f_loop:
             for line in f_loop.readlines():
