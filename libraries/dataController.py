@@ -278,7 +278,7 @@ class DiskDataController:
                 s = line.split()
                 for i in range(int(s[1]), int(s[2])+1):
                     residue_list.append(i) 
-        self.rmsd = calc_rmsd_from_file(native_file, modeled_file, 0, 0, 'A', 'A', residue_list) 
+        self.rmsd = calc_rmsd_from_file(native_file, modeled_file, 0, 0, residue_list) 
     
 
     def write_log(self, benchmark_id, protocol_id, stdout, stderr, job_id):

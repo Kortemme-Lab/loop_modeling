@@ -34,9 +34,15 @@ class RMSDCalculator():
         return np.sqrt( sum(sum( np.multiply(diff,diff) ))/l )
 
 
-def calc_rmsd_from_file( file1, file2, model1, model2, chain1, chain2, residue_list ):
+def calc_rmsd_from_file( file1, file2, residue_list, model1, model2, chain1=None, chain2=None):
     parser = Bio.PDB.PDBParser()
     structure1 = parser.get_structure('', file1)
     structure2 = parser.get_structure('', file2)
+
+    if chain1 is None:
+        chain1 = [c for c in structure1[model1]][0]
+    if chain2 is None:
+        chain2 = [c for c in structure2[model2]][0]
+
     rmsd_calculator = RMSDCalculator(structure1[model1][chain1], structure2[model2][chain2], residue_list)
     return rmsd_calculator.rmsd()
