@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-#$ -S /usr/bin/python
+#$ -S /netapp/home/xingjiepan/.local/bin/python 
 #$ -l mem_free=4G
 #$ -l arch=linux-x64
 #$ -l netapp=2G
