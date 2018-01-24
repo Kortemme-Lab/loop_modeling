@@ -1,5 +1,7 @@
 #!/usr/bin/env python2
 
+import gzip
+
 from . import install
 install.require_biopython()
 import numpy as np
@@ -27,7 +29,6 @@ class RMSDCalculator():
         self.coord1 = np.array(c1)
         self.coord2 = np.array(c2)
 
-         
     def rmsd(self):
         diff = self.coord1 - self.coord2
         l = diff.shape[0]
@@ -39,7 +40,7 @@ def calc_rmsd_from_file( file1, file2, residue_list, model1, model2, chain1_id=N
     
     def load_structure_file(sf):
         if sf.endswith('.pdb.gz'):
-            with open(sf, 'r') as f:
+            with gzip.open(sf, 'r') as f:
                 return parser.get_structure('', f)
         return parser.get_structure('', sf)
 

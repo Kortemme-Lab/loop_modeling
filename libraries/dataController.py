@@ -279,7 +279,7 @@ class DiskDataController:
                 for i in range(int(s[1]), int(s[2])+1):
                     residue_list.append(i) 
         self.rmsd = calc_rmsd_from_file(native_file, modeled_file, residue_list, 0, 0) 
-    
+        return self.rmsd 
 
     def write_log(self, benchmark_id, protocol_id, stdout, stderr, job_id):
         build_time_match = re.search(r"protocols.loop_modeling.LoopModeler: Build Time: ([\d]+) sec", stdout)

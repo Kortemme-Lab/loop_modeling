@@ -58,7 +58,7 @@ def calc_rmsd_for_one_model(benchmark_id, model, reanalyze_method):
     # Calculate RMSD
     
     #print ref_path, protein_id, model_path, loop_file###DEBUG
-    data_controller.calc_rmsd(loop_file, ref_path, model_path, rmsd_calculation_method=reanalyze_method)
+    print data_controller.calc_rmsd(loop_file, ref_path, model_path, rmsd_calculation_method=reanalyze_method)
 
 if __name__ == '__main__':
     
