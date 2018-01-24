@@ -12,7 +12,7 @@ aligning method. Usage:
 '''
 
 import os
-import sys
+import sys; sys.path.append(os.getcwd())
 
 from libraries.dataController import DataController 
 
