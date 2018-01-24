@@ -812,12 +812,14 @@ plot "{tsv_path}" index 4 using 1:3:2:6:5 with candlesticks whiskerbars ls 3 not
 \\begin{{table}}[h]
     \\centering
     %\\footnotesize
-    \\begin{{tabular}}{{lr|lrr|lrr}}
+    \\begin{{tabular}}{{lr|lrr|lrr|lrr}}
     \\toprule
     & &
         \multicolumn{{3}}{{l}}{{\emph{{Best of Top {top_x} Models}}}} &
+        \multicolumn{{3}}{{|l}}{{\emph{{Lowest Score Model}}}} &
         \multicolumn{{3}}{{|l}}{{\emph{{Closest Model}}}} \\\\
     Loop & Models &
+        ID & RMSD & Score &
         ID & RMSD & Score &
         ID & RMSD & Score \\\\
     \\midrule
@@ -830,9 +832,11 @@ plot "{tsv_path}" index 4 using 1:3:2:6:5 with candlesticks whiskerbars ls 3 not
             '{0.pdb_id}', '{0.num_models:3}',
             '{1.id:3}', '{1.rmsd:4.2f}', '{1.score:7.2f}',
             '{2.id:3}', '{2.rmsd:4.2f}', '{2.score:7.2f}',
+            '{3.id:3}', '{3.rmsd:4.2f}', '{3.score:7.2f}',
         ])
         empty_row_template = '    ' + ' & '.join([
             '{0.pdb_id}', '{0.num_models:3}',
+            '---', ' ---', '    ---',
             '---', ' ---', '    ---',
             '---', ' ---', '    ---',
         ])
@@ -846,6 +850,7 @@ plot "{tsv_path}" index 4 using 1:3:2:6:5 with candlesticks whiskerbars ls 3 not
                 row = row_template.format(
                     loop,
                     loop.best_top_x_model,
+                    loop.lowest_score_model,
                     loop.lowest_rmsd_model
                 )
             else:
