@@ -273,12 +273,27 @@ class DiskDataController:
 
     def calc_rmsd(self, loop_file, native_file, modeled_file, rmsd_calculation_method='standard'):
         residue_list = []
+        stub_residues = [] ### Stubs are 3 residues extended from the loop
         with open(loop_file, 'r') as f_loop:
             for line in f_loop.readlines():
                 s = line.split()
                 for i in range(int(s[1]), int(s[2])+1):
-                    residue_list.append(i) 
-        self.rmsd = calc_rmsd_from_file(native_file, modeled_file, residue_list, 0, 0) 
+                    residue_list.append(i)
+
+                for i in range(int(s[1]) - 3, int(s[1])):
+                    if i > 0:
+                        stub_residues.append(i)
+
+                for i in range(int(s[2]) + 1, int(s[2]) + 4):
+                    stub_residues.append(i)
+        
+        if rmsd_calculation_method == 'standard':
+            self.rmsd = calc_rmsd_from_file(native_file, modeled_file, residue_list, 0, 0) 
+        elif rmsd_calculation_method == 'align_loops':
+            self.rmsd = calc_rmsd_from_file(native_file, modeled_file, residue_list, 0, 0, align_residues1=residue_list, align_residues2=residue_list) 
+        elif rmsd_calculation_method == 'align_stubs':
+            self.rmsd = calc_rmsd_from_file(native_file, modeled_file, residue_list, 0, 0, align_residues1=stub_residues, align_residues2=stub_residues) 
+
         return self.rmsd 
 
     def write_log(self, benchmark_id, protocol_id, stdout, stderr, job_id):

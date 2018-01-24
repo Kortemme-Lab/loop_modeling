@@ -1,4 +1,10 @@
 #!/usr/bin/env python2
+#$ -S /usr/bin/python
+#$ -l mem_free=4G
+#$ -l arch=linux-x64
+#$ -l netapp=2G
+#$ -cwd
+
 '''Re-analyze the data of a data set. For example, 
 re-calculate the RMSD of the loops using a different
 aligning method. Usage:
@@ -58,14 +64,35 @@ def calc_rmsd_for_one_model(benchmark_id, model, reanalyze_method):
     # Calculate RMSD
     
     #print ref_path, protein_id, model_path, loop_file###DEBUG
-    print data_controller.calc_rmsd(loop_file, ref_path, model_path, rmsd_calculation_method=reanalyze_method)
+    return data_controller.calc_rmsd(loop_file, ref_path, model_path, rmsd_calculation_method=reanalyze_method)
 
 if __name__ == '__main__':
     
     benchmark_id = sys.argv[1]
     reanalyze_method = sys.argv[2]
 
-    
+    # Load the existing results
+
     results = load_existing_results(benchmark_id)
 
-    calc_rmsd_for_one_model(benchmark_id, results[0], reanalyze_method)
+    # Recalculate the RMSD with a different method
+
+    new_results = []
+    
+    for model in results:
+        rmsd = calc_rmsd_for_one_model(benchmark_id, model, reanalyze_method)
+        new_results.append((model[0], model[1], rmsd, model[3], model[4]))
+
+    # Save the new results
+
+    for f in os.listdir(os.path.join('data', benchmark_id)):
+        if f.endswith('.results'):
+            new_result_file = os.path.join('data', benchmark_id, f + '.' + reanalyze_method)
+            break
+
+    with open(new_result_file, 'w') as fout:
+        fout.write('#PDB    Model   Loop_rmsd   Total_energy    Runtime\n')
+        for model in new_results:
+            fout.write('{0}\t{1}\t{2}\t{3}\t{4}\n'.format(model[0], model[1], model[2], model[3], model[4]))
+
+
