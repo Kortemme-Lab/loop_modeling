@@ -75,6 +75,12 @@ def prepare_inputs(pdb_id, chains_to_keep, h3_sequence):
     with open(os.path.join('inputs', pdb_id + '.loop'), 'w') as f:
         f.write('LOOP {0} {1} {1} 0 1'.format(loop[0], loop[1]))
 
+    # Generate the fasta file, this is important because the chains to be modeled are not labeled as chain A
+
+    with open(os.path.join('inputs', pdb_id + '.fasta'), 'w') as f:
+        f.write('>{0}|A\n'.format(pdb_id))
+        f.write(pose.sequence())
+
     pose.dump_file(os.path.join('inputs', pdb_id + '.pdb'))
     pose.dump_file(os.path.join('reference', pdb_id + '.pdb'))
 
