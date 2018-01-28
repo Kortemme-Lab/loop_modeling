@@ -26,45 +26,41 @@ def get_superimpose_transformation(P1, P2):
 
     return M, com2 - np.dot(M, com1)
 
-def get_align_transformation_for_two_chains(chain1, chain2, residue_list1, residue_list2):
-    '''Get the transformation that align chain1 to chain2 by 
+def get_align_transformation_for_two_list_of_residues(residue_list1, residue_list2):
+    '''Get the transformation that align residues in a list to that in another list by 
     residues in two lists. Return the transformation matrix and vector
     '''
     assert(len(residue_list1) == len(residue_list2))
     
-    def get_bb_coords_by_rosetta_ids(chain, residue_list):
-        chain_list = [residue for residue in chain]
+    def get_bb_coords_by_rosetta_ids(residue_list):
         valid_atoms = ['N', 'CA', 'C', 'O' ] #Only include the backbone atoms
         coords = []
         for residue in residue_list:
-            for atom in chain_list[residue - 1]:
+            for atom in residue:
                 if atom.get_name() in valid_atoms:
                     coords.append(atom.get_coord())
 
         return coords
     
-    coords1 = get_bb_coords_by_rosetta_ids(chain1, residue_list1)
-    coords2 = get_bb_coords_by_rosetta_ids(chain2, residue_list2)
+    coords1 = get_bb_coords_by_rosetta_ids(residue_list1)
+    coords2 = get_bb_coords_by_rosetta_ids(residue_list2)
     
     return get_superimpose_transformation(coords1, coords2)
 
 class RMSDCalculator():
     '''Calculate the RMSD of a given sequence between two structures''' 
-    def __init__(self, chain1, chain2, residue_list):
+    def __init__(self, residue_list1, residue_list2, residue_id_list):
         
-        #Save residues of each chain into a list, such that residue indices become Rosetta numbers
-        
-        chain1_list = [residue for residue in chain1]
-        chain2_list = [residue for residue in chain2]
+        #Save residues of each structure into a list, such that residue indices become Rosetta numbers
         
         c1 = []
         c2 = []
         valid_atoms = ['N', 'CA', 'C', 'O' ] #Only include the backbone atoms
-        for residue in residue_list:
-            for atom in chain1_list[residue - 1]:
+        for residue in residue_id_list:
+            for atom in residue_list1[residue - 1]:
                 if atom.get_name() in valid_atoms:
                     c1.append( atom.get_coord() )
-            for atom in chain2_list[residue - 1]:
+            for atom in residue_list2[residue - 1]:
                 if atom.get_name() in valid_atoms:
                     c2.append( atom.get_coord() )
         self.coord1 = np.array(c1)
@@ -86,7 +82,7 @@ class RMSDCalculator():
         return np.sqrt( sum(sum( np.multiply(diff,diff) ))/l )
 
 
-def calc_rmsd_from_file( file1, file2, residue_list, model1, model2, chain1_id=None, chain2_id=None, align_residues1=None, align_residues2=None):
+def calc_rmsd_from_file( file1, file2, residue_id_list, model1, model2, align_residues1=None, align_residues2=None):
     parser = Bio.PDB.PDBParser()
     
     def load_structure_file(sf):
@@ -100,21 +96,17 @@ def calc_rmsd_from_file( file1, file2, residue_list, model1, model2, chain1_id=N
     structure1 = load_structure_file(file1)
     structure2 = load_structure_file(file2)
 
-    # Get the chains
+    # Get the residues into a list
 
-    if chain1_id is None:
-        chain1 = [c for c in structure1[model1]][0]
-    else:
-        chain1 = structure1[model1][chain1_id]
-    if chain2_id is None:
-        chain2 = [c for c in structure2[model2]][0]
-    else:
-        chain2 = structure2[model2][chain2_id]
+    res_list1 = [res for c in structure1[model1] for res in c]
+    res_list2 = [res for c in structure2[model2] for res in c]
 
-    rmsd_calculator = RMSDCalculator(chain1, chain2, residue_list)
+    rmsd_calculator = RMSDCalculator(res_list1, res_list2, residue_id_list)
     
     if align_residues1 is None:
         return rmsd_calculator.rmsd()
     else:
-        M, t = get_align_transformation_for_two_chains(chain1, chain2, align_residues1, align_residues2)
+        M, t = get_align_transformation_for_two_list_of_residues(
+                [res_list1[i - 1] for i in align_residues1],
+                [res_list2[i - 1] for i in align_residues2])
         return rmsd_calculator.rmsd((M, t))
