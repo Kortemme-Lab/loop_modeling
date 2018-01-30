@@ -42,6 +42,7 @@ structures_12res = [
         ]
 
 structures_16res = [
+        ('2ntp', 'B', 16, 141),
         ('1vzy', 'A', 16, 90), 
         ('1wdp', 'A', 16, 399),
         ('2z30', 'A', 16, 346),
@@ -58,10 +59,10 @@ structures_16res = [
         ('1h1n', 'A', 16, 276),
         ('1lvw', 'B', 16, 7), 
         ('2g8j', 'A', 16, 296),
-        ('1h1n', 'B', 16, 201),
+        #('1h1n', 'B', 16, 201),
         ('1wdv', 'B', 16, 92),
         ('1vem', 'A', 16, 289),
-        ('2vjq', 'A', 16, 389),
+        #('2vjq', 'A', 16, 389),
         ('2isa', 'C', 16, 94), 
         ('2aka', 'B', 16, 53),
         ('1ofw', 'B', 16, 17), 
@@ -177,6 +178,6 @@ def generate_dataset(set_name, structures):
 if __name__ == '__main__':
     pyrosetta.init(options='-ignore_unrecognized_res')
 
-    #generate_dataset('12res', structures_12res)
+    generate_dataset('12res', structures_12res)
     generate_dataset('16res', structures_16res)
     generate_dataset('20res', structures_20res)
