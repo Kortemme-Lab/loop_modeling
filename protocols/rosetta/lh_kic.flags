@@ -1,2 +1,3 @@
 -lh:loopsizes  6 8 10
--lh:db_path #Loop hash database
+-lh:db_path /netapp/home/xingjiepan/Databases/loophash_db #Loop hash database
+-out:mute protocols.loops.loops_main

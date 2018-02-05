@@ -39,7 +39,7 @@
     </MOVERS>
 
     <PROTOCOLS>
-        <Add mover_name=modeler/>
+        <Add mover_name="modeler"/>
     </PROTOCOLS>
 
 </ROSETTASCRIPTS>

@@ -25,7 +25,7 @@
 <ROSETTASCRIPTS>
 
     <MOVERS>
-        <LoopModelerWrapper name="modeler" loops_file="%%loop_file%%" />
+        <LoopModeler name="modeler" config="loophash_kic" loops_file="%%loop_file%%" />
     </MOVERS>
 
     <PROTOCOLS>
