@@ -297,16 +297,16 @@ class DiskDataController:
         return self.rmsd 
 
     def write_log(self, benchmark_id, protocol_id, stdout, stderr, job_id):
-        build_time_match = re.search(r"protocols.loop_modeling.LoopModeler: Build Time: ([\d]+) sec", stdout)
+        build_time_match = re.search(r"protocols.loop_model.*LoopModeler: Build Time: ([\d]+) sec", stdout)
         build_time = int(build_time_match.groups()[0]) if build_time_match else 0
         
-        centroid_time_match = re.search(r"protocols.loop_modeling.LoopModeler: Centroid Time: ([\d]+) sec", stdout)
+        centroid_time_match = re.search(r"protocols.loop_model.*LoopModeler: Centroid Time: ([\d]+) sec", stdout)
         centroid_time = int(centroid_time_match.groups()[0]) if centroid_time_match else 0
         
-        fullatom_time_match = re.search(r"protocols.loop_modeling.LoopModeler: Fullatom Time: ([\d]+) sec", stdout)
+        fullatom_time_match = re.search(r"protocols.loop_model.*LoopModeler: Fullatom Time: ([\d]+) sec", stdout)
         fullatom_time = int(fullatom_time_match.groups()[0]) if fullatom_time_match else 0
         
-        score_match = re.search(r"protocols.loop_modeling.LoopModeler: Total Score: ([-]?[\d\.]+)", stdout)
+        score_match = re.search(r"protocols.loop_model.*LoopModeler: Total Score: ([-]?[\d\.]+)", stdout)
         if not score_match:
             score_match = re.search(r"protocols.loop_build.LoopBuildMover: total_energy ([-]?[\d\.]+)", stdout) #Legacy KIC
 
